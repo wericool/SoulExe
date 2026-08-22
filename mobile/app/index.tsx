@@ -30,6 +30,7 @@ import { sortConversationRows, toConversationListRow, type ConversationListRow }
 import { discoverSoulTextServers, type DiscoveredSoulTextServer } from "@/lib/soultext-discovery";
 import { clearSoulTextSession, defaultChatAppearance, loadChatAppearance, loadSoulTextSession, saveChatAppearance, saveSoulTextSession, type ChatAppearanceSettings } from "@/lib/soultext-storage";
 import { colors, radii, space, typography } from "@/lib/theme";
+import { useConversationSync } from "@/hooks/use-conversation-sync";
 
 type TabKey = "chats" | "scenes" | "characters" | "settings";
 type MobileChatEntry = { id: string; character: SoulCharacter; chat: SoulChat; preview?: string; previewAt?: string };
@@ -560,23 +561,15 @@ function ChatsScreen({ api, appearance, isVisible, onThreadChange }: { api: Soul
   }, [activeCharacterId, activeChatId, api, isVisible]);
   useEffect(() => { loadList().catch((error) => Alert.alert("Чаты", error instanceof Error ? error.message : "Ошибка сети")); }, [loadList]);
   useEffect(() => { loadMessages().catch((error) => Alert.alert("Чат", error instanceof Error ? error.message : "Ошибка сети")); }, [loadMessages]);
-  useEffect(() => {
-    if (!isVisible) return;
-    const timer = setInterval(() => { void loadList(true).catch(() => undefined); }, 2500);
-    return () => clearInterval(timer);
-  }, [isVisible, loadList]);
-  useEffect(() => {
-    if (!activeCharacterId || !activeChatId || !isVisible || busy) return;
-    let disposed = false;
-    const refreshActiveHistory = async () => {
-      try {
-        const fresh = await api.getMessages(activeCharacterId, activeChatId);
-        if (!disposed) setMessages((current) => chatFingerprint(current) === chatFingerprint(fresh) ? current : fresh);
-      } catch { /* The next refresh pass retries without interrupting an open chat. */ }
-    };
-    const timer = setInterval(() => { void refreshActiveHistory(); }, 1500);
-    return () => { disposed = true; clearInterval(timer); };
-  }, [activeCharacterId, activeChatId, api, busy, isVisible]);
+  useConversationSync({ enabled: isVisible, intervalMs: 2500, refresh: () => loadList(true) });
+  useConversationSync({
+    enabled: Boolean(activeCharacterId && activeChatId && isVisible && !busy),
+    intervalMs: 1500,
+    refresh: async () => {
+      const fresh = await api.getMessages(activeCharacterId!, activeChatId!);
+      setMessages((current) => chatFingerprint(current) === chatFingerprint(fresh) ? current : fresh);
+    },
+  });
   useEffect(() => {
     if (isVisible) return;
     setActive(undefined); setSceneId(undefined); setProfileOpen(false); setProfileEditing(false); setNewChatOpen(false); setNewSceneOpen(false); setCreationPicker(false);
@@ -808,11 +801,14 @@ function ScenesScreen({ api, appearance, onThreadChange, initialSceneId, onBackT
     });
     return () => subscription.remove();
   }, [onBackToChats, sceneEditing, sceneInfoOpen]);
-  useEffect(() => {
-    let disposed = false;
-    const timer = setInterval(() => { api.getScene(initialSceneId).then((fresh) => { if (!disposed) setScene((current) => sceneFingerprint(current) === sceneFingerprint(fresh) ? current : fresh); }).catch(() => undefined); }, 1500);
-    return () => { disposed = true; clearInterval(timer); };
-  }, [initialSceneId, api]);
+  useConversationSync({
+    enabled: true,
+    intervalMs: 1500,
+    refresh: async () => {
+      const fresh = await api.getScene(initialSceneId);
+      setScene((current) => sceneFingerprint(current) === sceneFingerprint(fresh) ? current : fresh);
+    },
+  });
   useEffect(() => { const timer = setInterval(() => setClock(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const action = async (name: "start" | "pause" | "next") => {
     if (!scene || busy) return;
