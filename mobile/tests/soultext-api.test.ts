@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { checkSoulTextServer, cleanSceneContent, normalizeServerUrl, SoulTextApi } from "../lib/soultext-api";
+import { sortConversationRows, toConversationListRow } from "../lib/conversation-adapter";
 
 describe("normalizeServerUrl", () => {
   it("добавляет HTTP и удаляет лишний завершающий слеш", () => {
@@ -33,6 +34,23 @@ describe("checkSoulTextServer", () => {
 describe("cleanSceneContent", () => {
   it("скрывает служебные теги и блоки рассуждений, оставляя ролевой текст", () => {
     expect(cleanSceneContent("<think>служебное рассуждение</think>\n[DIRECTOR EVENT] *Аня смотрит в окно.*\nПривет.")).toBe("*Аня смотрит в окно.*\nПривет.");
+  });
+});
+
+describe("общий адаптер разговоров", () => {
+  it("преобразует сцену в единую строку с участниками и последней репликой", () => {
+    const row = toConversationListRow({
+      id: "scene-1", kind: "scene", source: "Scene", name: "Ночная прогулка", isPinned: false, isArchived: false,
+      summaryText: "", lastSummarizedSequence: 0, createdAt: "2026-08-20T00:00:00Z", updatedAt: "2026-08-21T00:00:00Z",
+      participants: [
+        { id: "a", kind: "Character", displayName: "Аня", canGenerate: true, sortOrder: 0 },
+        { id: "b", kind: "Character", displayName: "Мира", canGenerate: true, sortOrder: 1 },
+      ],
+      messages: [{ id: "m", sequenceNumber: 1, kind: "message", author: "Аня", content: "*Смотрит на город.*", createdAt: "2026-08-21T00:00:00Z", variants: [], attachments: [] }],
+      context: {}, turnState: { status: "running", mode: "alternate", delaySeconds: 10, enforceContract: true, advanceAndAvoidRepetition: true },
+    });
+    expect(row).toMatchObject({ kind: "scene", title: "Ночная прогулка", subtitle: "Аня · Мира", preview: "*Смотрит на город.*", isRunning: true });
+    expect(sortConversationRows([row])[0].id).toBe("scene-1");
   });
 });
 
