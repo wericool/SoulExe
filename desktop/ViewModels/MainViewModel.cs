@@ -37,9 +37,9 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private readonly SceneService _scenes = AppServices.Scenes;
     private readonly ScenePromptEngine _scenePromptEngine = AppServices.ScenePromptEngine;
     private readonly ConversationTurnRunner _conversationTurnRunner = new(AppServices.Scenes, AppServices.ScenePromptEngine);
+    private readonly SceneTurnScheduler _sceneTurnScheduler = new(AppServices.Scenes);
     private readonly NetworkChatServer _network;
     private readonly CognitiveBackgroundScheduler _cognitiveScheduler;
-    private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _networkSceneLoops = new();
     private SoulCharacter? _selectedCharacter;
     private SoulChat? _selectedChat;
     private ChatListItemViewModel? _selectedChatListItem;
@@ -2095,6 +2095,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         try
         {
             CancelSceneTimer();
+            _sceneTurnScheduler.Cancel(SelectedScene.Id);
             await _scenes.DeleteAsync(SelectedScene.Id);
             await ReloadScenesAsync();
             SceneRunStatus = "Сцена удалена.";
@@ -2116,12 +2117,14 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         await LoadSelectedSceneAsync(SelectedScene.Id);
         SceneRunStatus = $"Сцена запущена. Следующий ход: {SceneNextSpeakerName}.";
         if (SelectedScene.DelaySeconds >= 5 && SelectedScene.TurnMode == "alternate") ScheduleSceneTimer();
+        await ScheduleAutomaticSceneTurnAsync(SelectedScene.Id);
     }
 
     private async Task PauseSceneAsync()
     {
         if (SelectedScene is null) return;
         CancelSceneTimer();
+        _sceneTurnScheduler.Cancel(SelectedScene.Id);
         await _scenes.SetStatusAsync(SelectedScene.Id, "paused");
         await LoadSelectedSceneAsync(SelectedScene.Id);
         ScheduleSceneSummary(SelectedScene.CharacterAId, SelectedScene.Id, immediate: true);
@@ -2132,6 +2135,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     {
         if (SelectedScene is null) return;
         CancelSceneTimer();
+        _sceneTurnScheduler.Cancel(SelectedScene.Id);
         await _scenes.SetStatusAsync(SelectedScene.Id, "finished");
         await LoadSelectedSceneAsync(SelectedScene.Id);
         ScheduleSceneSummary(SelectedScene.CharacterAId, SelectedScene.Id, immediate: true);
@@ -2143,6 +2147,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (SelectedScene is null || character is null) return;
         if (character.Id != SelectedScene.CharacterAId && character.Id != SelectedScene.CharacterBId) return;
         CancelSceneTimer();
+        _sceneTurnScheduler.Cancel(SelectedScene.Id);
         await _scenes.SetStatusAsync(SelectedScene.Id, "paused", character.Id);
         await LoadSelectedSceneAsync(SelectedScene.Id);
         SceneRunStatus = $"Следующий ход вручную назначен персонажу {character.Name}.";
@@ -2200,15 +2205,16 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         {
             case "start":
                 await _scenes.SetStatusAsync(sceneId, "running", token: token);
-                StartNetworkSceneLoop(sceneId);
+                await ScheduleAutomaticSceneTurnAsync(sceneId, token);
                 return;
             case "pause":
-                StopNetworkSceneLoop(sceneId);
+                _sceneTurnScheduler.Cancel(sceneId);
                 await _scenes.SetStatusAsync(sceneId, "paused", token: token);
                 return;
             case "next":
+                _sceneTurnScheduler.Cancel(sceneId);
                 await GenerateNetworkSceneTurnAsync(sceneId, token);
-                StartNetworkSceneLoop(sceneId);
+                await ScheduleAutomaticSceneTurnAsync(sceneId, token);
                 return;
             default:
                 throw new InvalidOperationException("Неизвестное действие сцены.");
@@ -2281,37 +2287,17 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         }
     }
 
-    private void StartNetworkSceneLoop(Guid sceneId)
-    {
-        StopNetworkSceneLoop(sceneId);
-        var source = new CancellationTokenSource();
-        _networkSceneLoops[sceneId] = source;
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                while (!source.IsCancellationRequested)
-                {
-                    var scene = await _scenes.GetSceneAsync(sceneId, source.Token);
-                    if (scene is null || scene.Status != "running" || scene.TurnMode != "alternate" || scene.DelaySeconds < 5) break;
-                    await Task.Delay(TimeSpan.FromSeconds(Math.Clamp(scene.DelaySeconds, 5, 30)), source.Token);
-                    if (!source.IsCancellationRequested) await GenerateNetworkSceneTurnAsync(sceneId, source.Token);
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex) { AppLog.Write($"NETWORK_SCENE_LOOP_FAILED scene={sceneId:N}: {ex}"); }
-            finally
-            {
-                if (_networkSceneLoops.TryGetValue(sceneId, out var active) && ReferenceEquals(active, source))
-                    _networkSceneLoops.TryRemove(sceneId, out _);
-                source.Dispose();
-            }
-        });
-    }
+    private Task ScheduleAutomaticSceneTurnAsync(Guid sceneId, CancellationToken token = default) =>
+        _sceneTurnScheduler.ScheduleAsync(sceneId, GenerateScheduledSceneTurnAsync, token);
 
-    private void StopNetworkSceneLoop(Guid sceneId)
+    private async Task GenerateScheduledSceneTurnAsync(Guid sceneId, CancellationToken token)
     {
-        if (_networkSceneLoops.TryRemove(sceneId, out var source)) source.Cancel();
+        if (SelectedScene?.Id == sceneId && Application.Current?.Dispatcher is { } dispatcher && !dispatcher.HasShutdownStarted && !dispatcher.HasShutdownFinished)
+        {
+            await dispatcher.InvokeAsync(async () => await GenerateNextSceneTurnAsync()).Task.Unwrap();
+            return;
+        }
+        await GenerateNetworkSceneTurnAsync(sceneId, token);
     }
 
     private async Task GenerateNextSceneTurnAsync()
@@ -2321,6 +2307,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         try
         {
             CancelSceneTimer();
+            _sceneTurnScheduler.Cancel(scene.Id);
             _cognitiveScheduler.Cancel(scene.CharacterAId, scene.Id);
             IsSceneGenerating = true;
             await _scenes.UpdateAsync(scene);
@@ -2422,6 +2409,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
             ScheduleSceneSummary(scene.CharacterAId, scene.Id);
             SceneRunStatus = $"{result.SpeakerName} ответил. Общий Summary при необходимости обновится в фоне после короткой паузы.";
             if (SelectedScene?.Status == "running" && SelectedScene.TurnMode == "alternate" && SelectedScene.DelaySeconds >= 5) ScheduleSceneTimer();
+            await ScheduleAutomaticSceneTurnAsync(scene.Id);
         }
         catch (Exception ex)
         {
@@ -2511,12 +2499,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
                 await Task.Delay(TimeSpan.FromSeconds(1), token).ConfigureAwait(false);
             }
 
-            if (token.IsCancellationRequested) return;
-            var readyToGenerate = false;
-            await UpdateSceneUiAsync(() => readyToGenerate = SelectedScene?.Id == sceneId && SelectedScene?.Status == "running");
-            if (!readyToGenerate || token.IsCancellationRequested) return;
-            if (Application.Current?.Dispatcher is not null)
-                await Application.Current.Dispatcher.InvokeAsync(async () => await GenerateNextSceneTurnAsync()).Task.Unwrap();
+            // SceneTurnScheduler owns actual generation. This local timer only keeps the header
+            // countdown responsive while the persisted NextTurnAt remains the source of truth.
         }
         catch (OperationCanceledException) { }
     }
@@ -3152,6 +3136,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         {
             IsBusy = true;
             CancelSceneTimer();
+            _sceneTurnScheduler.Cancel(scene.Id);
             await _scenes.DeleteAsync(scene.Id);
             await ReloadScenesAsync();
             Status = $"Сцена «{scene.Name}» удалена.";
@@ -4853,7 +4838,7 @@ User's character idea:
     private async Task PauseSceneAfterContextCapacityErrorAsync(Guid sceneId, CancellationToken token = default)
     {
         CancelSceneTimer();
-        StopNetworkSceneLoop(sceneId);
+        _sceneTurnScheduler.Cancel(sceneId);
         try { await _scenes.SetStatusAsync(sceneId, "paused", token: token); }
         catch (Exception pauseException) { AppLog.Write($"Не удалось поставить сцену {sceneId:N} на паузу после превышения контекста.", pauseException); }
 
@@ -4924,9 +4909,9 @@ User's character idea:
     public async ValueTask DisposeAsync()
     {
         CancelSceneTimer();
-        foreach (var sceneId in _networkSceneLoops.Keys) StopNetworkSceneLoop(sceneId);
         try
         {
+            await _sceneTurnScheduler.DisposeAsync();
             await _cognitiveScheduler.DisposeAsync();
             await _network.DisposeAsync();
             await _llama.DisposeAsync();
