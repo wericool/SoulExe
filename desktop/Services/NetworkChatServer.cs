@@ -93,6 +93,7 @@ public sealed class NetworkChatServer : IAsyncDisposable
         app.MapGet("/api/conversations", GetConversationsAsync);
         app.MapGet("/api/conversations/page", GetConversationPageAsync);
         app.MapGet("/api/conversations/{conversationId:guid}", GetConversationAsync);
+        app.MapPost("/api/conversations/{conversationId:guid}/actions", ConversationActionAsync);
         app.MapPut("/api/characters/{characterId:guid}", UpdateCharacterAsync);
         app.MapGet("/api/scenes", GetScenesAsync);
         app.MapGet("/api/scenes/{sceneId:guid}", GetSceneAsync);
@@ -236,6 +237,7 @@ public sealed class NetworkChatServer : IAsyncDisposable
 
     private static object ConversationDto(ConversationSnapshot conversation, int? take = null, Func<Guid, string?>? avatarUrl = null)
     {
+        var capabilities = ConversationCapabilityPolicy.For(conversation.Kind);
         IEnumerable<ConversationMessageSnapshot> messages = conversation.Messages.OrderBy(message => message.SequenceNumber);
         if (take is > 0) messages = messages.TakeLast(take.Value);
         return new
@@ -250,6 +252,16 @@ public sealed class NetworkChatServer : IAsyncDisposable
             lastSummarizedSequence = conversation.LastSummarizedSequence,
             createdAt = conversation.CreatedAt,
             updatedAt = conversation.UpdatedAt,
+            capabilities = new
+            {
+                appendUserMessage = capabilities.CanAppendUserMessage,
+                addDirectorEvent = capabilities.CanAddDirectorEvent,
+                start = capabilities.CanStart,
+                pause = capabilities.CanPause,
+                finish = capabilities.CanFinish,
+                chooseNextParticipant = capabilities.CanChooseNextParticipant,
+                generateNextTurn = capabilities.CanGenerateNextTurn
+            },
             participants = conversation.Participants.Select(participant => new
             {
                 id = participant.Id,
@@ -295,6 +307,47 @@ public sealed class NetworkChatServer : IAsyncDisposable
                 advanceAndAvoidRepetition = conversation.TurnState.AdvanceAndAvoidRepetition
             }
         };
+    }
+
+    private async Task<IResult> ConversationActionAsync(HttpContext context, Guid conversationId, MobileConversationActionRequest request, CancellationToken token)
+    {
+        var kind = string.Equals(request.Kind, "scene", StringComparison.OrdinalIgnoreCase) ? ConversationKind.Scene : ConversationKind.Direct;
+        var action = (request.Action ?? string.Empty).Trim().ToLowerInvariant();
+        var address = new ConversationAddress(conversationId, kind);
+
+        if (kind == ConversationKind.Direct && action == "append")
+        {
+            var result = await AppServices.Conversations.AppendUserMessageAsync(address, request.Text ?? string.Empty, token);
+            await NotifyDataChangedAsync();
+            return Results.Ok(ConversationDto(result.Conversation, avatarUrl: AvatarUrlForCharacter));
+        }
+
+        if (kind == ConversationKind.Scene && action == "director")
+        {
+            var result = await AppServices.Conversations.AddDirectorEventAsync(address, request.Text ?? string.Empty, token);
+            await NotifyDataChangedAsync();
+            return Results.Ok(ConversationDto(result.Conversation, avatarUrl: AvatarUrlForCharacter));
+        }
+
+        if (kind == ConversationKind.Scene && action is "start" or "pause" or "finish" or "next")
+        {
+            if (string.Equals(context.Request.Query["async"], "1", StringComparison.Ordinal) && action == "next")
+            {
+                _ = Task.Run(async () =>
+                {
+                    try { await _sceneAction(conversationId, action, CancellationToken.None); await NotifyDataChangedAsync(); }
+                    catch (Exception ex) { AppLog.Write($"Conversation scene action failed: {ex}"); }
+                });
+                return Results.Accepted($"/api/conversations/{conversationId}", new { accepted = true });
+            }
+
+            await _sceneAction(conversationId, action, token);
+            var result = await AppServices.Conversations.GetAsync(address, token);
+            await NotifyDataChangedAsync();
+            return Results.Ok(ConversationDto(result.Conversation, avatarUrl: AvatarUrlForCharacter));
+        }
+
+        return Results.BadRequest(new { error = "Это действие недоступно для выбранного разговора." });
     }
 
     private async Task<IResult> CreateCharacterAsync(MobileCharacterCreateRequest request, CancellationToken token)
@@ -565,6 +618,12 @@ public sealed class NetworkChatServer : IAsyncDisposable
         ? $"/api/characters/{character.Id}/avatar?v={File.GetLastWriteTimeUtc(character.AvatarPath).Ticks}"
         : null;
 
+    private string? AvatarUrlForCharacter(Guid characterId)
+    {
+        var character = _characters().FirstOrDefault(value => value.Id == characterId);
+        return character is null ? null : AvatarUrl(character);
+    }
+
     private async Task NotifyDataChangedAsync()
     {
         try { await _notifyDataChanged(); }
@@ -695,3 +754,4 @@ public sealed record MobileSceneUpdateRequest(string? Name, string? Scenario, st
 public sealed record MobileSceneCreateRequest(string? CharacterAId, string? CharacterBId, string? Name, string? Scenario, string? Location, string? TimeContext, string? Mood, string? Goal, string? RelationshipContext, string? TurnMode, int DelaySeconds, bool EnforceSceneContract, bool AdvanceSceneAndAvoidRepetition);
 public sealed record MobileSceneActionRequest(string? Action);
 public sealed record MobileDirectorRequest(string? Text);
+public sealed record MobileConversationActionRequest(string? Kind, string? Action, string? Text = null);

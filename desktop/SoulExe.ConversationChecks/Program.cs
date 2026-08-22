@@ -44,6 +44,11 @@ Expect(sceneThread.Messages.Count == sceneConversation.Messages.Count, "Обще
 Expect(sceneThread.Messages.Count(message => message.IsDirector) == 1, "Режиссёрское событие должно иметь особый тип в общем представлении.");
 Expect(sceneThread.Messages.Any(message => message.IsOutgoing), "Первая реплика сцены должна сохранять правило выравнивания участника A.");
 
+var directCapabilities = ConversationCapabilityPolicy.For(ConversationKind.Direct);
+var sceneCapabilities = ConversationCapabilityPolicy.For(ConversationKind.Scene);
+Expect(directCapabilities.CanAppendUserMessage && !directCapabilities.CanAddDirectorEvent, "Обычный чат должен разрешать пользовательскую реплику и запрещать режиссёрское событие.");
+Expect(sceneCapabilities.CanAddDirectorEvent && sceneCapabilities.CanStart && sceneCapabilities.CanChooseNextParticipant, "Сцена должна публиковать действия режиссёра, запуска и выбора следующего участника.");
+
 var history = new[] { "старое", "актуальное" };
 var selectedHistory = ConversationContextWindow.TakeLatestThatFits(history, 5, value => value);
 Expect(selectedHistory.SequenceEqual(["актуальное"]), "Общее окно контекста должно сохранять последнюю подходящую реплику.");

@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="..\Models\FullDomainModels.cs" Link="Models\FullDomainModels.cs" />
     <Compile Include="..\Models\ConversationModels.cs" Link="Models\ConversationModels.cs" />
+    <Compile Include="..\Models\ConversationServiceModels.cs" Link="Models\ConversationServiceModels.cs" />
     <Compile Include="..\Services\ConversationReadService.cs" Link="Services\ConversationReadService.cs" />
     <Compile Include="..\Services\ConversationContextWindow.cs" Link="Services\ConversationContextWindow.cs" />
     <Compile Include="..\ViewModels\ConversationThreadPresentationViewModel.cs" Link="ViewModels\ConversationThreadPresentationViewModel.cs" />

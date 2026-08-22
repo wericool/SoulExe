@@ -35,6 +35,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private readonly SoulOfWaifuImportService _soulOfWaifuImporter = AppServices.SoulOfWaifuImporter;
     private readonly CharacterCardExportService _characterCardExporter = AppServices.CharacterCardExporter;
     private readonly SceneService _scenes = AppServices.Scenes;
+    private readonly ConversationService _conversations = AppServices.Conversations;
     private readonly ScenePromptEngine _scenePromptEngine = AppServices.ScenePromptEngine;
     private readonly ConversationTurnRunner _conversationTurnRunner = new(AppServices.Scenes, AppServices.ScenePromptEngine);
     private readonly SceneTurnScheduler _sceneTurnScheduler = new(AppServices.Scenes);
@@ -2113,7 +2114,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private async Task StartSceneAsync()
     {
         if (SelectedScene is null) return;
-        await _scenes.SetStatusAsync(SelectedScene.Id, "running");
+        await _conversations.SetSceneStatusAsync(new ConversationAddress(SelectedScene.Id, ConversationKind.Scene), ConversationSceneStatusAction.Start);
         await LoadSelectedSceneAsync(SelectedScene.Id);
         SceneRunStatus = $"Сцена запущена. Следующий ход: {SceneNextSpeakerName}.";
         if (SelectedScene.DelaySeconds >= 5 && SelectedScene.TurnMode == "alternate") ScheduleSceneTimer();
@@ -2125,7 +2126,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (SelectedScene is null) return;
         CancelSceneTimer();
         _sceneTurnScheduler.Cancel(SelectedScene.Id);
-        await _scenes.SetStatusAsync(SelectedScene.Id, "paused");
+        await _conversations.SetSceneStatusAsync(new ConversationAddress(SelectedScene.Id, ConversationKind.Scene), ConversationSceneStatusAction.Pause);
         await LoadSelectedSceneAsync(SelectedScene.Id);
         ScheduleSceneSummary(SelectedScene.CharacterAId, SelectedScene.Id, immediate: true);
         SceneRunStatus = "Сцена поставлена на паузу. История и контекст сохранены; Summary обновится в фоне при необходимости.";
@@ -2136,7 +2137,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (SelectedScene is null) return;
         CancelSceneTimer();
         _sceneTurnScheduler.Cancel(SelectedScene.Id);
-        await _scenes.SetStatusAsync(SelectedScene.Id, "finished");
+        await _conversations.SetSceneStatusAsync(new ConversationAddress(SelectedScene.Id, ConversationKind.Scene), ConversationSceneStatusAction.Finish);
         await LoadSelectedSceneAsync(SelectedScene.Id);
         ScheduleSceneSummary(SelectedScene.CharacterAId, SelectedScene.Id, immediate: true);
         SceneRunStatus = "Сцена завершена. Обычные чаты персонажей не изменялись; Summary обновится в фоне при необходимости.";
@@ -2148,7 +2149,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (character.Id != SelectedScene.CharacterAId && character.Id != SelectedScene.CharacterBId) return;
         CancelSceneTimer();
         _sceneTurnScheduler.Cancel(SelectedScene.Id);
-        await _scenes.SetStatusAsync(SelectedScene.Id, "paused", character.Id);
+        await _conversations.ChooseSceneNextParticipantAsync(new ConversationAddress(SelectedScene.Id, ConversationKind.Scene), character.Id);
         await LoadSelectedSceneAsync(SelectedScene.Id);
         SceneRunStatus = $"Следующий ход вручную назначен персонажу {character.Name}.";
     }
@@ -2158,7 +2159,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (SelectedScene is null || string.IsNullOrWhiteSpace(SceneDirectorDraft)) return;
         try
         {
-            await _scenes.AddDirectorMessageAsync(SelectedScene.Id, SceneDirectorDraft);
+            await _conversations.AddDirectorEventAsync(new ConversationAddress(SelectedScene.Id, ConversationKind.Scene), SceneDirectorDraft);
             SceneDirectorDraft = "";
             await LoadSelectedSceneAsync(SelectedScene.Id);
             SceneRunStatus = "Режиссёрское событие добавлено в общий контекст сцены.";
@@ -2204,12 +2205,16 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         switch (normalizedAction)
         {
             case "start":
-                await _scenes.SetStatusAsync(sceneId, "running", token: token);
+                await _conversations.SetSceneStatusAsync(new ConversationAddress(sceneId, ConversationKind.Scene), ConversationSceneStatusAction.Start, token);
                 await ScheduleAutomaticSceneTurnAsync(sceneId, token);
                 return;
             case "pause":
                 _sceneTurnScheduler.Cancel(sceneId);
-                await _scenes.SetStatusAsync(sceneId, "paused", token: token);
+                await _conversations.SetSceneStatusAsync(new ConversationAddress(sceneId, ConversationKind.Scene), ConversationSceneStatusAction.Pause, token);
+                return;
+            case "finish":
+                _sceneTurnScheduler.Cancel(sceneId);
+                await _conversations.SetSceneStatusAsync(new ConversationAddress(sceneId, ConversationKind.Scene), ConversationSceneStatusAction.Finish, token);
                 return;
             case "next":
                 _sceneTurnScheduler.Cancel(sceneId);
