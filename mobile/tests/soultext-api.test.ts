@@ -69,6 +69,23 @@ describe("SoulTextApi: чаты и сцены", () => {
     );
   });
 
+  it("загружает единый список разговоров через совместимый endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([
+      { id: "chat-1", kind: "direct", name: "Диалог", participants: [], messages: [] },
+      { id: "scene-1", kind: "scene", name: "Сцена", participants: [], messages: [{ id: "event-1", kind: "director", content: "Событие" }] },
+    ]), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const conversations = await api.getConversations();
+
+    expect(conversations.map((conversation) => conversation.kind)).toEqual(["direct", "scene"]);
+    expect(conversations[1].messages[0].kind).toBe("director");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://192.168.1.34:8000/api/conversations",
+      expect.objectContaining({ headers: expect.objectContaining({ "X-SoulExe-Session": "test-session" }) }),
+    );
+  });
+
   it("отправляет выбранный аватар как multipart-данные в локальный SoulExe", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: "char-1", name: "Полина", avatarUrl: "/api/characters/char-1/avatar?v=2" }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
