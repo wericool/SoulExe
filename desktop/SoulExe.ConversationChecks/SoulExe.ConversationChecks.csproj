@@ -11,6 +11,7 @@
     <Compile Include="..\Models\ConversationServiceModels.cs" Link="Models\ConversationServiceModels.cs" />
     <Compile Include="..\Services\ConversationReadService.cs" Link="Services\ConversationReadService.cs" />
     <Compile Include="..\Services\ConversationContextWindow.cs" Link="Services\ConversationContextWindow.cs" />
+    <Compile Include="..\Services\ConversationMigrationPreflight.cs" Link="Services\ConversationMigrationPreflight.cs" />
     <Compile Include="..\ViewModels\ConversationThreadPresentationViewModel.cs" Link="ViewModels\ConversationThreadPresentationViewModel.cs" />
   </ItemGroup>
 </Project>

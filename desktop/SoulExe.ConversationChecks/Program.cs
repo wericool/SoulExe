@@ -49,6 +49,10 @@ var sceneCapabilities = ConversationCapabilityPolicy.For(ConversationKind.Scene)
 Expect(directCapabilities.CanAppendUserMessage && !directCapabilities.CanAddDirectorEvent, "Обычный чат должен разрешать пользовательскую реплику и запрещать режиссёрское событие.");
 Expect(sceneCapabilities.CanAddDirectorEvent && sceneCapabilities.CanStart && sceneCapabilities.CanChooseNextParticipant, "Сцена должна публиковать действия режиссёра, запуска и выбора следующего участника.");
 
+var preflight = ConversationMigrationPreflight.Analyze(root, reader);
+Expect(preflight.IsSafeToPrepareBackup, "Фикстуры без потерь должны пройти migration preflight до создания резервной копии.");
+Expect(preflight.ExpectedConversationCount == preflight.ProjectedConversationCount, "Migration preflight должен сверять ожидаемое и спроецированное число разговоров.");
+
 var history = new[] { "старое", "актуальное" };
 var selectedHistory = ConversationContextWindow.TakeLatestThatFits(history, 5, value => value);
 Expect(selectedHistory.SequenceEqual(["актуальное"]), "Общее окно контекста должно сохранять последнюю подходящую реплику.");

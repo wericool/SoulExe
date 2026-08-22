@@ -26,6 +26,7 @@ public static class AppServices
     public static SceneService Scenes { get; } = new(DataStore);
     public static ScenePromptEngine ScenePromptEngine { get; } = new();
     public static ConversationService Conversations { get; } = new(DataStore, CharacterLibrary, Scenes);
+    public static ConversationMigrationPreparationService ConversationMigrationPreparation { get; } = new(DataStore);
 
     public static async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
