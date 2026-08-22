@@ -5226,7 +5226,7 @@ public sealed class ConversationListItemViewModel
     {
         ChatItem = chatItem;
         Id = chatItem.ChatId;
-        IsScene = false;
+        Kind = ConversationKind.Direct;
         Title = chatItem.CharacterName;
         SecondaryTitle = chatItem.ChatName;
         Preview = NormalizePreview(chatItem.LastMessagePreview);
@@ -5242,7 +5242,7 @@ public sealed class ConversationListItemViewModel
     {
         Scene = scene;
         Id = scene.Id;
-        IsScene = true;
+        Kind = ConversationKind.Scene;
         var firstName = first?.Name ?? "Персонаж A";
         var secondName = second?.Name ?? "Персонаж B";
         Title = $"{firstName}, {secondName}";
@@ -5260,7 +5260,10 @@ public sealed class ConversationListItemViewModel
     private static string NormalizePreview(string? text) => string.Join(" ", (text ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     public Guid Id { get; }
-    public bool IsScene { get; }
+    public ConversationKind Kind { get; }
+    public bool IsScene => Kind == ConversationKind.Scene;
+    public string TypeLabel => IsScene ? "Сцена" : "Диалог";
+    public bool HasSceneControls => Kind == ConversationKind.Scene;
     public bool IsPinned { get; }
     public ChatListItemViewModel? ChatItem { get; }
     public SoulScene? Scene { get; }
