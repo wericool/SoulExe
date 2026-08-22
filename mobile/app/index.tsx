@@ -23,6 +23,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Avatar, Button, Card, EmptyState, Field, IconButton, PageHeader, Screen, StatusPill } from "@/components/soul/ui";
 import { MessengerRow, MessengerThreadHeader } from "@/components/soul/messenger-elements";
+import { ConversationMessageList } from "@/components/soul/conversation-message-list";
 import { checkSoulTextServer, normalizeServerUrl, SoulTextApi, type ChatMessage, type SoulCharacter, type SoulCharacterDraft, type SoulChat, type SoulConversation, type SoulExeApi, type SoulScene, type SoulSceneSummary, type SoulTextSession } from "@/lib/soultext-api";
 import { createSoulExeDemoApi } from "@/lib/soulexe-demo-api";
 import { sortConversationRows, toConversationListRow, type ConversationListRow } from "@/lib/conversation-adapter";
@@ -68,6 +69,8 @@ function formatTime(value?: string) {
   }
 }
 
+// Сцена пока использует legacy-FlatList; эти helpers будут удалены при её отдельном переходе
+// на ConversationMessageList, чтобы не рисковать текущей автопрокруткой и composer-логикой.
 function messageDayKey(value?: string) {
   const date = value ? new Date(value) : new Date(0);
   if (Number.isNaN(date.getTime())) return "";
@@ -664,13 +667,11 @@ function ChatsScreen({ api, appearance, isVisible, onThreadChange }: { api: Soul
       />
       {historyLoaded ? (
         <View style={styles.grow}>
-        <FlatList
+        <ConversationMessageList
           key={active.id}
-          ref={history}
+          listRef={history}
           style={[styles.grow, !historyReady && styles.historyHidden]}
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          data={messages}
+          messages={messages}
           keyExtractor={(item, index) => item.id || `${item.createdAt}-${index}`}
           contentContainerStyle={styles.messagesList}
           initialNumToRender={Math.max(messages.length, 1)}
@@ -693,10 +694,9 @@ function ChatsScreen({ api, appearance, isVisible, onThreadChange }: { api: Soul
             const distance = nativeEvent.contentSize.height - (nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height);
             stickToBottom.current = distance < 64;
           }}
-          scrollEventThrottle={16}
-          renderItem={({ item, index }) => <>{needsDateDivider(messages, index) ? <ChatDateDivider value={item.createdAt} /> : null}<MessageBubble message={item} appearance={appearance} /></>}
-          ListFooterComponent={typing ? <View style={styles.typingRow}><ActivityIndicator size="small" color={colors.accentHover} /><Text style={styles.typingText}>{active.character.name} печатает…</Text></View> : null}
-          ListEmptyComponent={<Text style={styles.listHint}>Напишите первое сообщение</Text>}
+          renderMessage={(item) => <MessageBubble message={item} appearance={appearance} />}
+          footer={typing ? <View style={styles.typingRow}><ActivityIndicator size="small" color={colors.accentHover} /><Text style={styles.typingText}>{active.character.name} печатает…</Text></View> : null}
+          empty={<Text style={styles.listHint}>Напишите первое сообщение</Text>}
           onScrollToIndexFailed={() => requestAnimationFrame(() => history.current?.scrollToEnd({ animated: false }))}
         />
         {!historyReady ? <View style={styles.historyLoadingOverlay}><ActivityIndicator color={colors.accentHover} /></View> : null}
