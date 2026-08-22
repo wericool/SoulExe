@@ -75,9 +75,7 @@ public sealed class SceneService
             scene.TurnMode = string.Equals(draft.TurnMode, "manual", StringComparison.OrdinalIgnoreCase) ? "manual" : "alternate";
             scene.DelaySeconds = Math.Clamp(draft.DelaySeconds, 0, 30);
             var now = DateTimeOffset.Now;
-            scene.NextTurnAt = scene.Status == "running" && scene.TurnMode == "alternate" && scene.DelaySeconds >= 5
-                ? now.AddSeconds(scene.DelaySeconds)
-                : null;
+            scene.NextTurnAt = ConversationTurnPolicy.NextTurnAt(scene.Status, scene.TurnMode, scene.DelaySeconds, now);
             scene.UpdatedAt = now;
         }, "update_scene", token);
 
@@ -95,9 +93,7 @@ public sealed class SceneService
             var now = DateTimeOffset.Now;
             scene.Status = status is "running" or "finished" ? status : "paused";
             if (nextCharacterId is not null && (nextCharacterId == scene.CharacterAId || nextCharacterId == scene.CharacterBId)) scene.NextCharacterId = nextCharacterId;
-            scene.NextTurnAt = scene.Status == "running" && scheduleNextTurn && scene.TurnMode == "alternate" && scene.DelaySeconds >= 5
-                ? now.AddSeconds(Math.Clamp(scene.DelaySeconds, 5, 30))
-                : null;
+            scene.NextTurnAt = scheduleNextTurn ? ConversationTurnPolicy.NextTurnAt(scene.Status, scene.TurnMode, scene.DelaySeconds, now) : null;
             scene.UpdatedAt = now;
         }, "set_scene_status", token);
 

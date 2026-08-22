@@ -36,9 +36,9 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private readonly CharacterCardExportService _characterCardExporter = AppServices.CharacterCardExporter;
     private readonly SceneService _scenes = AppServices.Scenes;
     private readonly ScenePromptEngine _scenePromptEngine = AppServices.ScenePromptEngine;
+    private readonly ConversationTurnRunner _conversationTurnRunner = new(AppServices.Scenes, AppServices.ScenePromptEngine);
     private readonly NetworkChatServer _network;
     private readonly CognitiveBackgroundScheduler _cognitiveScheduler;
-    private readonly ConcurrentDictionary<Guid, byte> _networkSceneGenerations = new();
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _networkSceneLoops = new();
     private SoulCharacter? _selectedCharacter;
     private SoulChat? _selectedChat;
@@ -2189,43 +2189,29 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
 
     private async Task GenerateNetworkSceneTurnAsync(Guid sceneId, CancellationToken token)
     {
-        if (!_networkSceneGenerations.TryAdd(sceneId, 0)) return;
         try
         {
-            var runtime = await _scenes.GetRuntimeAsync(sceneId, token);
-            var scene = runtime.Scene;
-            if (scene.Status == "finished") return;
-            var speakerId = scene.NextCharacterId ?? scene.CharacterAId;
-            var speaker = speakerId == runtime.First.Id ? runtime.First : runtime.Second;
-                await _scenes.SetStatusAsync(sceneId, "running", speakerId, token, scheduleNextTurn: false);
-
             var settings = await BuildLlamaSettingsAsync();
-            var context = _scenePromptEngine.Build(runtime, speakerId, settings.ContextSize, settings.MaxTokens);
-            AppLog.Write($"NETWORK_SCENE_BEGIN scene={sceneId:N} speaker={speakerId:N} messages={context.Messages.Count}");
-            var buffer = new StringBuilder();
-            await foreach (var chunk in _llama.GenerateFromMessagesAsync(settings, context.Messages, token, "network_scene_" + Guid.NewGuid().ToString("N")[..8]).ConfigureAwait(false))
-                buffer.Append(chunk);
-
-            var text = SceneResponseFormatter.RemoveOwnLeadingLabel(_stateVariables.RemoveStateBlocks(buffer.ToString()), speaker.Name);
-            text = SceneResponseFormatter.NormalizeRoleplayLayout(text, speaker.UseRoleplayResponseFormatting);
-            if (string.IsNullOrWhiteSpace(text)) text = "…";
-
-            var savedMessage = await _scenes.AddCharacterMessageAsync(sceneId, speakerId, text, token);
-            var otherId = speakerId == runtime.First.Id ? runtime.Second.Id : runtime.First.Id;
-            var nextStatus = scene.TurnMode == "alternate" ? "running" : "paused";
-            await _scenes.SetStatusAsync(sceneId, nextStatus, otherId, token);
-            ScheduleSceneSummary(scene.CharacterAId, sceneId);
-            AppLog.Write($"NETWORK_SCENE_SAVED scene={sceneId:N} message={savedMessage.Id:N} chars={text.Length} status={nextStatus}");
+            var result = await _conversationTurnRunner.RunSceneTurnAsync(
+                sceneId,
+                settings.ContextSize,
+                settings.MaxTokens,
+                (messages, cancellation) => _llama.GenerateFromMessagesAsync(settings, messages, cancellation, "network_scene_" + Guid.NewGuid().ToString("N")[..8]),
+                (speaker, raw) => SceneResponseFormatter.NormalizeRoleplayLayout(
+                    SceneResponseFormatter.RemoveOwnLeadingLabel(_stateVariables.RemoveStateBlocks(raw), speaker.Name),
+                    speaker.UseRoleplayResponseFormatting),
+                started => AppLog.Write($"NETWORK_SCENE_BEGIN scene={started.SceneId:N} speaker={started.SpeakerCharacterId:N}"),
+                token: token);
+            if (result.Status != SceneTurnExecutionStatus.Completed) return;
+            var scene = await _scenes.GetSceneAsync(sceneId, token);
+            if (scene is not null) ScheduleSceneSummary(scene.CharacterAId, sceneId);
+            AppLog.Write($"NETWORK_SCENE_SAVED scene={sceneId:N} message={result.SavedMessage?.Id:N} chars={result.Content.Length} status={result.NextStatus}");
         }
         catch (Exception ex) when (IsContextCapacityError(ex))
         {
             await PauseSceneAfterContextCapacityErrorAsync(sceneId, token);
             AppLog.Write($"NETWORK_SCENE_PAUSED_CONTEXT_LIMIT scene={sceneId:N}: {ex.Message}");
             throw new InvalidOperationException("Контекст сцены достиг лимита модели. Сцена поставлена на паузу; повторите ход после сокращения истории.", ex);
-        }
-        finally
-        {
-            _networkSceneGenerations.TryRemove(sceneId, out _);
         }
     }
 
@@ -2266,22 +2252,17 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     {
         var scene = SelectedScene;
         if (scene is null || IsSceneGenerating || IsBusy) return;
-        var speakerId = scene.NextCharacterId ?? scene.CharacterAId;
         try
         {
             CancelSceneTimer();
             _cognitiveScheduler.Cancel(scene.CharacterAId, scene.Id);
             IsSceneGenerating = true;
             await _scenes.UpdateAsync(scene);
-            await _scenes.SetStatusAsync(scene.Id, "running", speakerId);
-            var runtime = await _scenes.GetRuntimeAsync(scene.Id);
-            var speaker = speakerId == runtime.First.Id ? runtime.First : runtime.Second;
-            SceneRunStatus = $"{speaker.Name} формирует реплику…";
             var settings = await BuildLlamaSettingsAsync();
-            var context = _scenePromptEngine.Build(runtime, speakerId, settings.ContextSize, settings.MaxTokens);
-            var live = SceneMessageViewModel.Live(speaker.Name, speakerId == runtime.First.Id, speaker.AvatarPath);
+            SceneMessageViewModel? live = null;
             var liveAdded = false;
             var previewActive = 1;
+            var lastPreviewAt = 0L;
             var dispatcher = Application.Current?.Dispatcher;
             await UpdateSceneUiAsync(() => { IsSceneTyping = true; });
 
@@ -2291,54 +2272,65 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
                 _ = dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                 {
                     if (Volatile.Read(ref previewActive) == 0) return;
-                    if (!liveAdded)
+                    if (!liveAdded && live is not null)
                     {
                         SceneMessages.Add(live);
                         liveAdded = true;
                         IsSceneTyping = false;
                     }
-                    live.SetContent(preview);
+                    live?.SetContent(preview);
                 }));
             }
 
-            var replyText = await Task.Run(async () =>
-            {
-                var buffer = new StringBuilder();
-                var lastPreviewAt = 0L;
-                await foreach (var chunk in _llama.GenerateFromMessagesAsync(settings, context.Messages, CancellationToken.None, "scene_" + Guid.NewGuid().ToString("N")[..8]).ConfigureAwait(false))
+            var result = await Task.Run(async () => await _conversationTurnRunner.RunSceneTurnAsync(
+                scene.Id,
+                settings.ContextSize,
+                settings.MaxTokens,
+                (messages, cancellation) => _llama.GenerateFromMessagesAsync(settings, messages, cancellation, "scene_" + Guid.NewGuid().ToString("N")[..8]),
+                (speaker, raw) => SceneResponseFormatter.NormalizeRoleplayLayout(
+                    SceneResponseFormatter.RemoveOwnLeadingLabel(_stateVariables.RemoveStateBlocks(raw), speaker.Name),
+                    speaker.UseRoleplayResponseFormatting),
+                started =>
                 {
-                    buffer.Append(chunk);
+                    live = SceneMessageViewModel.Live(started.Speaker.Name, started.SpeakerCharacterId == scene.CharacterAId, started.Speaker.AvatarPath);
+                    if (dispatcher is not null && !dispatcher.HasShutdownStarted && !dispatcher.HasShutdownFinished)
+                        _ = dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => SceneRunStatus = $"{started.Speaker.Name} формирует реплику…"));
+                },
+                preview =>
+                {
                     var now = Environment.TickCount64;
-                    if (now - lastPreviewAt >= 85)
+                    if (now - Interlocked.Read(ref lastPreviewAt) >= 85)
                     {
-                        lastPreviewAt = now;
-                        PublishScenePreview(buffer.ToString());
+                        Interlocked.Exchange(ref lastPreviewAt, now);
+                        PublishScenePreview(preview);
                     }
-                }
-                return buffer.ToString();
-            });
+                }));
+
+            if (result.Status == SceneTurnExecutionStatus.AlreadyRunning)
+            {
+                SceneRunStatus = "Для этой сцены уже формируется реплика.";
+                return;
+            }
+            if (result.Status == SceneTurnExecutionStatus.Finished) return;
 
             Interlocked.Exchange(ref previewActive, 0);
-            var text = SceneResponseFormatter.RemoveOwnLeadingLabel(_stateVariables.RemoveStateBlocks(replyText), speaker.Name);
-            text = SceneResponseFormatter.NormalizeRoleplayLayout(text, speaker.UseRoleplayResponseFormatting);
-            if (string.IsNullOrWhiteSpace(text)) text = "…";
+            var text = result.Content;
 
             // The streaming bubble remains in place. Removing it and rebuilding the full list caused a visible flash/jump.
             await UpdateSceneUiAsync(() =>
             {
                 IsSceneTyping = false;
-                if (!liveAdded)
+                if (!liveAdded && live is not null)
                 {
                     SceneMessages.Add(live);
                     liveAdded = true;
                 }
-                live.SetContent(text);
+                live?.SetContent(text);
             });
 
-            var savedMessage = await _scenes.AddCharacterMessageAsync(scene.Id, speakerId, text);
-            var otherId = speakerId == runtime.First.Id ? runtime.Second.Id : runtime.First.Id;
-            var nextStatus = runtime.Scene.TurnMode == "alternate" ? "running" : "paused";
-            await _scenes.SetStatusAsync(scene.Id, nextStatus, otherId);
+            var savedMessage = result.SavedMessage ?? throw new InvalidOperationException("Общий runner не вернул сохранённую реплику сцены.");
+            var otherId = result.NextSpeakerCharacterId;
+            var nextStatus = result.NextStatus;
 
             // Keep the selected scene in sync without recreating SceneMessages and without replacing the live bubble.
             await UpdateSceneUiAsync(() =>
@@ -2362,7 +2354,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
             });
 
             ScheduleSceneSummary(scene.CharacterAId, scene.Id);
-            SceneRunStatus = $"{speaker.Name} ответил. Общий Summary при необходимости обновится в фоне после короткой паузы.";
+            SceneRunStatus = $"{result.SpeakerName} ответил. Общий Summary при необходимости обновится в фоне после короткой паузы.";
             if (SelectedScene?.Status == "running" && SelectedScene.TurnMode == "alternate" && SelectedScene.DelaySeconds >= 5) ScheduleSceneTimer();
         }
         catch (Exception ex)

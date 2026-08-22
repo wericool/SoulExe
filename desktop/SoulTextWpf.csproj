@@ -21,4 +21,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <EmbeddedResource Include="Assets\recommended_models.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="SoulExe.ConversationChecks\**\*.cs" />
+  </ItemGroup>
 </Project>

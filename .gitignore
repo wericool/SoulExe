@@ -1,6 +1,8 @@
 # Windows build products and local data
 desktop/bin/
 desktop/obj/
+**/bin/
+**/obj/
 desktop/dist_*/
 desktop/SoulExeData/
 desktop/*.exe

@@ -71,10 +71,8 @@ public sealed class PromptEngine
         messages.Add(new LlamaMessage("system", string.Join("\n\n", systemSections)));
         var history = request.Chat.Messages.OrderBy(x => x.SequenceNumber).ToList();
         if (request.ExcludeLastUserMessage && history.LastOrDefault()?.Role == SoulMessageRole.User) history.RemoveAt(history.Count - 1);
-        var contextLimit = Math.Max(1024, request.ContextSize);
-        var reservedGeneration = Math.Clamp(request.ReservedGenerationTokens, 64, Math.Max(64, contextLimit - 768));
-        var remainingTokens = Math.Max(256, contextLimit - EstimateTokens(messages[0].content) - reservedGeneration - 512);
-        foreach (var message in TakeHistoryThatFits(history, remainingTokens, diagnostics))
+        var remainingTokens = ConversationContextWindow.CalculateHistoryBudget(request.ContextSize, messages[0].content, request.ReservedGenerationTokens, 512);
+        foreach (var message in ConversationContextWindow.TakeLatestThatFits(history, remainingTokens, CurrentContent, () => diagnostics.Add(new PromptDiagnostic("history", "Старая часть истории не вошла в лимит контекста; её заменяет summary."))))
         {
             var content = CurrentContent(message);
             messages.Add(new LlamaMessage(message.Role == SoulMessageRole.User ? "user" : message.Role == SoulMessageRole.Assistant ? "assistant" : "system", content));
@@ -92,7 +90,7 @@ public sealed class PromptEngine
             }
             messages.Add(new LlamaMessage("user", request.UserMessage));
         }
-        diagnostics.Add(new PromptDiagnostic("context", $"Итоговый контекст: ~{messages.Sum(x => EstimateTokens(x.content))} токенов."));
+        diagnostics.Add(new PromptDiagnostic("context", $"Итоговый контекст: ~{messages.Sum(x => ConversationContextWindow.EstimateTokens(x.content))} токенов."));
         return new PromptBuildResult(messages, diagnostics);
     }
 
@@ -163,26 +161,6 @@ The following exact facts have already occurred and are true in the scene:
 
 These facts override any expectation, suspicion, preference, or reaction the character would otherwise have. Preserve every stated outcome literally. Do not deny, question, reverse, reinterpret, discover, or narrate around a stated result. For example, if a fact says another character did not notice something, that character did not notice it and must not imply awareness, suspicion, detection, or later discovery in this reply. Continue only from the consequences of these settled facts. Do not quote this instruction or write for the user.
 """;
-    }
-
-    private static IEnumerable<SoulMessage> TakeHistoryThatFits(IReadOnlyList<SoulMessage> history, int budget, ICollection<PromptDiagnostic> diagnostics)
-    {
-        var accepted = new List<SoulMessage>();
-        var spent = 0;
-        for (var index = history.Count - 1; index >= 0; index--)
-        {
-            var message = history[index];
-            var cost = EstimateTokens(CurrentContent(message));
-            if (spent + cost > budget)
-            {
-                diagnostics.Add(new PromptDiagnostic("history", "Старая часть истории не вошла в лимит контекста; её заменяет summary."));
-                break;
-            }
-            accepted.Add(message);
-            spent += cost;
-        }
-        accepted.Reverse();
-        return accepted;
     }
 
     private static List<LlamaMessage> CollapseConsecutiveAssistantTurns(IEnumerable<LlamaMessage> messages)
@@ -270,7 +248,7 @@ These facts override any expectation, suspicion, preference, or reaction the cha
         (message.Variants.FirstOrDefault(x => x.Id == message.CurrentVariantId) ?? message.Variants.FirstOrDefault())?.Content ?? "";
 
     // Conservative approximation for Cyrillic text and chat-template overhead.
-    public static int EstimateTokens(string text) => Math.Max(1, ((text?.Length ?? 0) + 1) / 2);
+    public static int EstimateTokens(string text) => ConversationContextWindow.EstimateTokens(text);
     private static string TrimToTokenBudget(string content, int budget) => content.Length <= budget * 4 ? content : content[..Math.Min(content.Length, budget * 4)] + "…";
 }
 

@@ -26,10 +26,10 @@ public sealed class ScenePromptEngine
         var result = new List<LlamaMessage> { new("system", string.Join("\n\n", systems.Where(text => !string.IsNullOrWhiteSpace(text)))) };
         // The local estimate is deliberately conservative. A small reserve prevents llama.cpp
         // from rejecting a scene turn when real tokenizer output is a few tokens above it.
-        var contextLimit = Math.Max(1024, contextSize);
-        var reservedGeneration = Math.Clamp(reservedGenerationTokens, 64, Math.Max(64, contextLimit - 768));
-        var tokenizerSafetyReserve = Math.Max(768, Math.Min(1536, Math.Max(256, reservedGeneration / 2)));
-        var tokenBudget = Math.Max(256, contextLimit - EstimateTokens(result[0].content) - reservedGeneration - tokenizerSafetyReserve);
+        var normalizedContextSize = Math.Max(1024, contextSize);
+        var normalizedReservedGeneration = Math.Clamp(reservedGenerationTokens, 64, Math.Max(64, normalizedContextSize - 768));
+        var tokenizerSafetyReserve = Math.Max(768, Math.Min(1536, Math.Max(256, normalizedReservedGeneration / 2)));
+        var tokenBudget = ConversationContextWindow.CalculateHistoryBudget(normalizedContextSize, result[0].content, normalizedReservedGeneration, tokenizerSafetyReserve);
         var history = new List<LlamaMessage>();
         foreach (var message in scene.Messages.OrderBy(message => message.SequenceNumber))
         {
@@ -39,15 +39,7 @@ public sealed class ScenePromptEngine
             var prefix = message.Kind == SoulSceneMessageKind.Director ? "[DIRECTOR EVENT] " : "";
             history.Add(new LlamaMessage(role, prefix + message.Content));
         }
-        var accepted = new List<LlamaMessage>();
-        var spent = 0;
-        for (var index = history.Count - 1; index >= 0; index--)
-        {
-            var cost = EstimateTokens(history[index].content);
-            if (spent + cost > tokenBudget) break;
-            accepted.Add(history[index]); spent += cost;
-        }
-        accepted.Reverse(); result.AddRange(accepted);
+        result.AddRange(ConversationContextWindow.TakeLatestThatFits(history, tokenBudget, message => message.content));
         result.Add(new LlamaMessage("user", BuildTurnInstruction(scene, active, counterpart)));
         return new PromptBuildResult(result, []);
     }
@@ -135,7 +127,6 @@ public sealed class ScenePromptEngine
         Before replying, consider the last several scene turns. Do not repeat, summarize, echo, or merely paraphrase what has already been said. Every reply must add one meaningful new beat that fits the established scene: a fresh observation, reaction, question, decision, small action, emotional shift, detail, or a natural follow-up. Move the current goal forward in small believable steps. If the current topic is exhausted, transition naturally to a related topic or action while preserving the scene's place, time, relationship, and tone. Do not force a dramatic jump and do not conclude the scene.
         """;
 
-    private static int EstimateTokens(string value) => Math.Max(1, ((value ?? "").Length + 1) / 2);
 }
 
 public static class SceneResponseFormatter
