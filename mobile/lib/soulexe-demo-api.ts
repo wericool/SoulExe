@@ -1,4 +1,4 @@
-import type { ChatMessage, CreateSoulSceneRequest, SoulCharacter, SoulCharacterDraft, SoulChat, SoulExeApi, SoulScene, SoulSceneSummary, UpdateSoulSceneRequest } from "@/lib/soultext-api";
+import type { ChatMessage, CreateSoulSceneRequest, SoulCharacter, SoulCharacterDraft, SoulChat, SoulConversation, SoulConversationPageOptions, SoulExeApi, SoulScene, SoulSceneSummary, UpdateSoulSceneRequest } from "@/lib/soultext-api";
 
 const stamp = (minutesFromNow = 0) => new Date(Date.now() + minutesFromNow * 60_000).toISOString();
 const turnStamp = (secondsFromNow: number) => new Date(Date.now() + secondsFromNow * 1_000).toISOString();
@@ -79,9 +79,41 @@ export function createSoulExeDemoApi(): SoulExeApi {
   const findCharacter = (characterId: string) => characters.find((character) => character.id === characterId);
   const messageKey = (characterId: string, chatId: string) => `${characterId}:${chatId}`;
   const findScene = (sceneId: string) => scenes.find((scene) => scene.id === sceneId);
+  const getConversations = (): SoulConversation[] => [
+    ...characters.flatMap((character) => (chats.get(character.id) || []).map((chat) => {
+      const chatMessages = messages.get(messageKey(character.id, chat.id)) || [];
+      return {
+        id: chat.id, kind: "direct" as const, source: "Chat", name: chat.name, isPinned: false, isArchived: false,
+        summaryText: "", lastSummarizedSequence: 0, createdAt: chat.updatedAt || stamp(), updatedAt: chat.updatedAt || stamp(),
+        participants: [{ id: "user", kind: "User" as const, displayName: "Вы", canGenerate: false, sortOrder: 0 }, { id: character.id, kind: "Character" as const, displayName: character.name, characterId: character.id, avatarUrl: character.avatarUrl, canGenerate: true, sortOrder: 1 }],
+        messages: chatMessages.map((message, index) => ({ id: message.id || `${chat.id}-${index}`, sequenceNumber: index + 1, kind: "message" as const, author: message.author, content: message.content, createdAt: message.createdAt, variants: [], attachments: [] })),
+        context: { scenario: character.scenario }, turnState: null,
+      };
+    })),
+    ...scenes.map((scene) => ({
+      id: scene.id, kind: "scene" as const, source: "Scene", name: scene.name, isPinned: false, isArchived: false,
+      summaryText: "", lastSummarizedSequence: 0, createdAt: scene.updatedAt || stamp(), updatedAt: scene.updatedAt || stamp(),
+      participants: [scene.characterA, scene.characterB].filter(Boolean).map((character, index) => ({ id: character!.id, kind: "Character" as const, displayName: character!.name, characterId: character!.id, avatarUrl: character!.avatarUrl, canGenerate: true, sortOrder: index })),
+      messages: scene.messages.map((message, index) => ({ id: `${scene.id}-${index}`, sequenceNumber: index + 1, kind: message.kind === "director" ? "director" as const : "message" as const, author: message.author || "", content: message.content, createdAt: message.createdAt, variants: [], attachments: [] })),
+      context: { scenario: scene.scenario, location: scene.location, timeContext: scene.timeContext, mood: scene.mood, goal: scene.goal, relationshipContext: scene.relationshipContext },
+      turnState: { status: scene.status, mode: scene.turnMode === "manual" ? "manual" as const : "alternate" as const, nextTurnAt: scene.nextTurnAt, delaySeconds: scene.delaySeconds || 10, enforceContract: Boolean(scene.enforceSceneContract), advanceAndAvoidRepetition: Boolean(scene.advanceSceneAndAvoidRepetition) },
+    })),
+  ];
 
   return {
     async getCharacters() { return copy(characters); },
+    async getConversations(take?: number) {
+      const normalizedTake = take && take > 0 ? Math.min(Math.max(Math.trunc(take), 1), 100) : undefined;
+      return copy(getConversations().map((conversation) => ({ ...conversation, messages: normalizedTake ? conversation.messages.slice(-normalizedTake) : conversation.messages })));
+    },
+    async getConversationPage(options: SoulConversationPageOptions = {}) {
+      const limit = options.limit && options.limit > 0 ? Math.min(Math.max(Math.trunc(options.limit), 1), 100) : 50;
+      const offset = options.cursor && /^\d+$/.test(options.cursor) ? Number(options.cursor) : 0;
+      const all = await this.getConversations(options.take);
+      const ordered = [...all].sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
+      const items = ordered.slice(offset, offset + limit);
+      return copy({ items, nextCursor: offset + items.length < ordered.length ? String(offset + items.length) : null });
+    },
     async createCharacter(draft: Pick<SoulCharacterDraft, "name"> & Partial<SoulCharacterDraft>) {
       const character: SoulCharacter = { id: `demo-character-${Date.now()}`, name: draft.name, title: draft.title || "Новый персонаж", description: draft.description || "Демонстрационный персонаж", personality: draft.personality || "Характер можно изменить в редакторе.", scenario: draft.scenario || "", systemPrompt: draft.systemPrompt || "", soulMemoryEnabled: draft.soulMemoryEnabled, autoSummaryEnabled: draft.autoSummaryEnabled };
       characters = [character, ...characters]; chats.set(character.id, []); return copy(character);

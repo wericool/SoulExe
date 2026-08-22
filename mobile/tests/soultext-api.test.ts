@@ -89,17 +89,29 @@ describe("SoulTextApi: чаты и сцены", () => {
 
   it("загружает единый список разговоров через совместимый endpoint", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([
-      { id: "chat-1", kind: "direct", name: "Диалог", participants: [], messages: [] },
+      { id: "chat-1", kind: "direct", name: "Диалог", participants: [{ id: "char-1", kind: "Character", displayName: "Полина", avatarUrl: "/api/characters/char-1/avatar?v=2" }], messages: [] },
       { id: "scene-1", kind: "scene", name: "Сцена", participants: [], messages: [{ id: "event-1", kind: "director", content: "Событие" }] },
     ]), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const conversations = await api.getConversations();
+    const conversations = await api.getConversations(1);
 
     expect(conversations.map((conversation) => conversation.kind)).toEqual(["direct", "scene"]);
     expect(conversations[1].messages[0].kind).toBe("director");
+    expect(conversations[0].participants[0].avatarUrl).toBe("http://192.168.1.34:8000/api/characters/char-1/avatar?v=2&s=test-session");
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://192.168.1.34:8000/api/conversations",
+      "http://192.168.1.34:8000/api/conversations?take=1",
+      expect.objectContaining({ headers: expect.objectContaining({ "X-SoulExe-Session": "test-session" }) }),
+    );
+  });
+
+  it("загружает страницу разговоров с limit, take и непрозрачным курсором", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [], nextCursor: "opaque-cursor" }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.getConversationPage({ cursor: "before", limit: 2, take: 1 })).resolves.toEqual({ items: [], nextCursor: "opaque-cursor" });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://192.168.1.34:8000/api/conversations/page?cursor=before&limit=2&take=1",
       expect.objectContaining({ headers: expect.objectContaining({ "X-SoulExe-Session": "test-session" }) }),
     );
   });

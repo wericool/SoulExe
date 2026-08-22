@@ -14,6 +14,31 @@ describe("SoulExe demo API", () => {
     expect(messages.at(-1)).toMatchObject({ author: "Луна", role: "assistant" });
   });
 
+  it("выдаёт чаты и сцены через общий список Conversation", async () => {
+    const api = createSoulExeDemoApi();
+    const conversations = await api.getConversations(1);
+    const direct = conversations.find((conversation) => conversation.kind === "direct");
+    const scene = conversations.find((conversation) => conversation.kind === "scene");
+
+    expect(direct).toMatchObject({ name: "Вечер у набережной", participants: expect.arrayContaining([expect.objectContaining({ displayName: "Луна", kind: "Character" })]) });
+    expect(direct?.messages.at(-1)).toMatchObject({ author: "Луна", kind: "message" });
+    expect(scene).toMatchObject({ name: "Тишина старой библиотеки", turnState: expect.objectContaining({ status: "paused" }) });
+    expect(scene?.participants.map((participant) => participant.displayName)).toEqual(["Луна", "Мира"]);
+    expect(scene?.messages).toHaveLength(1);
+  });
+
+  it("разбивает общий список Conversation на страницы в демо-режиме", async () => {
+    const api = createSoulExeDemoApi();
+    const first = await api.getConversationPage({ limit: 2, take: 1 });
+    const second = await api.getConversationPage({ cursor: first.nextCursor, limit: 2, take: 1 });
+
+    expect(first.items).toHaveLength(2);
+    expect(first.items.every((conversation) => conversation.messages.length <= 1)).toBe(true);
+    expect(first.nextCursor).toBeTruthy();
+    expect(second.items).toHaveLength(2);
+    expect(new Set([...first.items, ...second.items].map((conversation) => conversation.id)).size).toBe(4);
+  });
+
   it("добавляет локальный ответ персонажа без сетевого запроса", async () => {
     const api = createSoulExeDemoApi();
     const [character] = await api.getCharacters();

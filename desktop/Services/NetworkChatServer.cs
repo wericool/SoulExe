@@ -91,6 +91,7 @@ public sealed class NetworkChatServer : IAsyncDisposable
         app.MapGet("/api/characters/{characterId:guid}/chats/{chatId:guid}/messages", ChatMessages);
         app.MapPost("/api/chat", SendChatAsync);
         app.MapGet("/api/conversations", GetConversationsAsync);
+        app.MapGet("/api/conversations/page", GetConversationPageAsync);
         app.MapGet("/api/conversations/{conversationId:guid}", GetConversationAsync);
         app.MapPut("/api/characters/{characterId:guid}", UpdateCharacterAsync);
         app.MapGet("/api/scenes", GetScenesAsync);
@@ -140,74 +141,161 @@ public sealed class NetworkChatServer : IAsyncDisposable
         avatarUrl = AvatarUrl(character)
     };
 
-    private async Task<IResult> GetConversationsAsync(CancellationToken token)
+    private async Task<IResult> GetConversationsAsync(HttpRequest request, CancellationToken token)
     {
-        var conversations = await AppServices.DataStore.ReadAsync(root => new ConversationReadService().ReadAll(root), token);
-        return Results.Ok(conversations.Select(ConversationDto));
+        var take = ReadConversationTake(request);
+        var conversations = await AppServices.DataStore.ReadAsync(root =>
+        {
+            var avatars = (root.Characters ?? []).ToDictionary(character => character.Id, AvatarUrl);
+            return new ConversationReadService().ReadAll(root)
+                .Select(conversation => ConversationDto(conversation, take, characterId => avatars.GetValueOrDefault(characterId)))
+                .ToList();
+        }, token);
+        return Results.Ok(conversations);
     }
 
-    private async Task<IResult> GetConversationAsync(Guid conversationId, CancellationToken token)
+    private async Task<IResult> GetConversationAsync(Guid conversationId, HttpRequest request, CancellationToken token)
     {
-        var conversation = await AppServices.DataStore.ReadAsync(root => new ConversationReadService().ReadAll(root).FirstOrDefault(value => value.Id == conversationId), token);
-        return conversation is null ? Results.NotFound(new { error = "Разговор не найден." }) : Results.Ok(ConversationDto(conversation));
+        var take = ReadConversationTake(request);
+        var conversation = await AppServices.DataStore.ReadAsync(root =>
+        {
+            var avatars = (root.Characters ?? []).ToDictionary(character => character.Id, AvatarUrl);
+            var snapshot = new ConversationReadService().ReadAll(root).FirstOrDefault(value => value.Id == conversationId);
+            return snapshot is null ? null : ConversationDto(snapshot, take, characterId => avatars.GetValueOrDefault(characterId));
+        }, token);
+        return conversation is null ? Results.NotFound(new { error = "Разговор не найден." }) : Results.Ok(conversation);
     }
 
-    private static object ConversationDto(ConversationSnapshot conversation) => new
+    private async Task<IResult> GetConversationPageAsync(HttpRequest request, CancellationToken token)
     {
-        id = conversation.Id,
-        kind = conversation.Kind == ConversationKind.Scene ? "scene" : "direct",
-        source = conversation.Source.ToString(),
-        name = conversation.Name,
-        isPinned = conversation.IsPinned,
-        isArchived = conversation.IsArchived,
-        summaryText = conversation.SummaryText,
-        lastSummarizedSequence = conversation.LastSummarizedSequence,
-        createdAt = conversation.CreatedAt,
-        updatedAt = conversation.UpdatedAt,
-        participants = conversation.Participants.Select(participant => new
+        var messageTake = ReadConversationTake(request);
+        var pageSize = ReadConversationPageSize(request);
+        var cursor = ReadConversationCursor(request.Query["cursor"].ToString());
+        var page = await AppServices.DataStore.ReadAsync(root =>
         {
-            id = participant.Id,
-            kind = participant.Kind.ToString(),
-            displayName = participant.DisplayName,
-            characterId = participant.CharacterId,
-            canGenerate = participant.CanGenerate,
-            sortOrder = participant.SortOrder
-        }),
-        messages = conversation.Messages.Select(message => new
+            var avatars = (root.Characters ?? []).ToDictionary(character => character.Id, AvatarUrl);
+            var eligible = new ConversationReadService().ReadAll(root)
+                .OrderByDescending(conversation => conversation.UpdatedAt)
+                .ThenBy(conversation => conversation.Id)
+                .Where(conversation => cursor is null
+                    || conversation.UpdatedAt < cursor.Value.UpdatedAt
+                    || (conversation.UpdatedAt == cursor.Value.UpdatedAt && conversation.Id.CompareTo(cursor.Value.Id) > 0))
+                .ToList();
+            var items = eligible.Take(pageSize).ToList();
+            var nextCursor = items.Count == pageSize && eligible.Count > items.Count
+                ? CreateConversationCursor(items[^1])
+                : null;
+            return new
+            {
+                items = items.Select(conversation => ConversationDto(conversation, messageTake, characterId => avatars.GetValueOrDefault(characterId))).ToList(),
+                nextCursor
+            };
+        }, token);
+        return Results.Ok(page);
+    }
+
+    private static int? ReadConversationTake(HttpRequest request)
+    {
+        return int.TryParse(request.Query["take"].ToString(), out var value) && value > 0
+            ? Math.Clamp(value, 1, 100)
+            : null;
+    }
+
+    private static int ReadConversationPageSize(HttpRequest request)
+    {
+        return int.TryParse(request.Query["limit"].ToString(), out var value) && value > 0
+            ? Math.Clamp(value, 1, 100)
+            : 50;
+    }
+
+    private static (DateTime UpdatedAt, Guid Id)? ReadConversationCursor(string? encoded)
+    {
+        if (string.IsNullOrWhiteSpace(encoded)) return null;
+        try
         {
-            id = message.Id,
-            sequenceNumber = message.SequenceNumber,
-            kind = message.Kind == ConversationMessageKind.DirectorEvent ? "director" : message.Kind == ConversationMessageKind.SystemEvent ? "system" : "message",
-            authorParticipantId = message.AuthorParticipantId,
-            author = message.AuthorName,
-            content = message.Content,
-            createdAt = message.CreatedAt,
-            editedAt = message.EditedAt,
-            variants = message.Variants.Select(variant => new { id = variant.Id, label = variant.Label, content = variant.Content, createdAt = variant.CreatedAt }),
-            attachments = message.Attachments.Select(attachment => new { id = attachment.Id, mediaType = attachment.MediaType, originalName = attachment.OriginalName, createdAt = attachment.CreatedAt })
-        }),
-        context = new
-        {
-            initialUserProfile = conversation.Context.InitialUserProfile,
-            initialRelationshipContext = conversation.Context.InitialRelationshipContext,
-            scenario = conversation.Context.Scenario,
-            location = conversation.Context.Location,
-            timeContext = conversation.Context.TimeContext,
-            mood = conversation.Context.Mood,
-            goal = conversation.Context.Goal,
-            relationshipContext = conversation.Context.RelationshipContext
-        },
-        turnState = conversation.TurnState is null ? null : new
-        {
-            status = conversation.TurnState.Status,
-            mode = conversation.TurnState.Mode,
-            nextParticipantId = conversation.TurnState.NextParticipantId,
-            nextTurnAt = conversation.TurnState.NextTurnAt,
-            delaySeconds = conversation.TurnState.DelaySeconds,
-            enforceContract = conversation.TurnState.EnforceContract,
-            advanceAndAvoidRepetition = conversation.TurnState.AdvanceAndAvoidRepetition
+            var padded = encoded.Replace('-', '+').Replace('_', '/');
+            padded = padded.PadRight(padded.Length + (4 - padded.Length % 4) % 4, '=');
+            var values = Encoding.UTF8.GetString(Convert.FromBase64String(padded)).Split('|', 2);
+            return values.Length == 2 && long.TryParse(values[0], out var ticks) && Guid.TryParse(values[1], out var id)
+                ? (new DateTime(ticks, DateTimeKind.Utc), id)
+                : null;
         }
-    };
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
+
+    private static string CreateConversationCursor(ConversationSnapshot conversation)
+    {
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{conversation.UpdatedAt.Ticks}|{conversation.Id}"))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+
+    private static object ConversationDto(ConversationSnapshot conversation, int? take = null, Func<Guid, string?>? avatarUrl = null)
+    {
+        IEnumerable<ConversationMessageSnapshot> messages = conversation.Messages.OrderBy(message => message.SequenceNumber);
+        if (take is > 0) messages = messages.TakeLast(take.Value);
+        return new
+        {
+            id = conversation.Id,
+            kind = conversation.Kind == ConversationKind.Scene ? "scene" : "direct",
+            source = conversation.Source.ToString(),
+            name = conversation.Name,
+            isPinned = conversation.IsPinned,
+            isArchived = conversation.IsArchived,
+            summaryText = conversation.SummaryText,
+            lastSummarizedSequence = conversation.LastSummarizedSequence,
+            createdAt = conversation.CreatedAt,
+            updatedAt = conversation.UpdatedAt,
+            participants = conversation.Participants.Select(participant => new
+            {
+                id = participant.Id,
+                kind = participant.Kind.ToString(),
+                displayName = participant.DisplayName,
+                characterId = participant.CharacterId,
+                avatarUrl = participant.CharacterId is { } characterId ? avatarUrl?.Invoke(characterId) : null,
+                canGenerate = participant.CanGenerate,
+                sortOrder = participant.SortOrder
+            }),
+            messages = messages.Select(message => new
+            {
+                id = message.Id,
+                sequenceNumber = message.SequenceNumber,
+                kind = message.Kind == ConversationMessageKind.DirectorEvent ? "director" : message.Kind == ConversationMessageKind.SystemEvent ? "system" : "message",
+                authorParticipantId = message.AuthorParticipantId,
+                author = message.AuthorName,
+                content = message.Content,
+                createdAt = message.CreatedAt,
+                editedAt = message.EditedAt,
+                variants = message.Variants.Select(variant => new { id = variant.Id, label = variant.Label, content = variant.Content, createdAt = variant.CreatedAt }),
+                attachments = message.Attachments.Select(attachment => new { id = attachment.Id, mediaType = attachment.MediaType, originalName = attachment.OriginalName, createdAt = attachment.CreatedAt })
+            }),
+            context = new
+            {
+                initialUserProfile = conversation.Context.InitialUserProfile,
+                initialRelationshipContext = conversation.Context.InitialRelationshipContext,
+                scenario = conversation.Context.Scenario,
+                location = conversation.Context.Location,
+                timeContext = conversation.Context.TimeContext,
+                mood = conversation.Context.Mood,
+                goal = conversation.Context.Goal,
+                relationshipContext = conversation.Context.RelationshipContext
+            },
+            turnState = conversation.TurnState is null ? null : new
+            {
+                status = conversation.TurnState.Status,
+                mode = conversation.TurnState.Mode,
+                nextParticipantId = conversation.TurnState.NextParticipantId,
+                nextTurnAt = conversation.TurnState.NextTurnAt,
+                delaySeconds = conversation.TurnState.DelaySeconds,
+                enforceContract = conversation.TurnState.EnforceContract,
+                advanceAndAvoidRepetition = conversation.TurnState.AdvanceAndAvoidRepetition
+            }
+        };
+    }
 
     private async Task<IResult> CreateCharacterAsync(MobileCharacterCreateRequest request, CancellationToken token)
     {

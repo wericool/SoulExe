@@ -72,6 +72,7 @@ export type SoulConversationParticipant = {
   kind: "User" | "Character" | "Director" | "System";
   displayName: string;
   characterId?: string | null;
+  avatarUrl?: string | null;
   canGenerate: boolean;
   sortOrder: number;
 };
@@ -121,6 +122,17 @@ export type SoulConversation = {
     enforceContract: boolean;
     advanceAndAvoidRepetition: boolean;
   } | null;
+};
+
+export type SoulConversationPage = {
+  items: SoulConversation[];
+  nextCursor?: string | null;
+};
+
+export type SoulConversationPageOptions = {
+  cursor?: string | null;
+  limit?: number;
+  take?: number;
 };
 
 export type CreateSoulSceneRequest = {
@@ -203,17 +215,29 @@ export async function checkSoulTextServer(baseUrl: string, timeoutMs = 1000): Pr
 export class SoulTextApi {
   public constructor(private readonly session: SoulTextSession) {}
 
+  private withAvatarSessionUrl(avatarUrl?: string | null): string | null | undefined {
+    if (!avatarUrl) return avatarUrl;
+    const absoluteAvatarUrl = avatarUrl.startsWith("http")
+      ? avatarUrl
+      : `${normalizeServerUrl(this.session.baseUrl)}${avatarUrl.startsWith("/") ? "" : "/"}${avatarUrl}`;
+    const separator = absoluteAvatarUrl.includes("?") ? "&" : "?";
+    return `${absoluteAvatarUrl}${separator}s=${encodeURIComponent(this.session.session)}`;
+  }
+
   private withAvatarUrl(character?: SoulCharacter | null): SoulCharacter | null | undefined {
     if (!character || !character.avatarUrl) return character;
-    const absoluteAvatarUrl = character.avatarUrl.startsWith("http")
-      ? character.avatarUrl
-      : `${normalizeServerUrl(this.session.baseUrl)}${character.avatarUrl.startsWith("/") ? "" : "/"}${character.avatarUrl}`;
-    const separator = absoluteAvatarUrl.includes("?") ? "&" : "?";
     return {
       ...character,
       // react-native Image cannot send the custom API header; the local server also accepts
       // the short-lived mobile session in a query string for protected image requests.
-      avatarUrl: `${absoluteAvatarUrl}${separator}s=${encodeURIComponent(this.session.session)}`,
+      avatarUrl: this.withAvatarSessionUrl(character.avatarUrl),
+    };
+  }
+
+  private withConversationAvatarUrls(conversation: SoulConversation): SoulConversation {
+    return {
+      ...conversation,
+      participants: conversation.participants.map((participant) => ({ ...participant, avatarUrl: this.withAvatarSessionUrl(participant.avatarUrl) })),
     };
   }
 
@@ -247,12 +271,25 @@ export class SoulTextApi {
     return characters.map((character) => this.withAvatarUrl(character) as SoulCharacter);
   }
 
-  getConversations() {
-    return this.request<SoulConversation[]>("/api/conversations");
+  async getConversations(take?: number) {
+    const suffix = take && take > 0 ? `?take=${Math.min(Math.max(Math.trunc(take), 1), 100)}` : "";
+    const conversations = await this.request<SoulConversation[]>(`/api/conversations${suffix}`);
+    return conversations.map((conversation) => this.withConversationAvatarUrls(conversation));
   }
 
-  getConversation(conversationId: string) {
-    return this.request<SoulConversation>(`/api/conversations/${conversationId}`);
+  async getConversation(conversationId: string, take?: number) {
+    const suffix = take && take > 0 ? `?take=${Math.min(Math.max(Math.trunc(take), 1), 100)}` : "";
+    return this.withConversationAvatarUrls(await this.request<SoulConversation>(`/api/conversations/${conversationId}${suffix}`));
+  }
+
+  async getConversationPage(options: SoulConversationPageOptions = {}) {
+    const params = new URLSearchParams();
+    if (options.cursor) params.set("cursor", options.cursor);
+    if (options.limit && options.limit > 0) params.set("limit", String(Math.min(Math.max(Math.trunc(options.limit), 1), 100)));
+    if (options.take && options.take > 0) params.set("take", String(Math.min(Math.max(Math.trunc(options.take), 1), 100)));
+    const suffix = params.size ? `?${params.toString()}` : "";
+    const page = await this.request<SoulConversationPage>(`/api/conversations/page${suffix}`);
+    return { ...page, items: page.items.map((conversation) => this.withConversationAvatarUrls(conversation)) };
   }
 
   async createCharacter(draft: Pick<SoulCharacterDraft, "name"> & Partial<SoulCharacterDraft>) {
@@ -385,6 +422,8 @@ export class SoulTextApi {
 export type SoulExeApi = Pick<
   SoulTextApi,
   | "getCharacters"
+  | "getConversations"
+  | "getConversationPage"
   | "createCharacter"
   | "generateCharacter"
   | "updateCharacter"
