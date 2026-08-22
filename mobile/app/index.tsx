@@ -847,7 +847,40 @@ function ScenesScreen({ api, appearance, onThreadChange, initialSceneId, onBackT
     <View style={[styles.grow, keyboardLift > 0 && { paddingBottom: keyboardLift }]}>
     <MessengerThreadHeader title={currentScene.name} subtitle={[currentScene.characterA?.name, currentScene.characterB?.name].filter(Boolean).join(" × ") || "Сцена"} onBack={onBackToChats} onTitlePress={() => setSceneInfoOpen(true)} timer={sceneTimer} status={{ text: statusLabel(currentScene.status), tone: statusTone(currentScene.status) }} />
     <View style={styles.grow}>
-      <FlatList ref={history} style={[styles.grow, !sceneHistoryReady && styles.historyHidden]} data={currentScene.messages} keyExtractor={(item, index) => `${item.createdAt}-${index}`} contentContainerStyle={styles.messagesList} initialNumToRender={Math.max(currentScene.messages.length, 1)} maxToRenderPerBatch={Math.max(currentScene.messages.length, 1)} windowSize={7} onContentSizeChange={() => { if (shouldInitialScroll.current) { let attempts = 0; const settleAtLatest = () => { history.current?.scrollToEnd({ animated: false }); if (++attempts < 4) requestAnimationFrame(settleAtLatest); else { shouldInitialScroll.current = false; setSceneHistoryReady(true); } }; requestAnimationFrame(settleAtLatest); return; } if (stickToBottom.current) requestAnimationFrame(() => history.current?.scrollToEnd({ animated: true })); }} onScroll={({ nativeEvent }) => { const distance = nativeEvent.contentSize.height - (nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height); stickToBottom.current = distance < 64; }} scrollEventThrottle={16} renderItem={({ item, index }) => { const director = item.kind === "director" || item.author === "Режиссёр"; const secondParticipant = !director && item.speakerId === currentScene.characterB?.id; return <>{needsDateDivider(currentScene.messages, index) ? <ChatDateDivider value={item.createdAt} /> : null}<View style={[styles.bubbleRow, secondParticipant && styles.bubbleRowMine, director && styles.directorRowAlign]}><View style={[styles.bubble, secondParticipant ? styles.bubbleMine : styles.bubbleTheirs, director && styles.bubbleDirector]}><Text style={styles.messageAuthor}>{director ? "Режиссёр" : item.author || "Сцена"}</Text><FormattedMessageText content={item.content} mine={secondParticipant} appearance={appearance} /><Text style={[styles.messageTime, secondParticipant && styles.messageTimeMine]}>{formatTime(item.createdAt)}</Text></View></View></>; }} ListFooterComponent={sceneGenerating ? <View style={styles.typingRow}><ActivityIndicator size="small" color={colors.accentHover} /><Text style={styles.typingText}>Сцена формирует следующую реплику…</Text></View> : null} ListEmptyComponent={<Text style={styles.listHint}>Запустите сцену, чтобы появилась первая реплика</Text>} onScrollToIndexFailed={() => requestAnimationFrame(() => history.current?.scrollToEnd({ animated: false }))} />
+      <ConversationMessageList
+        listRef={history}
+        style={[styles.grow, !sceneHistoryReady && styles.historyHidden]}
+        messages={currentScene.messages}
+        keyExtractor={(item, index) => `${item.createdAt}-${index}`}
+        contentContainerStyle={styles.messagesList}
+        initialNumToRender={Math.max(currentScene.messages.length, 1)}
+        maxToRenderPerBatch={Math.max(currentScene.messages.length, 1)}
+        onContentSizeChange={() => {
+          if (shouldInitialScroll.current) {
+            let attempts = 0;
+            const settleAtLatest = () => {
+              history.current?.scrollToEnd({ animated: false });
+              if (++attempts < 4) requestAnimationFrame(settleAtLatest);
+              else { shouldInitialScroll.current = false; setSceneHistoryReady(true); }
+            };
+            requestAnimationFrame(settleAtLatest);
+            return;
+          }
+          if (stickToBottom.current) requestAnimationFrame(() => history.current?.scrollToEnd({ animated: true }));
+        }}
+        onScroll={({ nativeEvent }) => {
+          const distance = nativeEvent.contentSize.height - (nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height);
+          stickToBottom.current = distance < 64;
+        }}
+        renderMessage={(item) => {
+          const director = item.kind === "director" || item.author === "Режиссёр";
+          const secondParticipant = !director && item.speakerId === currentScene.characterB?.id;
+          return <View style={[styles.bubbleRow, secondParticipant && styles.bubbleRowMine, director && styles.directorRowAlign]}><View style={[styles.bubble, secondParticipant ? styles.bubbleMine : styles.bubbleTheirs, director && styles.bubbleDirector]}><Text style={styles.messageAuthor}>{director ? "Режиссёр" : item.author || "Сцена"}</Text><FormattedMessageText content={item.content} mine={secondParticipant} appearance={appearance} /><Text style={[styles.messageTime, secondParticipant && styles.messageTimeMine]}>{formatTime(item.createdAt)}</Text></View></View>;
+        }}
+        footer={sceneGenerating ? <View style={styles.typingRow}><ActivityIndicator size="small" color={colors.accentHover} /><Text style={styles.typingText}>Сцена формирует следующую реплику…</Text></View> : null}
+        empty={<Text style={styles.listHint}>Запустите сцену, чтобы появилась первая реплика</Text>}
+        onScrollToIndexFailed={() => requestAnimationFrame(() => history.current?.scrollToEnd({ animated: false }))}
+      />
       {!sceneHistoryReady ? <View style={styles.historyLoadingOverlay}><ActivityIndicator color={colors.accentHover} /></View> : null}
     </View>
     <MessageComposer value={directorText} onChangeText={setDirectorText} placeholder="Режиссёрское событие" leftAction={{ icon: currentScene.status === "running" ? "pause" : "play-arrow", onPress: () => void action(currentScene.status === "running" ? "pause" : "start"), disabled: busy, accessibilityLabel: currentScene.status === "running" ? "Поставить сцену на паузу" : "Запустить сцену" }} rightActions={[{ icon: "movie-creation", primary: true, onPress: addDirector, disabled: busy || !directorText.trim(), accessibilityLabel: "Добавить режиссёрское событие" }, { icon: "arrow-upward", primary: true, onPress: () => void action("next"), disabled: busy, accessibilityLabel: "Следующая реплика" }]} />
