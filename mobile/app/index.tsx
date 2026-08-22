@@ -23,8 +23,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Avatar, Button, Card, EmptyState, Field, IconButton, PageHeader, Screen, StatusPill } from "@/components/soul/ui";
 import { MessengerRow, MessengerThreadHeader } from "@/components/soul/messenger-elements";
-import { checkSoulTextServer, normalizeServerUrl, SoulTextApi, type ChatMessage, type SoulCharacter, type SoulCharacterDraft, type SoulChat, type SoulExeApi, type SoulScene, type SoulSceneSummary, type SoulTextSession } from "@/lib/soultext-api";
+import { checkSoulTextServer, normalizeServerUrl, SoulTextApi, type ChatMessage, type SoulCharacter, type SoulCharacterDraft, type SoulChat, type SoulConversation, type SoulExeApi, type SoulScene, type SoulSceneSummary, type SoulTextSession } from "@/lib/soultext-api";
 import { createSoulExeDemoApi } from "@/lib/soulexe-demo-api";
+import { sortConversationRows, toConversationListRow, type ConversationListRow } from "@/lib/conversation-adapter";
 import { discoverSoulTextServers, type DiscoveredSoulTextServer } from "@/lib/soultext-discovery";
 import { clearSoulTextSession, defaultChatAppearance, loadChatAppearance, loadSoulTextSession, saveChatAppearance, saveSoulTextSession, type ChatAppearanceSettings } from "@/lib/soultext-storage";
 import { colors, radii, space, typography } from "@/lib/theme";
@@ -33,6 +34,30 @@ type TabKey = "chats" | "scenes" | "characters" | "settings";
 type MobileChatEntry = { id: string; character: SoulCharacter; chat: SoulChat; preview?: string; previewAt?: string };
 type MobileSceneEntry = { id: string; scene: SoulSceneSummary; preview?: string; previewAt?: string };
 type MobileThreadEntry = { kind: "chat"; value: MobileChatEntry } | { kind: "scene"; value: MobileSceneEntry };
+type MobileConversationEntry = {
+  conversation: SoulConversation;
+  row: ConversationListRow;
+  character?: SoulCharacter;
+  sceneCharacters: [SoulCharacter | undefined, SoulCharacter | undefined];
+};
+
+function toMobileConversationEntry(conversation: SoulConversation, characters: SoulCharacter[]): MobileConversationEntry {
+  const knownCharacters = new Map(characters.map((character) => [character.id, character]));
+  const participants = conversation.participants
+    .filter((participant) => participant.kind === "Character")
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+    .map((participant) => knownCharacters.get(participant.characterId || participant.id) || {
+      id: participant.characterId || participant.id,
+      name: participant.displayName,
+      avatarUrl: participant.avatarUrl,
+    });
+  return {
+    conversation,
+    row: toConversationListRow(conversation),
+    character: participants[0],
+    sceneCharacters: [participants[0], participants[1]],
+  };
+}
 
 function formatTime(value?: string) {
   if (!value) return "";
@@ -140,6 +165,17 @@ const sceneEntryListFingerprint = (entries: MobileSceneEntry[]) => entries.map((
   entry.preview || "",
   entry.previewAt || "",
 ].join("\u001e")).join("\u001f");
+
+const conversationEntryListFingerprint = (entries: MobileConversationEntry[]) => entries.map((entry) => [
+  entry.conversation.id,
+  entry.row.kind,
+  entry.row.title,
+  entry.row.subtitle,
+  entry.row.preview,
+  entry.row.updatedAt,
+  entry.conversation.turnState?.status || "",
+  entry.sceneCharacters.map((character) => `${character?.name || ""}|${character?.avatarUrl || ""}`).join("\u001e"),
+].join("\u001d")).join("\u001f");
 
 function useAndroidKeyboardLift() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -427,6 +463,7 @@ function MessageBubble({ message, appearance }: { message: ChatMessage; appearan
 function ChatsScreen({ api, appearance, isVisible, onThreadChange }: { api: SoulExeApi; appearance: ChatAppearanceSettings; isVisible: boolean; onThreadChange: (open: boolean) => void }) {
   const [entries, setEntries] = useState<MobileChatEntry[]>([]);
   const [sceneEntries, setSceneEntries] = useState<MobileSceneEntry[]>([]);
+  const [conversationEntries, setConversationEntries] = useState<MobileConversationEntry[] | null>(null);
   const [active, setActive] = useState<MobileChatEntry>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -451,7 +488,34 @@ function ChatsScreen({ api, appearance, isVisible, onThreadChange }: { api: Soul
   const loadList = useCallback(async (quiet = false) => {
     if (!quiet) setBusy(true);
     try {
-      const [characters, scenes] = await Promise.all([api.getCharacters(), api.getScenes().catch(() => [])]);
+      const characters = await api.getCharacters();
+      try {
+        const page = await api.getConversationPage({ limit: 100, take: 1 });
+        const unified = sortConversationRows(page.items.map(toConversationListRow))
+          .map((row) => toMobileConversationEntry(page.items.find((conversation) => conversation.id === row.id)!, characters));
+        const directEntries = unified
+          .filter((entry) => entry.row.kind === "direct" && entry.character)
+          .map((entry) => ({
+            id: `${entry.character!.id}:${entry.conversation.id}`,
+            character: entry.character!,
+            chat: { id: entry.conversation.id, name: entry.conversation.name || entry.row.subtitle, updatedAt: entry.row.updatedAt },
+            preview: entry.row.preview,
+            previewAt: entry.row.updatedAt,
+          }));
+        setConversationEntries((current) => current && conversationEntryListFingerprint(current) === conversationEntryListFingerprint(unified) ? current : unified);
+        setEntries((current) => chatEntryListFingerprint(current) === chatEntryListFingerprint(directEntries) ? current : directEntries);
+        setActive((current) => {
+          if (!current) return current;
+          const fresh = directEntries.find((entry) => entry.id === current.id);
+          return !fresh || activeChatIdentityFingerprint(current) === activeChatIdentityFingerprint(fresh) ? current : fresh;
+        });
+        return;
+      } catch {
+        // Windows clients released before the Conversation API continue through the existing routes.
+        setConversationEntries(null);
+      }
+
+      const scenes = await api.getScenes().catch(() => []);
       const grouped = await Promise.all(characters.map(async (character) => ({ character, chats: await api.getChats(character.id) })));
       const bare: MobileChatEntry[] = grouped.flatMap(({ character, chats }) => chats.map((chat) => ({ id: `${character.id}:${chat.id}`, character, chat })));
       const withPreview = await Promise.all(bare.map(async (entry) => {
@@ -583,6 +647,7 @@ function ChatsScreen({ api, appearance, isVisible, onThreadChange }: { api: Soul
     ...entries.map((value) => ({ kind: "chat" as const, value })),
     ...sceneEntries.map((value) => ({ kind: "scene" as const, value })),
   ].sort((a, b) => new Date((b.value.previewAt || (b.kind === "chat" ? b.value.chat.updatedAt : b.value.scene.updatedAt)) || 0).getTime() - new Date((a.value.previewAt || (a.kind === "chat" ? a.value.chat.updatedAt : a.value.scene.updatedAt)) || 0).getTime());
+  if (!active && conversationEntries) return <View style={styles.grow}><FlatList data={conversationEntries} keyExtractor={(item) => item.conversation.id} contentContainerStyle={styles.dialogListWithFab} refreshing={busy} onRefresh={loadList} renderItem={({ item }) => <MessengerRow title={item.row.title} subtitle={formatMessagePreview(item.row.preview || item.row.subtitle, appearance)} updatedAt={item.row.updatedAt} character={item.row.kind === "direct" ? item.character : undefined} sceneCharacters={item.row.kind === "scene" ? item.sceneCharacters : undefined} status={item.conversation.turnState?.status} onPress={() => { if (item.row.kind === "scene") setSceneId(item.conversation.id); else if (item.character) setActive({ id: `${item.character.id}:${item.conversation.id}`, character: item.character, chat: { id: item.conversation.id, name: item.conversation.name || item.row.subtitle, updatedAt: item.row.updatedAt }, preview: item.row.preview, previewAt: item.row.updatedAt }); }} />} ListEmptyComponent={busy ? <ActivityIndicator color={colors.accentHover} style={{ marginTop: 40 }} /> : <EmptyState icon="chat-bubble-outline" title="Переписок пока нет" caption="Нажмите кнопку внизу, чтобы создать чат или сцену." />} /><FloatingCreateButton icon="edit" onPress={() => setCreationPicker(true)} accessibilityLabel="Создать чат или сцену" /></View>;
   if (!active) return <View style={styles.grow}><FlatList data={threads} keyExtractor={(item) => `${item.kind}:${item.value.id}`} contentContainerStyle={styles.dialogListWithFab} refreshing={busy} onRefresh={loadList} renderItem={({ item }) => item.kind === "chat" ? <MessengerRow title={item.value.character.name} subtitle={formatMessagePreview(item.value.preview || item.value.chat.name, appearance)} updatedAt={item.value.previewAt || item.value.chat.updatedAt} character={item.value.character} onPress={() => setActive(item.value)} /> : <MessengerRow title={item.value.scene.name} subtitle={formatMessagePreview(item.value.preview || [item.value.scene.characterA?.name, item.value.scene.characterB?.name].filter(Boolean).join(" × ") || "Участники сцены", appearance)} updatedAt={item.value.previewAt || item.value.scene.updatedAt} sceneCharacters={[item.value.scene.characterA, item.value.scene.characterB]} status={item.value.scene.status} onPress={() => setSceneId(item.value.scene.id)} />} ListEmptyComponent={busy ? <ActivityIndicator color={colors.accentHover} style={{ marginTop: 40 }} /> : <EmptyState icon="chat-bubble-outline" title="Переписок пока нет" caption="Нажмите кнопку внизу, чтобы создать чат или сцену." />} /><FloatingCreateButton icon="edit" onPress={() => setCreationPicker(true)} accessibilityLabel="Создать чат или сцену" /></View>;
 
   if (profileOpen && profileEditing) return <CharacterEditorScreen api={api} character={active.character} onBack={() => setProfileEditing(false)} onSaved={(character) => { setActive((current) => current ? { ...current, character } : current); setEntries((current) => current.map((entry) => entry.character.id === character.id ? { ...entry, character } : entry)); setProfileEditing(false); setProfileOpen(false); }} />;
