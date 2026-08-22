@@ -90,6 +90,8 @@ public sealed class NetworkChatServer : IAsyncDisposable
         app.MapPost("/api/characters/{characterId:guid}/chats", CreateChatAsync);
         app.MapGet("/api/characters/{characterId:guid}/chats/{chatId:guid}/messages", ChatMessages);
         app.MapPost("/api/chat", SendChatAsync);
+        app.MapGet("/api/conversations", GetConversationsAsync);
+        app.MapGet("/api/conversations/{conversationId:guid}", GetConversationAsync);
         app.MapPut("/api/characters/{characterId:guid}", UpdateCharacterAsync);
         app.MapGet("/api/scenes", GetScenesAsync);
         app.MapGet("/api/scenes/{sceneId:guid}", GetSceneAsync);
@@ -136,6 +138,75 @@ public sealed class NetworkChatServer : IAsyncDisposable
         autoSummaryEnabled = character.AutoSummaryEnabled,
         autoSummaryIntervalMessages = character.AutoSummaryIntervalMessages,
         avatarUrl = AvatarUrl(character)
+    };
+
+    private async Task<IResult> GetConversationsAsync(CancellationToken token)
+    {
+        var conversations = await AppServices.DataStore.ReadAsync(root => new ConversationReadService().ReadAll(root), token);
+        return Results.Ok(conversations.Select(ConversationDto));
+    }
+
+    private async Task<IResult> GetConversationAsync(Guid conversationId, CancellationToken token)
+    {
+        var conversation = await AppServices.DataStore.ReadAsync(root => new ConversationReadService().ReadAll(root).FirstOrDefault(value => value.Id == conversationId), token);
+        return conversation is null ? Results.NotFound(new { error = "Разговор не найден." }) : Results.Ok(ConversationDto(conversation));
+    }
+
+    private static object ConversationDto(ConversationSnapshot conversation) => new
+    {
+        id = conversation.Id,
+        kind = conversation.Kind == ConversationKind.Scene ? "scene" : "direct",
+        source = conversation.Source.ToString(),
+        name = conversation.Name,
+        isPinned = conversation.IsPinned,
+        isArchived = conversation.IsArchived,
+        summaryText = conversation.SummaryText,
+        lastSummarizedSequence = conversation.LastSummarizedSequence,
+        createdAt = conversation.CreatedAt,
+        updatedAt = conversation.UpdatedAt,
+        participants = conversation.Participants.Select(participant => new
+        {
+            id = participant.Id,
+            kind = participant.Kind.ToString(),
+            displayName = participant.DisplayName,
+            characterId = participant.CharacterId,
+            canGenerate = participant.CanGenerate,
+            sortOrder = participant.SortOrder
+        }),
+        messages = conversation.Messages.Select(message => new
+        {
+            id = message.Id,
+            sequenceNumber = message.SequenceNumber,
+            kind = message.Kind == ConversationMessageKind.DirectorEvent ? "director" : message.Kind == ConversationMessageKind.SystemEvent ? "system" : "message",
+            authorParticipantId = message.AuthorParticipantId,
+            author = message.AuthorName,
+            content = message.Content,
+            createdAt = message.CreatedAt,
+            editedAt = message.EditedAt,
+            variants = message.Variants.Select(variant => new { id = variant.Id, label = variant.Label, content = variant.Content, createdAt = variant.CreatedAt }),
+            attachments = message.Attachments.Select(attachment => new { id = attachment.Id, mediaType = attachment.MediaType, originalName = attachment.OriginalName, createdAt = attachment.CreatedAt })
+        }),
+        context = new
+        {
+            initialUserProfile = conversation.Context.InitialUserProfile,
+            initialRelationshipContext = conversation.Context.InitialRelationshipContext,
+            scenario = conversation.Context.Scenario,
+            location = conversation.Context.Location,
+            timeContext = conversation.Context.TimeContext,
+            mood = conversation.Context.Mood,
+            goal = conversation.Context.Goal,
+            relationshipContext = conversation.Context.RelationshipContext
+        },
+        turnState = conversation.TurnState is null ? null : new
+        {
+            status = conversation.TurnState.Status,
+            mode = conversation.TurnState.Mode,
+            nextParticipantId = conversation.TurnState.NextParticipantId,
+            nextTurnAt = conversation.TurnState.NextTurnAt,
+            delaySeconds = conversation.TurnState.DelaySeconds,
+            enforceContract = conversation.TurnState.EnforceContract,
+            advanceAndAvoidRepetition = conversation.TurnState.AdvanceAndAvoidRepetition
+        }
     };
 
     private async Task<IResult> CreateCharacterAsync(MobileCharacterCreateRequest request, CancellationToken token)

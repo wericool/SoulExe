@@ -67,6 +67,62 @@ export type SoulScene = SoulSceneSummary & {
   }>;
 };
 
+export type SoulConversationParticipant = {
+  id: string;
+  kind: "User" | "Character" | "Director" | "System";
+  displayName: string;
+  characterId?: string | null;
+  canGenerate: boolean;
+  sortOrder: number;
+};
+
+export type SoulConversationMessage = {
+  id: string;
+  sequenceNumber: number;
+  kind: "message" | "director" | "system";
+  authorParticipantId?: string | null;
+  author: string;
+  content: string;
+  createdAt: string;
+  editedAt?: string | null;
+  variants: Array<{ id: string; label: string; content: string; createdAt: string }>;
+  attachments: Array<{ id: string; mediaType: string; originalName: string; createdAt: string }>;
+};
+
+export type SoulConversation = {
+  id: string;
+  kind: "direct" | "scene";
+  source: string;
+  name: string;
+  isPinned: boolean;
+  isArchived: boolean;
+  summaryText: string;
+  lastSummarizedSequence: number;
+  createdAt: string;
+  updatedAt: string;
+  participants: SoulConversationParticipant[];
+  messages: SoulConversationMessage[];
+  context: {
+    initialUserProfile?: string;
+    initialRelationshipContext?: string;
+    scenario?: string;
+    location?: string;
+    timeContext?: string;
+    mood?: string;
+    goal?: string;
+    relationshipContext?: string;
+  };
+  turnState?: {
+    status: "running" | "paused" | "finished";
+    mode: "alternate" | "manual";
+    nextParticipantId?: string | null;
+    nextTurnAt?: string | null;
+    delaySeconds: number;
+    enforceContract: boolean;
+    advanceAndAvoidRepetition: boolean;
+  } | null;
+};
+
 export type CreateSoulSceneRequest = {
   characterAId: string;
   characterBId: string;
@@ -189,6 +245,14 @@ export class SoulTextApi {
   async getCharacters() {
     const characters = await this.request<SoulCharacter[]>("/api/characters");
     return characters.map((character) => this.withAvatarUrl(character) as SoulCharacter);
+  }
+
+  getConversations() {
+    return this.request<SoulConversation[]>("/api/conversations");
+  }
+
+  getConversation(conversationId: string) {
+    return this.request<SoulConversation>(`/api/conversations/${conversationId}`);
   }
 
   async createCharacter(draft: Pick<SoulCharacterDraft, "name"> & Partial<SoulCharacterDraft>) {
