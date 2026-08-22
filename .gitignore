@@ -1,0 +1,30 @@
+# Windows build products and local data
+desktop/bin/
+desktop/obj/
+desktop/dist_*/
+desktop/SoulExeData/
+desktop/*.exe
+desktop/*.pdb
+desktop/*.zip
+desktop/*.log
+desktop/.vs/
+
+# Expo and Node generated files
+mobile/node_modules/
+mobile/.expo/
+mobile/.manus-logs/
+mobile/dist/
+mobile/coverage/
+mobile/.env
+mobile/.env.*
+mobile/*.log
+
+# Tooling, packages, and editor state
+*.zip
+*.tar
+*.gz
+*.apk
+*.aab
+*.user
+*.suo
+.DS_Store

@@ -1,0 +1,153 @@
+import type { ChatMessage, CreateSoulSceneRequest, SoulCharacter, SoulCharacterDraft, SoulChat, SoulExeApi, SoulScene, SoulSceneSummary, UpdateSoulSceneRequest } from "@/lib/soultext-api";
+
+const stamp = (minutesFromNow = 0) => new Date(Date.now() + minutesFromNow * 60_000).toISOString();
+const turnStamp = (secondsFromNow: number) => new Date(Date.now() + secondsFromNow * 1_000).toISOString();
+const copy = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+const initialCharacters: SoulCharacter[] = [
+  {
+    id: "demo-luna",
+    name: "Луна",
+    title: "Спокойная ночная собеседница",
+    description: "Луна любит тихие разговоры, музыку и прогулки под дождём.",
+    personality: "Внимательная, мягкая, наблюдательная. Отвечает тепло и образно.",
+    scenario: "Вечернее кафе рядом с набережной.",
+    systemPrompt: "Поддерживай живой, бережный разговор на русском языке.",
+    soulMemoryEnabled: true,
+    autoSummaryEnabled: true,
+  },
+  {
+    id: "demo-mira",
+    name: "Мира",
+    title: "Искательница приключений",
+    description: "Путешественница, которая собирает истории и старые карты.",
+    personality: "Смелая, любознательная, с лёгким чувством юмора.",
+    scenario: "Экспедиция в забытый приморский город.",
+    systemPrompt: "Веди сюжет динамично, но уважай решения автора.",
+    soulMemoryEnabled: true,
+    autoSummaryEnabled: false,
+  },
+  {
+    id: "demo-kai",
+    name: "Кай",
+    title: "Аналитик и друг",
+    description: "Рациональный собеседник с добрым отношением к людям.",
+    personality: "Собранный, прямой, иногда ироничный.",
+    scenario: "Рабочая студия поздним вечером.",
+    systemPrompt: "Помогай находить ясные решения и поддерживай диалог.",
+  },
+];
+
+function assistantReply(characterName: string, message: string) {
+  return `*${characterName} ненадолго задумывается, затем улыбается.*\n\n«Я тебя слышу. ${message.length > 54 ? "Давай разберём это спокойно и по шагам." : "Расскажи чуть подробнее — мне интересно продолжить."}»`;
+}
+
+export function createSoulExeDemoApi(): SoulExeApi {
+  let characters = copy(initialCharacters);
+  const chats = new Map<string, SoulChat[]>([
+    ["demo-luna", [{ id: "demo-chat-evening", name: "Вечер у набережной", updatedAt: stamp(-3) }]],
+    ["demo-mira", [{ id: "demo-chat-journey", name: "Карта старого города", updatedAt: stamp(-42) }]],
+    ["demo-kai", [{ id: "demo-chat-focus", name: "Планы на неделю", updatedAt: stamp(-180) }]],
+  ]);
+  const messages = new Map<string, ChatMessage[]>([
+    ["demo-luna:demo-chat-evening", [
+      { id: "1", role: "assistant", author: "Луна", content: "*Луна поправляет рукав и смотрит на отражения огней в воде.*\n\n«Сегодня город звучит совсем иначе, правда?»", createdAt: stamp(-26) },
+      { id: "2", role: "user", author: "Вы", content: "Да, после дождя здесь особенно спокойно.", createdAt: stamp(-19) },
+      { id: "3", role: "assistant", author: "Луна", content: "<think>Хочется сохранить это тихое настроение.</think>\n\n*Она кивает и делает глоток горячего чая.*\n\n«Тогда давай никуда не спешить.»", createdAt: stamp(-3) },
+    ]],
+    ["demo-mira:demo-chat-journey", [
+      { id: "4", role: "assistant", author: "Мира", content: "*Мира разворачивает выцветшую карту на столе.*\n\n«Смотри: здесь отмечен путь к старому маяку.»", createdAt: stamp(-42) },
+    ]],
+    ["demo-kai:demo-chat-focus", [
+      { id: "5", role: "assistant", author: "Кай", content: "«Начнём с одной небольшой задачи — так будет проще увидеть результат.»", createdAt: stamp(-180) },
+    ]],
+  ]);
+  let scenes: SoulScene[] = [{
+    id: "demo-scene-library",
+    name: "Тишина старой библиотеки",
+    status: "paused",
+    updatedAt: stamp(-8),
+    characterA: copy(initialCharacters[0]),
+    characterB: copy(initialCharacters[1]),
+    scenario: "Луна и Мира нашли записку между страницами старого атласа.",
+    messages: [
+      { kind: "dialogue", speakerId: "demo-luna", author: "Луна", content: "*Луна осторожно снимает печать с записки.*\n\n«Похоже, её оставили именно для нас.»", createdAt: stamp(-21) },
+      { kind: "dialogue", speakerId: "demo-mira", author: "Мира", content: "«Тогда прочтём вместе. Такие находки редко бывают случайными.»", createdAt: stamp(-8) },
+    ],
+  }];
+
+  const findCharacter = (characterId: string) => characters.find((character) => character.id === characterId);
+  const messageKey = (characterId: string, chatId: string) => `${characterId}:${chatId}`;
+  const findScene = (sceneId: string) => scenes.find((scene) => scene.id === sceneId);
+
+  return {
+    async getCharacters() { return copy(characters); },
+    async createCharacter(draft: Pick<SoulCharacterDraft, "name"> & Partial<SoulCharacterDraft>) {
+      const character: SoulCharacter = { id: `demo-character-${Date.now()}`, name: draft.name, title: draft.title || "Новый персонаж", description: draft.description || "Демонстрационный персонаж", personality: draft.personality || "Характер можно изменить в редакторе.", scenario: draft.scenario || "", systemPrompt: draft.systemPrompt || "", soulMemoryEnabled: draft.soulMemoryEnabled, autoSummaryEnabled: draft.autoSummaryEnabled };
+      characters = [character, ...characters]; chats.set(character.id, []); return copy(character);
+    },
+    async generateCharacter(idea: string) {
+      return this.createCharacter({ name: "Астра", title: "Сгенерированный персонаж", description: `Создано по идее: ${idea}`, personality: "Творческая, внимательная, открытая к диалогу.", scenario: "Демо-сценарий для знакомства." });
+    },
+    async updateCharacter(characterId: string, draft: Partial<SoulCharacterDraft>) {
+      const current = findCharacter(characterId); if (!current) throw new Error("Персонаж не найден.");
+      const updated = { ...current, ...draft }; characters = characters.map((item) => item.id === characterId ? updated : item);
+      scenes = scenes.map((scene) => ({ ...scene, characterA: scene.characterA?.id === characterId ? updated : scene.characterA, characterB: scene.characterB?.id === characterId ? updated : scene.characterB }));
+      return copy(updated);
+    },
+    async uploadCharacterAvatar(characterId: string, asset) {
+      const current = findCharacter(characterId); if (!current) throw new Error("Персонаж не найден.");
+      const updated = { ...current, avatarUrl: asset.uri };
+      characters = characters.map((item) => item.id === characterId ? updated : item);
+      scenes = scenes.map((scene) => ({ ...scene, characterA: scene.characterA?.id === characterId ? updated : scene.characterA, characterB: scene.characterB?.id === characterId ? updated : scene.characterB }));
+      return copy(updated);
+    },
+    async getChats(characterId: string) { return copy(chats.get(characterId) || []); },
+    async getMessages(characterId: string, chatId: string) { return copy(messages.get(messageKey(characterId, chatId)) || []); },
+    async createChat(characterId: string, name: string) {
+      if (!findCharacter(characterId)) throw new Error("Персонаж не найден.");
+      const chat = { id: `demo-chat-${Date.now()}`, name, updatedAt: stamp() }; chats.set(characterId, [chat, ...(chats.get(characterId) || [])]); messages.set(messageKey(characterId, chat.id), []); return copy(chat);
+    },
+    async sendMessage(characterId: string, chatId: string, message: string) {
+      const character = findCharacter(characterId); if (!character) throw new Error("Персонаж не найден.");
+      const key = messageKey(characterId, chatId); const reply = assistantReply(character.name, message); const sentAt = stamp();
+      messages.set(key, [...(messages.get(key) || []), { id: `demo-user-${Date.now()}`, role: "user", author: "Вы", content: message, createdAt: sentAt }, { id: `demo-reply-${Date.now()}`, role: "assistant", author: character.name, content: reply, createdAt: stamp(1) }]);
+      chats.set(characterId, (chats.get(characterId) || []).map((chat) => chat.id === chatId ? { ...chat, updatedAt: sentAt } : chat)); return { reply };
+    },
+    async getScenes() {
+      return copy(scenes.map((scene) => ({
+        id: scene.id,
+        name: scene.name,
+        status: scene.status,
+        updatedAt: scene.updatedAt,
+        nextTurnAt: scene.nextTurnAt,
+        characterA: scene.characterA ?? null,
+        characterB: scene.characterB ?? null,
+      })));
+    },
+    async getScene(sceneId: string) { const scene = findScene(sceneId); if (!scene) throw new Error("Сцена не найдена."); return copy(scene); },
+    async createScene(request: CreateSoulSceneRequest) {
+      const characterA = findCharacter(request.characterAId); const characterB = findCharacter(request.characterBId); if (!characterA || !characterB) throw new Error("Выберите участников сцены.");
+      const scene: SoulScene = { id: `demo-scene-${Date.now()}`, name: request.name, status: "paused", updatedAt: stamp(), characterA: copy(characterA), characterB: copy(characterB), scenario: request.scenario, location: request.location, timeContext: request.timeContext, mood: request.mood, goal: request.goal, relationshipContext: request.relationshipContext, turnMode: request.turnMode === "manual" ? "manual" : "alternate", delaySeconds: request.delaySeconds, enforceSceneContract: request.enforceSceneContract, advanceSceneAndAvoidRepetition: request.advanceSceneAndAvoidRepetition, messages: [{ kind: "director", author: "Режиссёр", content: request.scenario || "Новая демонстрационная сцена готова к запуску.", createdAt: stamp() }] }; scenes = [scene, ...scenes]; return copy(scene);
+    },
+    async updateScene(sceneId: string, request: UpdateSoulSceneRequest) {
+      const current = findScene(sceneId); if (!current) throw new Error("Сцена не найдена.");
+      const characterA = request.characterAId ? findCharacter(request.characterAId) : current.characterA;
+      const characterB = request.characterBId ? findCharacter(request.characterBId) : current.characterB;
+      if (!characterA || !characterB || characterA.id === characterB.id) throw new Error("Выберите двух разных участников сцены.");
+      const updated: SoulScene = { ...current, ...request, characterA: copy(characterA), characterB: copy(characterB), turnMode: request.turnMode === "manual" ? "manual" : request.turnMode === "alternate" ? "alternate" : current.turnMode, updatedAt: stamp() };
+      scenes = scenes.map((scene) => scene.id === sceneId ? updated : scene); return copy(updated);
+    },
+    async sceneAction(sceneId: string, action: "start" | "pause" | "next"): Promise<SoulScene> {
+      const current = findScene(sceneId); if (!current) throw new Error("Сцена не найдена.");
+      const running = action !== "pause";
+      const updated: SoulScene = { ...current, status: running ? "running" : "paused", nextTurnAt: running && current.turnMode !== "manual" ? turnStamp(current.delaySeconds || 10) : null, updatedAt: stamp(), messages: [...current.messages] };
+      if (action === "next") updated.messages.push({ kind: "dialogue", speakerId: current.characterA?.id, author: current.characterA?.name || "Участник", content: "*Персонаж делает шаг вперёд, развивая разговор.*\n\n«Кажется, теперь у нас появилась новая зацепка.»", createdAt: stamp() });
+      scenes = scenes.map((scene) => scene.id === sceneId ? updated : scene); return copy(updated);
+    },
+    async addDirectorEvent(sceneId: string, text: string): Promise<SoulScene> {
+      const current = findScene(sceneId); if (!current) throw new Error("Сцена не найдена.");
+      const updated: SoulScene = { ...current, updatedAt: stamp(), messages: [...current.messages, { kind: "director", author: "Режиссёр", content: text, createdAt: stamp() }] }; scenes = scenes.map((scene) => scene.id === sceneId ? updated : scene); return copy(updated);
+    },
+  };
+}
