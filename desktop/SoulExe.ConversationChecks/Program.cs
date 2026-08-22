@@ -1,6 +1,7 @@
 using SoulTextWpf.ConversationChecks;
 using SoulTextWpf.Models;
 using SoulTextWpf.Services;
+using SoulTextWpf.ViewModels;
 
 var failures = new List<string>();
 void Expect(bool condition, string message)
@@ -33,6 +34,15 @@ Expect(sceneConversation.Kind == ConversationKind.Scene && sceneConversation.Par
 Expect(sceneConversation.Messages.Count == scene.Messages.Count, "Адаптер не должен терять сообщения сцены.");
 Expect(sceneConversation.Messages.Count(message => message.Kind == ConversationMessageKind.DirectorEvent) == 1, "Адаптер должен сохранить режиссёрское событие.");
 Expect(sceneConversation.TurnState?.NextParticipantId == first.Id, "Следующий участник сцены должен отображаться в общей модели.");
+
+var directThread = new ConversationThreadPresentationViewModel(direct, root.Characters);
+var sceneThread = new ConversationThreadPresentationViewModel(sceneConversation, root.Characters);
+Expect(directThread.Messages.Count == direct.Messages.Count, "Общее представление не должно терять сообщения обычного чата.");
+Expect(directThread.Messages[0].ShowDateSeparator, "Первая реплика общего представления должна открывать дату-разделитель.");
+Expect(directThread.Messages.Any(message => message.IsOutgoing), "В обычном чате пользовательская реплика должна быть выровнена как исходящая.");
+Expect(sceneThread.Messages.Count == sceneConversation.Messages.Count, "Общее представление не должно терять сообщения сцены.");
+Expect(sceneThread.Messages.Count(message => message.IsDirector) == 1, "Режиссёрское событие должно иметь особый тип в общем представлении.");
+Expect(sceneThread.Messages.Any(message => message.IsOutgoing), "Первая реплика сцены должна сохранять правило выравнивания участника A.");
 
 var history = new[] { "старое", "актуальное" };
 var selectedHistory = ConversationContextWindow.TakeLatestThatFits(history, 5, value => value);

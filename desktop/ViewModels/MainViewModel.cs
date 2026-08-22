@@ -90,6 +90,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     private string _chatCharacterSortMode = "recent";
     private string _chatSearchQuery = "";
     private ConversationListItemViewModel? _selectedConversationItem;
+    private ConversationThreadPresentationViewModel? _selectedConversationThreadPresentation;
+    private bool _isConversationThreadPreviewVisible;
     private string _newConversationType = "chat";
     private bool _isNewChatCharacterPickerOpen;
     private SoulCharacter? _newChatCharacter;
@@ -256,6 +258,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         ToggleSceneMessageSearchCommand = new RelayCommand(_ => IsSceneMessageSearchOpen = !IsSceneMessageSearchOpen, _ => SelectedScene is not null);
         CloseSceneMessageSearchCommand = new RelayCommand(_ => IsSceneMessageSearchOpen = false);
         SelectSceneMessageSearchResultCommand = new RelayCommand(x => SelectSceneMessageSearchResult(x as ChatMessageSearchResult));
+        ToggleConversationThreadPreviewCommand = new RelayCommand(_ => ToggleConversationThreadPreview(), _ => SelectedConversationThreadPresentation is not null);
         ToggleCharacterCardSectionCommand = new RelayCommand(x => ToggleCharacterCardSection(x as string));
         DeleteChatCommand = new AsyncRelayCommand(_ => DeleteChatAsync(), _ => !IsBusy && SelectedCharacter is not null && SelectedChat is not null);
         CreateChatForCharacterCommand = new AsyncRelayCommand(x => CreateChatForCharacterAsync(x as ChatListItemViewModel), _ => !IsBusy);
@@ -424,6 +427,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     public RelayCommand ToggleSceneMessageSearchCommand { get; }
     public RelayCommand CloseSceneMessageSearchCommand { get; }
     public RelayCommand SelectSceneMessageSearchResultCommand { get; }
+    public RelayCommand ToggleConversationThreadPreviewCommand { get; }
     public RelayCommand ToggleCharacterCardSectionCommand { get; }
     public AsyncRelayCommand DeleteChatCommand { get; }
     public AsyncRelayCommand CreateChatForCharacterCommand { get; }
@@ -753,12 +757,27 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         set
         {
             if (!Set(ref _selectedConversationItem, value) || value is null) return;
+            RefreshSelectedConversationThreadPresentation();
             OnPropertyChanged(nameof(IsSceneChatActive));
             _ = OpenConversationItemAsync(value);
         }
     }
 
     public bool IsSceneChatActive => SelectedConversationItem?.IsScene == true;
+    public ConversationThreadPresentationViewModel? SelectedConversationThreadPresentation
+    {
+        get => _selectedConversationThreadPresentation;
+        private set
+        {
+            if (!Set(ref _selectedConversationThreadPresentation, value)) return;
+            ToggleConversationThreadPreviewCommand.RaiseCanExecuteChanged();
+        }
+    }
+    public bool IsConversationThreadPreviewVisible
+    {
+        get => _isConversationThreadPreviewVisible;
+        private set => Set(ref _isConversationThreadPreviewVisible, value);
+    }
 
     public string NewConversationType
     {
@@ -1760,8 +1779,55 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (item.ChatItem is not null)
         {
             await OpenChatListItemAsync(item.ChatItem);
+            RefreshSelectedConversationThreadPresentation();
             OnPropertyChanged(nameof(IsSceneChatActive));
         }
+    }
+
+    private void RefreshSelectedConversationThreadPresentation()
+    {
+        var item = SelectedConversationItem;
+        if (item is null)
+        {
+            SelectedConversationThreadPresentation = null;
+            IsConversationThreadPreviewVisible = false;
+            return;
+        }
+
+        try
+        {
+            var reader = new ConversationReadService();
+            ConversationSnapshot snapshot;
+            if (item.IsScene && item.Scene is not null)
+            {
+                snapshot = reader.ReadScene(new SoulDataRoot { Characters = Characters.ToList(), Scenes = Scenes.ToList() }, item.Scene);
+            }
+            else if (item.ChatItem is not null)
+            {
+                snapshot = reader.ReadChat(item.ChatItem.Character, item.ChatItem.Chat);
+            }
+            else
+            {
+                SelectedConversationThreadPresentation = null;
+                IsConversationThreadPreviewVisible = false;
+                return;
+            }
+
+            SelectedConversationThreadPresentation = new ConversationThreadPresentationViewModel(snapshot, Characters);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"Conversation thread presentation was not created: {ex}");
+            SelectedConversationThreadPresentation = null;
+            IsConversationThreadPreviewVisible = false;
+        }
+    }
+
+    private void ToggleConversationThreadPreview()
+    {
+        if (!IsConversationThreadPreviewVisible) RefreshSelectedConversationThreadPresentation();
+        if (SelectedConversationThreadPresentation is not null)
+            IsConversationThreadPreviewVisible = !IsConversationThreadPreviewVisible;
     }
 
     private void RaiseChatPresentationProperties()

@@ -10,5 +10,6 @@
     <Compile Include="..\Models\ConversationModels.cs" Link="Models\ConversationModels.cs" />
     <Compile Include="..\Services\ConversationReadService.cs" Link="Services\ConversationReadService.cs" />
     <Compile Include="..\Services\ConversationContextWindow.cs" Link="Services\ConversationContextWindow.cs" />
+    <Compile Include="..\ViewModels\ConversationThreadPresentationViewModel.cs" Link="ViewModels\ConversationThreadPresentationViewModel.cs" />
   </ItemGroup>
 </Project>
