@@ -2083,8 +2083,14 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         if (SelectedScene is null) return;
         try
         {
+            var sceneId = SelectedScene.Id;
             await _scenes.UpdateAsync(SelectedScene);
-            await ReloadScenesAsync(SelectedScene.Id);
+            await ReloadScenesAsync(sceneId);
+            if (SelectedScene?.Status == "running" && SelectedScene.TurnMode == "alternate" && SelectedScene.DelaySeconds >= 5)
+                ScheduleSceneTimer();
+            else
+                CancelSceneTimer();
+            await ScheduleAutomaticSceneTurnAsync(sceneId);
             SceneRunStatus = "Параметры сцены сохранены.";
         }
         catch (Exception ex) { HandleError("Не удалось сохранить сцену", ex); }
