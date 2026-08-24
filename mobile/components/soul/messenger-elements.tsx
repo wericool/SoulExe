@@ -1,0 +1,17 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { Pressable, Text, View } from "react-native";
+
+import { Avatar, StatusPill } from "@/components/soul/ui";
+import type { SoulCharacter } from "@/lib/soulexe-api";
+import { colors } from "@/lib/theme";
+
+export function MessengerThreadHeader({ title, subtitle, character, onBack, onEdit, onTitlePress, timer, status }: { title: string; subtitle?: string; character?: SoulCharacter | null; onBack?: () => void; onEdit?: () => void; onTitlePress?: () => void; timer?: string; status?: { text: string; tone?: "success" | "muted" | "danger" | "accent" } }) {
+  return <View style={{ minHeight: 64, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.panel, borderBottomWidth: 1, borderBottomColor: colors.border }}><Pressable onPress={onBack} hitSlop={8} style={{ padding: 6 }}><MaterialIcons name="arrow-back" size={23} color={colors.text} /></Pressable>{character ? <Avatar character={character} size={38} /> : null}<Pressable onPress={onTitlePress} disabled={!onTitlePress} style={{ flex: 1 }}><Text numberOfLines={1} style={{ color: colors.text, fontSize: 16, fontWeight: "800" }}>{title}</Text>{subtitle ? <Text numberOfLines={1} style={{ color: colors.muted, fontSize: 11, marginTop: 2 }}>{subtitle}</Text> : null}</Pressable>{timer ? <Text style={{ color: colors.accentHover, fontSize: 11, fontWeight: "800" }}>{timer}</Text> : null}{status ? <StatusPill text={status.text} tone={status.tone} /> : null}{onEdit ? <Pressable onPress={onEdit} hitSlop={8} style={{ padding: 6 }}><MaterialIcons name="edit" size={20} color={colors.accentHover} /></Pressable> : null}</View>;
+}
+
+export function MessengerRow({ title, subtitle, updatedAt, character, sceneCharacters, status, onPress }: { title: string; subtitle?: string; updatedAt?: string; character?: SoulCharacter; sceneCharacters?: [SoulCharacter | undefined | null, SoulCharacter | undefined | null]; status?: string | null; onPress: () => void }) {
+  const date = updatedAt ? new Date(updatedAt) : null;
+  const time = date && !Number.isNaN(date.getTime()) ? date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) : "";
+  const first = sceneCharacters?.[0]; const second = sceneCharacters?.[1];
+  return <Pressable onPress={onPress} style={({ pressed }) => [{ minHeight: 76, paddingHorizontal: 16, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 11, borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.72 : 1 }]}>{character ? <Avatar character={character} size={46} /> : <View style={{ width: 50, height: 46, flexDirection: "row", alignItems: "center" }}>{first ? <Avatar character={first} size={34} /> : null}{second ? <View style={{ marginLeft: -11 }}><Avatar character={second} size={34} /></View> : null}</View>}<View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={{ color: colors.text, fontSize: 15, fontWeight: "800" }}>{title}</Text>{subtitle ? <Text numberOfLines={2} style={{ color: colors.muted, fontSize: 12, marginTop: 3 }}>{subtitle}</Text> : null}</View><View style={{ alignItems: "flex-end", gap: 5 }}>{time ? <Text style={{ color: colors.dim, fontSize: 10 }}>{time}</Text> : null}{status ? <StatusPill text={status === "running" ? "Идёт" : status === "paused" ? "Пауза" : status} tone={status === "running" ? "success" : "muted"} /> : null}</View></Pressable>;
+}

@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Models\FullDomainModels.cs" Link="Models\FullDomainModels.cs" />
+    <Compile Include="..\Models\BackgroundModes.cs" Link="Models\BackgroundModes.cs" />
+    <Compile Include="..\Models\InitialsHelper.cs" Link="Models\InitialsHelper.cs" />
+    <Compile Include="..\Models\SceneStatus.cs" Link="Models\SceneStatus.cs" />
+    <Compile Include="..\Models\ConversationModels.cs" Link="Models\ConversationModels.cs" />
+    <Compile Include="..\Models\ConversationServiceModels.cs" Link="Models\ConversationServiceModels.cs" />
+    <Compile Include="..\Models\AppModels.cs" Link="Models\AppModels.cs" />
+    <Compile Include="..\Services\ConversationMessageMapper.cs" Link="Services\ConversationMessageMapper.cs" />
+    <Compile Include="..\Services\ConversationFactory.cs" Link="Services\ConversationFactory.cs" />
+    <Compile Include="..\Services\ConversationContextWindow.cs" Link="Services\ConversationContextWindow.cs" />
+    <Compile Include="..\Services\ConversationPaging.cs" Link="Services\ConversationPaging.cs" />
+    <Compile Include="..\Services\MobileAccessPasswordHasher.cs" Link="Services\MobileAccessPasswordHasher.cs" />
+    <Compile Include="..\Services\ConversationPromptEngine.cs" Link="Services\ConversationPromptEngine.cs" />
+    <Compile Include="..\Services\PromptModels.cs" Link="Services\PromptModels.cs" />
+    <Compile Include="..\Services\PromptTraceFormatter.cs" Link="Services\PromptTraceFormatter.cs" />
+    <Compile Include="..\Services\PromptDiagnosticSnapshotStore.cs" Link="Services\PromptDiagnosticSnapshotStore.cs" />
+    <Compile Include="..\Services\DataPaths.cs" Link="Services\DataPaths.cs" />
+    <Compile Include="..\Services\JsonDataStore.cs" Link="Services\JsonDataStore.cs" />
+    <Compile Include="..\Services\AppLog.cs" Link="Services\AppLog.cs" />
+    <Compile Include="..\Services\PromptRules.cs" Link="Services\PromptRules.cs" />
+    <Compile Include="..\Services\ReplyLanguage.cs" Link="Services\ReplyLanguage.cs" />
+    <Compile Include="..\Services\SummaryPromptBuilder.cs" Link="Services\SummaryPromptBuilder.cs" />
+    <Compile Include="..\Services\SoulMemoryPromptBuilder.cs" Link="Services\SoulMemoryPromptBuilder.cs" />
+    <Compile Include="..\ViewModels\ConversationThreadPresentationViewModel.cs" Link="ViewModels\ConversationThreadPresentationViewModel.cs" />
+  </ItemGroup>
+</Project>

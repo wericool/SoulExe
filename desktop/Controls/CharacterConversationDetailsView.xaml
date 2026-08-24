@@ -1,0 +1,91 @@
+<UserControl x:Class="SoulExe.Controls.CharacterConversationDetailsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Border Grid.Column="4" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="16" Padding="0" ClipToBounds="True">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+            <Grid Height="200" ClipToBounds="True" HorizontalAlignment="Stretch">
+                <Border Background="{StaticResource CardGradientBrush}">
+                    <TextBlock Text="{Binding SelectedCharacter.Initials}" FontSize="56" FontWeight="SemiBold" Foreground="{StaticResource TextDimBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Image Source="{Binding SelectedCharacter.AvatarPath}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Border VerticalAlignment="Bottom" Height="100">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#0005060C" Offset="0" />
+                            <GradientStop Color="#E005060C" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <StackPanel VerticalAlignment="Bottom" Margin="18,0,18,14">
+                    <DockPanel>
+                        <Ellipse DockPanel.Dock="Right" Width="10" Height="10" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding SelectedCharacter.Name}" FontSize="21" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                    </DockPanel>
+                    <TextBlock Text="{Binding SelectedCharacterTitle}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Grid>
+            <StackPanel Margin="18,16,18,0">
+                <Button Content="◉  Профиль" Command="{Binding NavigateCommand}" CommandParameter="Characters" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Padding="10,6" ToolTip="Открыть персонажа в редакторе" />
+                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,14" />
+                <TextBlock Text="О персонаже" FontWeight="SemiBold" FontSize="12.5" />
+                <TextBlock Text="{Binding SelectedCharacterDescriptionDisplay}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12.5" LineHeight="19" Margin="0,8,0,0" />
+                <Button Content="{Binding CharacterDescriptionToggleText}" Command="{Binding ToggleCharacterCardSectionCommand}" CommandParameter="description" HorizontalAlignment="Left" Padding="0,6" FontSize="11">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasSelectedCharacterDescriptionOverflow}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <TextBlock Text="Личность" FontWeight="SemiBold" FontSize="12.5" Margin="0,14,0,0" />
+                <TextBlock Text="{Binding SelectedCharacterPersonalityDisplay}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12.5" LineHeight="19" Margin="0,8,0,0" />
+                <Button Content="{Binding CharacterPersonalityToggleText}" Command="{Binding ToggleCharacterCardSectionCommand}" CommandParameter="personality" HorizontalAlignment="Left" Padding="0,6" FontSize="11">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasSelectedCharacterPersonalityOverflow}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <TextBlock Text="Сценарий" FontWeight="SemiBold" FontSize="12.5" Margin="0,14,0,0" />
+                <TextBlock Text="{Binding SelectedCharacterScenarioDisplay}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12.5" LineHeight="19" Margin="0,8,0,0" />
+                <Button Content="{Binding CharacterScenarioToggleText}" Command="{Binding ToggleCharacterCardSectionCommand}" CommandParameter="scenario" HorizontalAlignment="Left" Padding="0,6" FontSize="11">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasSelectedCharacterScenarioOverflow}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Grid Margin="0,18,0,22">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Создан" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                        <TextBlock Text="{Binding SelectedCharacterCreatedLabel}" FontSize="11.5" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Сообщений" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                        <TextBlock Text="{Binding SelectedChatMessageCount}" FontSize="11.5" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Border>
+</UserControl>

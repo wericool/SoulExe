@@ -1,0 +1,27 @@
+<UserControl x:Class="SoulExe.Controls.ConversationComposerView" x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Border>
+            <Border.Style><Style TargetType="Border" BasedOn="{StaticResource ConversationComposerBar}"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding Tag, ElementName=Root}" Value="Group"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Border.Style>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <ComboBox ItemsSource="{Binding ComposerAuthors}" SelectedItem="{Binding ComposerAuthor}" DisplayMemberPath="DisplayName" ToolTip="От чьего имени отправить сообщение"/>
+                <Border Grid.Column="2" Style="{StaticResource ConversationComposerInput}"><TextBox Style="{StaticResource ChatComposerTextBox}" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter — отправить; Shift+Enter — новая строка" PreviewKeyDown="PersonalDraft_OnPreviewKeyDown"/></Border>
+                <Button Grid.Column="4" Content="Продолжить" Command="{Binding ContinueChatCommand}" Style="{StaticResource ChatComposerButton}" ToolTip="Попросить персонажа продолжить ответ"/>
+                <Button Grid.Column="6" Content="➤" Command="{Binding SendCommand}" Style="{StaticResource ChatComposerSendButton}" ToolTip="Отправить"/>
+            </Grid>
+        </Border>
+        <Border>
+            <Border.Style><Style TargetType="Border" BasedOn="{StaticResource ConversationComposerBar}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Tag, ElementName=Root}" Value="Group"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <ComboBox ItemsSource="{Binding ComposerAuthors}" SelectedItem="{Binding ComposerAuthor}" DisplayMemberPath="DisplayName" ToolTip="От чьего имени отправить сообщение"/>
+                <Border Grid.Column="2" Style="{StaticResource ConversationComposerInput}"><TextBox Style="{StaticResource ChatComposerTextBox}" Text="{Binding GroupDraft, UpdateSourceTrigger=PropertyChanged}" ToolTip="Введите реплику персоны или режиссёрское событие"/></Border>
+                <Button Grid.Column="4" Content="{Binding SceneStartPauseText}" Command="{Binding ToggleSceneStartPauseCommand}" Style="{StaticResource ChatComposerAccentButton}"/>
+                <Button Grid.Column="6" Content="Следующая реплика" Command="{Binding NextSceneTurnCommand}" Style="{StaticResource ChatComposerButton}"/>
+                <Button Grid.Column="8" Content="Отправить" Command="{Binding SendGroupMessageCommand}" Style="{StaticResource ChatComposerSendButton}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

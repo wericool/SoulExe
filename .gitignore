@@ -1,0 +1,41 @@
+# Local toolchains and caches
+.android-sdk/
+.gradle-cache/
+.pnpm-store/
+.expo/
+.cache/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+Output/
+**/bin/
+**/obj/
+**/build/
+**/dist/
+*.apk
+*.aab
+*.exe
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+
+# IDE and OS files
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.user
+*.suo
+*.swp
+
