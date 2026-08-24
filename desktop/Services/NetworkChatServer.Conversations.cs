@@ -211,6 +211,13 @@ public sealed partial class NetworkChatServer
             return Results.Ok(ConversationDto(result.Conversation, avatarUrl: AvatarUrlForCharacter));
         }
 
+        if (action == "delete")
+        {
+            await AppServices.Conversations.DeleteAsync(address, token);
+            await NotifyDataChangedAsync();
+            return Results.NoContent();
+        }
+
         if (action == "rename")
         {
             var result = await AppServices.Conversations.RenameAsync(address, request.Text ?? string.Empty, token);

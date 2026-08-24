@@ -150,7 +150,7 @@ export type SoulConversationPageOptions = {
 };
 
 export type SoulConversationAction = {
-  action: "send" | "append" | "director" | "start" | "pause" | "finish" | "next" | "pin" | "unpin" | "rename";
+  action: "send" | "append" | "director" | "start" | "pause" | "finish" | "next" | "pin" | "unpin" | "rename" | "delete";
   text?: string;
   authorKind?: "user" | "persona" | "director";
   authorPersonaId?: string;
@@ -331,6 +331,14 @@ export class SoulExeApiClient {
     }));
   }
 
+  async deleteConversation(conversationId: string) {
+    await this.request<void>(`/api/conversations/${conversationId}/actions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete" }),
+    });
+  }
+
   async createConversation(request: CreateSoulConversationRequest) {
     return this.withConversationAvatarUrls(await this.request<SoulConversation>("/api/conversations", {
       method: "POST",
@@ -487,6 +495,7 @@ export type SoulExeApi = Pick<
   | "getConversation"
   | "getConversationPage"
   | "conversationAction"
+  | "deleteConversation"
   | "createConversation"
   | "updateConversation"
   | "sendConversationMessage"

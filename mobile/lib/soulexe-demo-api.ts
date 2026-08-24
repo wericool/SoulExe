@@ -2,7 +2,7 @@ import type { ChatMessage, CreateSoulSceneRequest, SoulCharacter, SoulCharacterD
 
 type SoulExeDemoApi = SoulExeApi & Pick<SoulExeApiClient,
   "getChats" | "getMessages" | "createChat" | "sendMessage" | "getScenes" | "getScene" |
-  "createScene" | "updateScene" | "sceneAction" | "addDirectorEvent">;
+  "createScene" | "updateScene" | "sceneAction" | "addDirectorEvent" | "deleteConversation">;
 
 const stamp = (minutesFromNow = 0) => new Date(Date.now() + minutesFromNow * 60_000).toISOString();
 const turnStamp = (secondsFromNow: number) => new Date(Date.now() + secondsFromNow * 1_000).toISOString();
@@ -146,6 +146,23 @@ export function createSoulExeDemoApi(): SoulExeDemoApi {
       const conversation = getConversations().find((item) => item.id === conversationId);
       if (!conversation) throw new Error("Разговор не найден.");
       return copy(conversation);
+    },
+    async deleteConversation(conversationId: string) {
+      const personalOwner = characters.find((character) =>
+        (chats.get(character.id) || []).some((chat) => chat.id === conversationId));
+      if (personalOwner) {
+        chats.set(personalOwner.id, (chats.get(personalOwner.id) || []).filter((chat) => chat.id !== conversationId));
+        messages.delete(messageKey(personalOwner.id, conversationId));
+        return;
+      }
+
+      const sceneIndex = scenes.findIndex((scene) => scene.id === conversationId);
+      if (sceneIndex >= 0) {
+        scenes.splice(sceneIndex, 1);
+        return;
+      }
+
+      throw new Error("Разговор не найден.");
     },
     async createConversation(request) {
       const ids = [...new Set(request.characterIds)];

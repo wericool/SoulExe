@@ -252,6 +252,22 @@ export function ChatsScreen({
     finally { setBusy(false); }
   };
 
+  const toggleConversationPin = async (entry: MobileConversationEntry) => {
+    try {
+      await api.conversationAction(entry.conversation.id, { action: entry.conversation.isPinned ? "unpin" : "pin" });
+      await loadList();
+    } catch (error) {
+      Alert.alert("Разговор", error instanceof Error ? error.message : "Не удалось изменить закрепление.");
+    }
+  };
+
+  const confirmConversationDelete = (entry: MobileConversationEntry) => {
+    Alert.alert("Удалить разговор?", `«${entry.row.title}» будет удалён без возможности восстановления.`, [
+      { text: "Отмена", style: "cancel" },
+      { text: "Удалить", style: "destructive", onPress: () => void api.deleteConversation(entry.conversation.id).then(() => loadList()).catch((error) => Alert.alert("Разговор", error instanceof Error ? error.message : "Не удалось удалить разговор.")) },
+    ]);
+  };
+
   const createChat = async () => {
     if (!newChatCharacterId || busy) return;
     setBusy(true);
@@ -290,7 +306,7 @@ export function ChatsScreen({
   if (sceneId) return <ScenesScreen api={api} appearance={appearance} onThreadChange={onThreadChange} initialSceneId={sceneId} onBackToChats={() => setSceneId(undefined)} />;
 
   const createButton = <FloatingCreateButton icon="edit" onPress={() => setCreationPicker(true)} accessibilityLabel="Создать разговор" />;
-  if (!active) return <ConversationListScreen entries={conversationEntries} appearance={appearance} busy={busy} onRefresh={loadList} footer={createButton} onOpen={(item) => {
+  if (!active) return <ConversationListScreen entries={conversationEntries} appearance={appearance} busy={busy} onRefresh={loadList} onTogglePin={(item) => void toggleConversationPin(item)} onDelete={confirmConversationDelete} createButton={createButton} onOpen={(item) => {
     if (item.row.mode === "group") setSceneId(item.conversation.id);
     else if (item.character) setActive({ id: `${item.character.id}:${item.conversation.id}`, character: item.character, chat: { id: item.conversation.id, name: item.conversation.name || item.row.subtitle, updatedAt: item.row.updatedAt }, preview: item.row.preview, previewAt: item.row.updatedAt });
   }} />;
