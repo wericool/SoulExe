@@ -47,6 +47,35 @@ function directConversationMessages(conversation: SoulConversation): ChatMessage
     }));
 }
 
+async function revealAssistantReply(messages: ChatMessage[], mode: ChatAppearanceSettings["typingSimulation"], update: (messages: ChatMessage[]) => void) {
+  if (mode === "off") {
+    update(messages);
+    return;
+  }
+
+  let replyIndex = -1;
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index].role === "assistant" && messages[index].authorKind !== "director") {
+      replyIndex = index;
+      break;
+    }
+  }
+  if (replyIndex < 0 || !messages[replyIndex].content) {
+    update(messages);
+    return;
+  }
+
+  const reply = messages[replyIndex];
+  const chunkSize = mode === "slow" ? 9 : 28;
+  const delay = mode === "slow" ? 45 : 32;
+  update(messages.map((message, index) => index === replyIndex ? { ...message, content: "" } : message));
+  for (let length = chunkSize; length < reply.content.length; length += chunkSize) {
+    await new Promise<void>((resolve) => setTimeout(resolve, delay));
+    update(messages.map((message, index) => index === replyIndex ? { ...message, content: reply.content.slice(0, length) } : message));
+  }
+  update(messages);
+}
+
 export function ChatsScreen({
   api,
   appearance,
@@ -292,7 +321,7 @@ export function ChatsScreen({
     stickToBottom.current = true;
     try {
       const fresh = directConversationMessages(await api.sendConversationMessage(active.chat.id, text, { authorKind: messageAuthor.kind, authorPersonaId: messageAuthor.personaId }));
-      setMessages(fresh);
+      await revealAssistantReply(fresh, appearance.typingSimulation, setMessages);
       await loadList(true);
     } catch (error) {
       setDraft(text);

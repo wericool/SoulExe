@@ -14,6 +14,7 @@ export type ChatAppearanceSettings = {
   stripActionMarkers: boolean;
   stripThoughtMarkers: boolean;
   stripSpeechMarkers: boolean;
+  typingSimulation: "off" | "fast" | "slow";
 };
 
 export const defaultChatAppearance: ChatAppearanceSettings = {
@@ -23,6 +24,7 @@ export const defaultChatAppearance: ChatAppearanceSettings = {
   stripActionMarkers: false,
   stripThoughtMarkers: false,
   stripSpeechMarkers: false,
+  typingSimulation: "fast",
 };
 
 function browserStorage() {
