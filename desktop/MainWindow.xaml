@@ -1826,7 +1826,7 @@
                                                 <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="25,12,0,0">
                                                     <StackPanel>
                                                         <TextBlock Text="Фоновое обновление" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
-                                                        <TextBlock Text="Summary выполняется раньше детальной памяти; новое сообщение отменяет ожидающее обслуживание. Рекомендуется пауза 60 секунд, чтобы модель оставалась свободна для следующей реплики." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,5,0,8" />
+                                                        <TextBlock Text="Summary и Soul Memory обрабатывают сохранённую очередь только после паузы. Новое сообщение отменяет ожидающее или идущее обслуживание, поэтому модель остаётся свободной для следующей реплики." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,5,0,8" />
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="*" />
@@ -1836,9 +1836,8 @@
                                                             <TextBlock Text="Режим" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
                                                             <ComboBox Grid.Column="1" SelectedValue="{Binding CognitiveBackgroundMode, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
                                                                 <ComboBoxItem Tag="idle" Content="После паузы" />
-                                                                <ComboBoxItem Tag="immediate" Content="Сразу в фоне" />
                                                             </ComboBox>
-                                                            <TextBox Grid.Column="2" Text="{Binding CognitiveBackgroundIdleSeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="Задержка от 10 до 180 секунд в режиме «После паузы». Рекомендуется 60 секунд." />
+                                                            <TextBox Grid.Column="2" Text="{Binding CognitiveBackgroundIdleSeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="Задержка от 60 до 300 секунд. Рекомендуется 60–120 секунд." />
                                                         </Grid>
                                                         <TextBlock Text="{Binding CognitiveBackgroundStatus}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,7,0,0" />
                                                     </StackPanel>

@@ -312,7 +312,8 @@ public sealed partial class MainViewModel
         get => _cognitiveBackgroundMode;
         set
         {
-            var mode = string.Equals(value, BackgroundModes.Immediate, StringComparison.OrdinalIgnoreCase) ? BackgroundModes.Immediate : BackgroundModes.Idle;
+            // Automatic maintenance must not take the model away from the next chat turn.
+            var mode = BackgroundModes.Idle;
             if (!Set(ref _cognitiveBackgroundMode, mode)) return;
             OnPropertyChanged(nameof(IsCognitiveIdleMode));
             _ = SaveCognitiveArchitectureAsync();
@@ -324,7 +325,7 @@ public sealed partial class MainViewModel
         get => _cognitiveBackgroundIdleSeconds;
         set
         {
-            var seconds = Math.Clamp(value, 10, 180);
+            var seconds = Math.Clamp(value, 60, 300);
             if (!Set(ref _cognitiveBackgroundIdleSeconds, seconds)) return;
             _ = SaveCognitiveArchitectureAsync();
         }

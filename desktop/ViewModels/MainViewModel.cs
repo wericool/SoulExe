@@ -349,17 +349,18 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
     private async Task LoadAsync()
     {
         var data = await _store.ReadAsync(root => root);
-        if (data.Preferences.CognitiveMaintenancePolicyVersion < 2)
+        if (data.Preferences.CognitiveMaintenancePolicyVersion < 3)
         {
             await _store.MutateAsync(root =>
             {
                 // Earlier releases could begin a multi-call Full Soul Memory pipeline immediately
-                // after an answer. Migrate that default to a real reading pause without disabling memory.
+                // after an answer. Persist all pending messages, but consume them only after a
+                // real reading pause so a new chat turn always has priority over maintenance.
                 if (string.Equals(root.Preferences.CognitiveBackgroundMode, BackgroundModes.Immediate, StringComparison.OrdinalIgnoreCase))
                     root.Preferences.CognitiveBackgroundMode = BackgroundModes.Idle;
                 root.Preferences.CognitiveBackgroundIdleSeconds = Math.Max(60, root.Preferences.CognitiveBackgroundIdleSeconds);
-                root.Preferences.CognitiveMaintenancePolicyVersion = 2;
-            }, "migrate_cognitive_maintenance_v2");
+                root.Preferences.CognitiveMaintenancePolicyVersion = 3;
+            }, "migrate_cognitive_maintenance_v3");
             data = await _store.ReadAsync(root => root);
         }
         if (!string.IsNullOrEmpty(data.Preferences.MobileAccessPassword))
@@ -387,8 +388,8 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         _cognitiveMemoryIntervalMessages = Math.Clamp(data.Preferences.CognitiveMemoryIntervalMessages, 1, 50);
         _cognitiveAutoSummaryEnabled = data.Preferences.CognitiveAutoSummaryEnabled;
         _cognitiveSummaryIntervalMessages = Math.Clamp(data.Preferences.CognitiveSummaryIntervalMessages, 1, 100);
-        _cognitiveBackgroundMode = string.Equals(data.Preferences.CognitiveBackgroundMode, BackgroundModes.Immediate, StringComparison.OrdinalIgnoreCase) ? BackgroundModes.Immediate : BackgroundModes.Idle;
-        _cognitiveBackgroundIdleSeconds = Math.Clamp(data.Preferences.CognitiveBackgroundIdleSeconds, 10, 180);
+        _cognitiveBackgroundMode = BackgroundModes.Idle;
+        _cognitiveBackgroundIdleSeconds = Math.Clamp(data.Preferences.CognitiveBackgroundIdleSeconds, 60, 300);
         OnPropertyChanged(nameof(CognitiveSoulMemoryEnabled));
         OnPropertyChanged(nameof(SelectedSoulMemoryPreset));
         OnPropertyChanged(nameof(SoulMemoryPresetDescription));

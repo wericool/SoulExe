@@ -26,7 +26,11 @@ public sealed class CognitiveBackgroundScheduler : IAsyncDisposable
         if (_disposed) return;
         var source = new CancellationTokenSource();
         _requests[key] = source;
-        var wait = string.Equals(mode, BackgroundModes.Immediate, StringComparison.OrdinalIgnoreCase) ? TimeSpan.Zero : TimeSpan.FromSeconds(Math.Clamp(idleSeconds, 10, 180));
+        // The local model has one practical generation lane. Running automatic maintenance
+        // immediately after a reply makes the next user turn queue behind it and feels like
+        // the application froze. Keep the data in the persisted queue, but wait for a real
+        // reading pause before consuming one maintenance batch.
+        var wait = TimeSpan.FromSeconds(Math.Clamp(idleSeconds, 60, 300));
         _ = RunAsync(key, source, wait, work);
     }
 

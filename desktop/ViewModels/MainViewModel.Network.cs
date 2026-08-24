@@ -109,6 +109,9 @@ public sealed partial class MainViewModel
             ? personalConversations.FirstOrDefault(value => value.Id == selectedChatId)
             : null;
         conversation ??= personalConversations.FirstOrDefault(value => value.Id == character.CurrentChatId) ?? personalConversations.First();
+        // A mobile turn must have the same priority as a desktop turn. Without this,
+        // an already running memory task can occupy the local model while the phone waits.
+        _cognitiveScheduler.Cancel(character.Id, conversation.Id);
         var authorKind = (request.AuthorKind ?? "user").Trim().ToLowerInvariant();
         Guid? personaId = null;
         SoulPersona? persona = null;
