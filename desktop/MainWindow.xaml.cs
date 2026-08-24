@@ -155,7 +155,6 @@ public partial class MainWindow : Window
             // На всякий случай, если развернули системно (не только нашей кнопкой).
             if (_normalBounds.IsEmpty && RestoreBounds.Width > 0 && RestoreBounds.Height > 0)
                 _normalBounds = RestoreBounds;
-            Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(ApplyMaximizedWorkArea));
             return;
         }
 
@@ -166,18 +165,6 @@ public partial class MainWindow : Window
             // После Maximized Width/Height часто остаются равными экрану — возвращаем сохранённые.
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(RestoreNormalBounds));
         }
-    }
-
-
-    private void ApplyMaximizedWorkArea()
-    {
-        if (WindowState != WindowState.Maximized) return;
-
-        var workArea = SystemParameters.WorkArea;
-        // Ограничиваем максимум рабочей областью (учёт панели задач),
-        // но не меняем Left/Top/Width/Height: они нужны WPF для RestoreBounds.
-        MaxWidth = workArea.Width;
-        MaxHeight = workArea.Height;
     }
 
     private void ChatMessages_OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => ScheduleChatScroll();

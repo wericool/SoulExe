@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MessengerThreadHeader } from "@/components/soul/messenger-elements";
 import { ConversationMessageList } from "@/components/soul/conversation-message-list";
@@ -38,8 +39,9 @@ export function DirectConversationThreadScreen({ active, messages, appearance, t
   onScrollToIndexFailed: () => void;
   onComposerFocus: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   return <KeyboardAvoidingView style={styles.grow} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={0}>
-    <View style={[styles.grow, keyboardLift > 0 && { paddingBottom: keyboardLift }]}>
+    <View style={[styles.grow, { paddingBottom: Math.max(insets.bottom, keyboardLift) }]}>
       <MessengerThreadHeader title={active.character.name} subtitle={typing ? "Печатает…" : lastSeenLabel(messages)} character={active.character} onBack={onBack} onTitlePress={onOpenProfile} />
       {historyLoaded ? <View style={styles.grow}>
         <ConversationMessageList

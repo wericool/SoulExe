@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, BackHandler, FlatList, KeyboardAvoidingView, Platform, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MessengerThreadHeader } from "@/components/soul/messenger-elements";
 import { ConversationMessageList } from "@/components/soul/conversation-message-list";
@@ -51,6 +52,7 @@ function sceneFromConversation(conversation: SoulConversation, characters: SoulC
 
 
 export function ScenesScreen({ api, appearance, onThreadChange, initialSceneId, onBackToChats }: { api: SoulExeApi; appearance: ChatAppearanceSettings; onThreadChange: (open: boolean) => void; initialSceneId: string; onBackToChats: () => void }) {
+  const insets = useSafeAreaInsets();
   const [scene, setScene] = useState<SoulScene>();
   const [sceneCharacters, setSceneCharacters] = useState<SoulCharacter[]>([]);
   const [personas, setPersonas] = useState<SoulPersona[]>([]);
@@ -127,7 +129,7 @@ export function ScenesScreen({ api, appearance, onThreadChange, initialSceneId, 
   if (sceneInfoOpen && sceneEditing) return <GroupConversationEditorScreen api={api} scene={currentScene} onBack={() => setSceneEditing(false)} onSaved={(updated) => { setScene(sceneFromConversation(updated, sceneCharacters)); setSceneEditing(false); setSceneInfoOpen(false); }} />;
   if (sceneInfoOpen) return <GroupConversationProfile scene={currentScene} onBack={() => setSceneInfoOpen(false)} onEdit={() => setSceneEditing(true)} />;
   return <KeyboardAvoidingView style={styles.grow} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={0}>
-    <View style={[styles.grow, keyboardLift > 0 && { paddingBottom: keyboardLift }]}>
+    <View style={[styles.grow, { paddingBottom: Math.max(insets.bottom, keyboardLift) }]}>
     <MessengerThreadHeader title={currentScene.name} subtitle={[currentScene.characterA?.name, currentScene.characterB?.name].filter(Boolean).join(" × ") || "Групповой разговор"} onBack={onBackToChats} onTitlePress={() => setSceneInfoOpen(true)} timer={sceneTimer} status={{ text: statusLabel(currentScene.status), tone: statusTone(currentScene.status) }} />
     <View style={styles.grow}>
       <ConversationMessageList
