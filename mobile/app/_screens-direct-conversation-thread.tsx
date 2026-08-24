@@ -14,7 +14,7 @@ import { ComposerAuthorPicker, MessageBubble, MessageComposer } from "./_compone
 
 type MessageAuthor = { kind: "user" | "persona" | "director"; personaId?: string };
 
-export function DirectConversationThreadScreen({ active, messages, appearance, typing, historyLoaded, historyReady, keyboardLift, draft, messageAuthor, personas, unifiedApiAvailable, busy, listRef, onBack, onOpenProfile, onDraftChange, onAuthorChange, onSend, onContentSizeChange, onScroll, onScrollToIndexFailed }: {
+export function DirectConversationThreadScreen({ active, messages, appearance, typing, historyLoaded, historyReady, keyboardLift, draft, messageAuthor, personas, unifiedApiAvailable, busy, listRef, onBack, onOpenProfile, onDraftChange, onAuthorChange, onSend, onContentSizeChange, onScroll, onScrollToIndexFailed, onComposerFocus }: {
   active: MobileChatEntry;
   messages: ChatMessage[];
   appearance: ChatAppearanceSettings;
@@ -36,6 +36,7 @@ export function DirectConversationThreadScreen({ active, messages, appearance, t
   onContentSizeChange: () => void;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   onScrollToIndexFailed: () => void;
+  onComposerFocus: () => void;
 }) {
   return <KeyboardAvoidingView style={styles.grow} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={0}>
     <View style={[styles.grow, keyboardLift > 0 && { paddingBottom: keyboardLift }]}>
@@ -60,7 +61,7 @@ export function DirectConversationThreadScreen({ active, messages, appearance, t
         />
         {!historyReady ? <View style={styles.historyLoadingOverlay}><ActivityIndicator color={colors.accentHover} /></View> : null}
       </View> : <View style={styles.historyLoading}><ActivityIndicator color={colors.accentHover} /></View>}
-      <MessageComposer value={draft} onChangeText={onDraftChange} placeholder={messageAuthor.kind === "director" ? "Режиссёрское событие" : "Сообщение"} onSend={onSend} sendDisabled={busy} authorPicker={unifiedApiAvailable ? <ComposerAuthorPicker personas={personas} value={messageAuthor} onChange={onAuthorChange} /> : undefined} />
+      <MessageComposer value={draft} onChangeText={onDraftChange} placeholder={messageAuthor.kind === "director" ? "Режиссёрское событие" : "Сообщение"} onSend={onSend} sendDisabled={busy} onFocus={onComposerFocus} authorPicker={unifiedApiAvailable ? <ComposerAuthorPicker personas={personas} value={messageAuthor} onChange={onAuthorChange} /> : undefined} />
     </View>
   </KeyboardAvoidingView>;
 }

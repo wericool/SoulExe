@@ -319,6 +319,7 @@ export function ChatsScreen({
     }}
     onScroll={({ nativeEvent }) => { const distance = nativeEvent.contentSize.height - (nativeEvent.contentOffset.y + nativeEvent.layoutMeasurement.height); stickToBottom.current = distance < 64; }}
     onScrollToIndexFailed={() => requestAnimationFrame(() => history.current?.scrollToEnd({ animated: false }))}
+    onComposerFocus={() => { requestAnimationFrame(() => history.current?.scrollToEnd({ animated: true })); setTimeout(() => history.current?.scrollToEnd({ animated: true }), 180); }}
   />;
 }
 

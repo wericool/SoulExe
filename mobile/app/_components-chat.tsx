@@ -78,6 +78,7 @@ export function MessageComposer({
   sendDisabled,
   rightActions,
   authorPicker,
+  onFocus,
 }: {
   value: string;
   onChangeText: (value: string) => void;
@@ -98,6 +99,7 @@ export function MessageComposer({
     accessibilityLabel?: string;
   }[];
   authorPicker?: ReactNode;
+  onFocus?: () => void;
 }) {
   const resolvedRightActions = rightActions ?? (onSend ? [{
     icon: "arrow-upward" as const,
@@ -125,6 +127,7 @@ export function MessageComposer({
       <TextInput
         value={value}
         onChangeText={onChangeText}
+        onFocus={onFocus}
         placeholder={placeholder}
         placeholderTextColor={colors.dim}
         multiline
