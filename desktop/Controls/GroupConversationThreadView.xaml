@@ -173,6 +173,11 @@
                                         <Setter TargetName="SceneAvatar" Property="Background" Value="{StaticResource AccentBrush}" />
                                         <Setter TargetName="SceneTime" Property="Foreground" Value="#D8CCFF" />
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsUserParticipant}" Value="True">
+                                        <Setter TargetName="SceneBubble" Property="HorizontalAlignment" Value="Center" />
+                                        <Setter TargetName="SceneBubble" Property="Background" Value="{StaticResource ElevatedBrush}" />
+                                        <Setter TargetName="SceneBubble" Property="BorderBrush" Value="{StaticResource AccentSoftBrush}" />
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding IsDirector}" Value="True">
                                         <Setter TargetName="SceneBubble" Property="HorizontalAlignment" Value="Center" />
                                         <Setter TargetName="SceneBubble" Property="Background" Value="{StaticResource ElevatedBrush}" />

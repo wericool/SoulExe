@@ -52,10 +52,11 @@ export function MessageBubble({
   message: ChatMessage;
   appearance: ChatAppearanceSettings;
 }) {
-  const mine = message.role === "user";
+  const director = message.authorKind === "director" || message.author === "Режиссёр";
+  const mine = message.role === "user" && !director;
   return (
-    <View style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
-      <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
+    <View style={[styles.bubbleRow, mine && styles.bubbleRowMine, director && styles.directorRowAlign]}>
+      <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs, director && styles.bubbleDirector]}>
         {(!mine || message.authorKind !== "user") && message.author ? (
           <Text style={styles.messageAuthor}>{message.author}</Text>
         ) : null}

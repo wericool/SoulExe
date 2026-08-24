@@ -26,7 +26,8 @@ public sealed record GroupPromptBuildRequest(
     IReadOnlyDictionary<Guid, SoulLorebook> Lorebooks,
     Guid ActiveCharacterId,
     int ContextSize,
-    int ReservedGenerationTokens);
+    int ReservedGenerationTokens,
+    IReadOnlyDictionary<Guid, SoulPersona>? Personas = null);
 
 public sealed record PromptBuildResult(IReadOnlyList<LlamaMessage> Messages, IReadOnlyList<PromptDiagnostic> Diagnostics);
 public sealed record PromptDiagnostic(string Category, string Text);

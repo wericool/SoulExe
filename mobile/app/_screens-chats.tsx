@@ -33,10 +33,12 @@ import { DirectConversationThreadScreen } from "./_screens-direct-conversation-t
 function directConversationMessages(conversation: SoulConversation): ChatMessage[] {
   const userIds = new Set(conversation.participants.filter((participant) => participant.kind === "User").map((participant) => participant.id));
   return conversation.messages
-    .filter((message) => message.kind === "message")
+    .filter((message) => message.kind === "message" || message.kind === "director")
     .map((message) => ({
       id: message.id,
-      role: message.authorParticipantId && userIds.has(message.authorParticipantId) ? "user" : "assistant",
+      // A director event is rendered as a distinct centred system bubble, not
+      // as an outgoing user message. ChatMessage keeps two transport roles.
+      role: message.kind === "director" ? "assistant" : message.authorParticipantId && userIds.has(message.authorParticipantId) ? "user" : "assistant",
       author: message.author,
       content: message.content,
       createdAt: message.createdAt,

@@ -207,8 +207,10 @@ public sealed class ConversationTurnRunner
                 reservedGenerationTokens,
                 IncludeSoulMemory: storedCharacter.CognitiveArchitectureEnabled && storedCharacter.SoulMemoryEnabled,
                 IncludeAutoSummary: storedCharacter.CognitiveArchitectureEnabled && storedCharacter.AutoSummaryEnabled,
-                ExcludeLastUserMessage: !isContinuation,
-                AppendUserMessage: !isContinuation,
+                // The message has already been persisted with its author kind. Keeping it
+                // in history prevents a Director event from being re-added as a user turn.
+                ExcludeLastUserMessage: false,
+                AppendUserMessage: false,
                 IsContinuation: isContinuation));
         }, token);
     }
@@ -244,7 +246,7 @@ public sealed class ConversationTurnRunner
             onStarted?.Invoke(new SceneTurnStarted(sceneId, speakerId, speaker));
 
             await SetGroupTurnStateAsync(sceneId, SceneStatus.Running, speakerId, scheduleNextTurn: false, token);
-            var context = _prompt.BuildGroup(new GroupPromptBuildRequest(conversation, runtime.First, runtime.Second, runtime.Lorebooks, speakerId, contextSize, reservedGenerationTokens));
+            var context = _prompt.BuildGroup(new GroupPromptBuildRequest(conversation, runtime.First, runtime.Second, runtime.Lorebooks, speakerId, contextSize, reservedGenerationTokens, runtime.Personas));
             AppLog.Write($"GEN {generationId} BEGIN mode=scene_turn scene={sceneId} speaker={speakerId}");
             LogPromptBuild(generationId, context);
             var raw = new StringBuilder();
@@ -283,7 +285,12 @@ public sealed class ConversationTurnRunner
                 ?? throw new InvalidOperationException("Первый персонаж группового разговора не найден.");
             var second = (root.Characters ?? []).FirstOrDefault(character => character.Id == characterIds[1])
                 ?? throw new InvalidOperationException("Второй персонаж группового разговора не найден.");
-            return new GroupConversationRuntime(conversation, first, second, (root.Lorebooks ?? []).ToDictionary(book => book.Id));
+            return new GroupConversationRuntime(
+                conversation,
+                first,
+                second,
+                (root.Lorebooks ?? []).ToDictionary(book => book.Id),
+                (root.Personas ?? []).ToDictionary(persona => persona.Id));
         }, token);
 
     private Task SetGroupTurnStateAsync(Guid conversationId, string status, Guid nextCharacterId, bool scheduleNextTurn, CancellationToken token) =>

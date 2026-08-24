@@ -10,7 +10,7 @@ public sealed class SceneMessageViewModel : INotifyPropertyChanged
     private readonly string _avatarPath;
     private bool _isSearchHighlighted;
 
-    private SceneMessageViewModel(Guid id, string speakerName, string content, string time, bool isDirector, bool isFirstCharacter, bool isLive, string? avatarPath)
+    private SceneMessageViewModel(Guid id, string speakerName, string content, string time, bool isDirector, bool isFirstCharacter, bool isUserParticipant, bool isLive, string? avatarPath)
     {
         Id = id;
         SpeakerName = speakerName;
@@ -18,6 +18,7 @@ public sealed class SceneMessageViewModel : INotifyPropertyChanged
         Time = time;
         IsDirector = isDirector;
         IsFirstCharacter = isFirstCharacter;
+        IsUserParticipant = isUserParticipant;
         _isLive = isLive;
         _avatarPath = avatarPath ?? "";
     }
@@ -30,6 +31,7 @@ public sealed class SceneMessageViewModel : INotifyPropertyChanged
             message.CreatedAt.ToString("HH:mm"),
             message.Kind == ConversationMessageKind.DirectorEvent,
             conversation.FindParticipant(message.AuthorParticipantId)?.CharacterId == firstCharacterId,
+            conversation.FindParticipant(message.AuthorParticipantId)?.Kind == ConversationParticipantKind.User,
             false,
             avatarPath)
     {
@@ -40,7 +42,7 @@ public sealed class SceneMessageViewModel : INotifyPropertyChanged
         ?? message.Content;
 
     public static SceneMessageViewModel Live(string speakerName, bool isFirstCharacter, string? avatarPath = null) =>
-        new(Guid.NewGuid(), speakerName, "", DateTime.Now.ToString("HH:mm"), false, isFirstCharacter, true, avatarPath);
+        new(Guid.NewGuid(), speakerName, "", DateTime.Now.ToString("HH:mm"), false, isFirstCharacter, false, true, avatarPath);
 
     public Guid Id { get; }
     public string SpeakerName { get; }
@@ -59,6 +61,7 @@ public sealed class SceneMessageViewModel : INotifyPropertyChanged
     public string Time { get; }
     public bool IsDirector { get; }
     public bool IsFirstCharacter { get; }
+    public bool IsUserParticipant { get; }
     public bool IsLive => _isLive;
     public bool IsSearchHighlighted => _isSearchHighlighted;
 

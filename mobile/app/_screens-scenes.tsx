@@ -157,9 +157,10 @@ export function ScenesScreen({ api, appearance, onThreadChange, initialSceneId, 
         }}
         renderMessage={(item) => {
           const director = item.kind === "director" || item.author === "Режиссёр";
-          const authoredByUser = item.authorKind === "user" || item.authorKind === "persona";
-          const secondParticipant = !director && (authoredByUser || item.speakerId === currentScene.characterB?.id);
-          return <View style={[styles.bubbleRow, secondParticipant && styles.bubbleRowMine, director && styles.directorRowAlign]}><View style={[styles.bubble, secondParticipant ? styles.bubbleMine : styles.bubbleTheirs, director && styles.bubbleDirector]}><Text style={styles.messageAuthor}>{director ? "Режиссёр" : item.author || "Групповой разговор"}</Text><FormattedMessageText content={item.content} mine={secondParticipant} appearance={appearance} /><Text style={[styles.messageTime, secondParticipant && styles.messageTimeMine]}>{formatTime(item.createdAt)}</Text></View></View>;
+          const userParticipant = !director && (item.authorKind === "user" || item.authorKind === "persona");
+          const secondCharacter = !director && !userParticipant && item.speakerId === currentScene.characterB?.id;
+          const centred = director || userParticipant;
+          return <View style={[styles.bubbleRow, secondCharacter && styles.bubbleRowMine, centred && styles.directorRowAlign]}><View style={[styles.bubble, secondCharacter ? styles.bubbleMine : styles.bubbleTheirs, centred && styles.bubbleDirector]}><Text style={styles.messageAuthor}>{director ? "Режиссёр" : item.author || "Групповой разговор"}</Text><FormattedMessageText content={item.content} mine={secondCharacter} appearance={appearance} /><Text style={[styles.messageTime, secondCharacter && styles.messageTimeMine]}>{formatTime(item.createdAt)}</Text></View></View>;
         }}
         footer={sceneGenerating ? <View style={styles.typingRow}><ActivityIndicator size="small" color={colors.accentHover} /><Text style={styles.typingText}>Групповой разговор формирует следующую реплику…</Text></View> : null}
         empty={<Text style={styles.listHint}>Запустите разговор, чтобы появилась первая реплика</Text>}

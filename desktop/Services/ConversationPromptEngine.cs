@@ -93,6 +93,9 @@ public sealed class ConversationPromptEngine
         if (request.IsContinuation)
             messages.Add(new LlamaMessage("system", PromptRules.ContinuationDirectorCommand));
 
+        // The caller persists a message before prompt construction. Reusing the
+        // canonical history preserves its true author: in particular a director
+        // event stays a system instruction instead of being appended as a user turn.
         if (request.AppendUserMessage)
             messages.Add(new LlamaMessage("user", request.UserMessage));
 
@@ -124,6 +127,21 @@ public sealed class ConversationPromptEngine
         systems.Add(BuildSceneState(scene, budgetPlan.StateTokens, diagnostics));
         systems.Add(BuildSceneSpeakerBlock(active, budgetPlan.CharacterTokens, diagnostics));
         systems.Add(BuildCounterpartBlock(counterpart, Math.Max(128, budgetPlan.CharacterTokens / 2), diagnostics));
+        var personaParticipants = scene.Messages
+            .Where(message => message.AuthorKind == SoulMessageAuthorKind.Persona && message.AuthorPersonaId is not null)
+            .GroupBy(message => message.AuthorPersonaId!.Value)
+            .Select(group => new { Id = group.Key, Name = group.Last().AuthorName })
+            .ToList();
+        foreach (var participant in personaParticipants)
+        {
+            var persona = request.Personas is not null && request.Personas.TryGetValue(participant.Id, out var found)
+                ? found
+                : null;
+            var identity = persona is null
+                ? $"{participant.Name} is a third, user-controlled speaking participant in this scene."
+                : BuildPersonaBlock(persona) + "\n\nThis persona is a third, user-controlled speaking participant in this scene.";
+            systems.Add(BuildBoundedBaseContextBlock("USER PERSONA PARTICIPANT", identity, Math.Max(96, budgetPlan.BaseContextTokens / 3), diagnostics));
+        }
 
         if (active.UseRoleplayResponseFormatting)
             systems.Add(PromptRules.RoleplayFormat(ConversationKind.Scene));
