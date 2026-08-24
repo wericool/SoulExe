@@ -3,6 +3,7 @@
 .gradle-cache/
 .pnpm-store/
 .expo/
+/Soul-of-Waifu-main/
 .cache/
 
 # Dependencies
@@ -18,6 +19,7 @@ Output/
 *.apk
 *.aab
 *.exe
+
 
 # Local configuration and secrets
 .env
@@ -38,4 +40,3 @@ Thumbs.db
 *.user
 *.suo
 *.swp
-
