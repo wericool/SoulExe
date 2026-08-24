@@ -56,7 +56,10 @@ public sealed partial class MainViewModel
             case "next":
                 _sceneTurnScheduler.Cancel(sceneId);
                 await GenerateNetworkSceneTurnAsync(sceneId, token);
-                await ScheduleAutomaticSceneTurnAsync(sceneId, token);
+                // "Следующая реплика" is a one-off manual turn.  The runner
+                // temporarily marks the scene running while generating, so put
+                // it back on pause rather than starting an automatic cycle.
+                await _conversations.SetSceneStatusAsync(new ConversationAddress(sceneId, ConversationKind.Scene), ConversationSceneStatusAction.Pause, token);
                 return;
             default:
                 throw new InvalidOperationException("Неизвестное действие сцены.");
@@ -135,6 +138,7 @@ public sealed partial class MainViewModel
         }
         else if (authorKind != "user") throw new InvalidOperationException("Неизвестный автор сообщения.");
         await _conversations.AppendAuthoredUserMessageAsync(ConversationAddress.Direct(conversation.Id), request.Message, storedAuthorKind, personaId, authorName, avatarPath, token);
+        await RefreshDesktopAfterNetworkMutationAsync();
         var settings = await BuildLlamaSettingsAsync();
         var generationId = Guid.NewGuid().ToString("N")[..12];
         var result = await _conversationTurnRunner.RunPersonalTurnAsync(

@@ -320,6 +320,20 @@ export function ChatsScreen({
     setTyping(true);
     stickToBottom.current = true;
     try {
+      const optimisticAuthor = messageAuthor.kind === "director"
+        ? "Режиссёр"
+        : messageAuthor.kind === "persona"
+          ? personas.find((persona) => persona.id === messageAuthor.personaId)?.name || "Персона"
+          : "Вы";
+      setMessages((current) => [...current, {
+        id: `pending-${Date.now()}`,
+        role: messageAuthor.kind === "director" ? "assistant" : "user",
+        author: optimisticAuthor,
+        content: text,
+        createdAt: new Date().toISOString(),
+        authorKind: messageAuthor.kind,
+        authorPersonaId: messageAuthor.personaId,
+      }]);
       const fresh = directConversationMessages(await api.sendConversationMessage(active.chat.id, text, { authorKind: messageAuthor.kind, authorPersonaId: messageAuthor.personaId }));
       await revealAssistantReply(fresh, appearance.typingSimulation, setMessages);
       await loadList(true);

@@ -159,7 +159,10 @@ export function ScenesScreen({ api, appearance, onThreadChange, initialSceneId, 
         }}
         renderMessage={(item) => {
           const director = item.kind === "director" || item.author === "Режиссёр";
-          const userParticipant = !director && (item.authorKind === "user" || item.authorKind === "persona");
+          const characterParticipant = item.speakerId === currentScene.characterA?.id || item.speakerId === currentScene.characterB?.id;
+          // Older servers can omit authorKind, but a non-character participant is
+          // still the user. This keeps "Вы" and user personas out of character lanes.
+          const userParticipant = !director && (item.authorKind === "user" || item.authorKind === "persona" || !characterParticipant);
           const secondCharacter = !director && !userParticipant && item.speakerId === currentScene.characterB?.id;
           const centred = director || userParticipant;
           return <View style={[styles.bubbleRow, secondCharacter && styles.bubbleRowMine, centred && styles.directorRowAlign]}><View style={[styles.bubble, secondCharacter ? styles.bubbleMine : styles.bubbleTheirs, centred && styles.bubbleDirector]}><Text style={styles.messageAuthor}>{director ? "Режиссёр" : item.author || "Групповой разговор"}</Text><FormattedMessageText content={item.content} mine={secondCharacter} appearance={appearance} /><Text style={[styles.messageTime, secondCharacter && styles.messageTimeMine]}>{formatTime(item.createdAt)}</Text></View></View>;
