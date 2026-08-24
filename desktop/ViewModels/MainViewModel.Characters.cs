@@ -176,7 +176,7 @@ public sealed partial class MainViewModel
     }
     private Task ConfirmDeleteCharacterAsync(SoulCharacter? character)
     {
-        if (character is null || Characters.Count <= 1) return Task.CompletedTask;
+        if (character is null) return Task.CompletedTask;
         CharacterPendingDeletion = character;
         return Task.CompletedTask;
     }

@@ -52,7 +52,6 @@ public sealed class CharacterLibraryService
     public Task DeleteCharacterAsync(Guid characterId, CancellationToken token = default) =>
         _store.MutateAsync(root =>
         {
-            if (root.Characters.Count <= 1) throw new InvalidOperationException("В библиотеке должен оставаться хотя бы один персонаж.");
             root.Characters.RemoveAll(value => value.Id == characterId);
             root.Conversations.RemoveAll(conversation => conversation.Participants.Any(participant => participant.CharacterId == characterId));
         }, "delete_character", token);

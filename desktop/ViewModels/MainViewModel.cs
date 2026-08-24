@@ -228,10 +228,10 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         ImportCharacterCommand = new AsyncRelayCommand(_ => ImportCharacterAsync(), _ => !IsBusy);
         ImportSoulOfWaifuCommand = new AsyncRelayCommand(_ => ImportSoulOfWaifuAsync(), _ => !IsBusy);
         ExportCharacterCommand = new AsyncRelayCommand(_ => ExportCharacterAsync(), _ => !IsBusy && SelectedCharacter is not null);
-        DeleteCharacterCommand = new AsyncRelayCommand(_ => DeleteCharacterAsync(), _ => !IsBusy && Characters.Count > 1 && SelectedCharacter is not null);
+        DeleteCharacterCommand = new AsyncRelayCommand(_ => DeleteCharacterAsync(), _ => !IsBusy && SelectedCharacter is not null);
         OpenCharacterChatCommand = new AsyncRelayCommand(x => OpenCharacterChatAsync(x as SoulCharacter), _ => !IsBusy);
         OpenCharacterEditorCommand = new AsyncRelayCommand(x => OpenCharacterEditorAsync(x as SoulCharacter), _ => !IsBusy);
-        ConfirmDeleteCharacterCommand = new AsyncRelayCommand(x => ConfirmDeleteCharacterAsync(x as SoulCharacter), _ => !IsBusy && Characters.Count > 1);
+        ConfirmDeleteCharacterCommand = new AsyncRelayCommand(x => ConfirmDeleteCharacterAsync(x as SoulCharacter), _ => !IsBusy);
         ConfirmCharacterDeleteCommand = new AsyncRelayCommand(_ => ConfirmCharacterDeleteAsync(), _ => !IsBusy && CharacterPendingDeletion is not null);
         CancelCharacterDeleteCommand = new RelayCommand(_ => CharacterPendingDeletion = null);
         AddChatCommand = new AsyncRelayCommand(_ => OpenNewChatCharacterPickerAsync(), _ => !IsBusy && Characters.Count > 0);
