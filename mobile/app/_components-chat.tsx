@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import type { ChatMessage, SoulCharacter, SoulPersona } from "@/lib/soulexe-api";
 import type { ChatAppearanceSettings } from "@/lib/soulexe-storage";
@@ -181,13 +181,15 @@ export function SceneCharacterPicker({
   excludeId?: string;
   onSelect: (id: string) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const selected = characters.find((c) => c.id === selectedId);
+  const available = characters.filter((character) => character.id !== excludeId);
   return (
     <View>
       <Text style={styles.sceneOptionLabel}>{label}</Text>
       {selected ? (
         <Pressable
-          onPress={() => onSelect(selectedId)}
+          onPress={() => setExpanded((value) => !value)}
           style={({ pressed }) => [styles.scenePickerRow, pressed && styles.scenePickerRowPressed]}
         >
           <Avatar character={selected} size={34} />
@@ -199,7 +201,7 @@ export function SceneCharacterPicker({
         </Pressable>
       ) : (
         <Pressable
-          onPress={() => onSelect(characters.find((c) => c.id !== excludeId)?.id || "")}
+          onPress={() => setExpanded((value) => !value)}
           style={({ pressed }) => [styles.scenePickerRow, pressed && styles.scenePickerRowPressed]}
         >
           <View style={styles.scenePickerEmptyAvatar}>
@@ -208,6 +210,24 @@ export function SceneCharacterPicker({
           <Text style={styles.scenePickerSubtitle}>Выберите</Text>
         </Pressable>
       )}
+      {expanded ? (
+        <View style={{ gap: 6, marginTop: 6 }}>
+          {available.map((character) => (
+            <Pressable
+              key={character.id}
+              onPress={() => { onSelect(character.id); setExpanded(false); }}
+              style={({ pressed }) => [styles.scenePickerRow, character.id === selectedId && styles.choiceRowActive, pressed && styles.scenePickerRowPressed]}
+            >
+              <Avatar character={character} size={34} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.scenePickerName}>{character.name}</Text>
+                <Text style={styles.scenePickerSubtitle}>{character.title || "Персонаж"}</Text>
+              </View>
+              {character.id === selectedId ? <MaterialIcons name="check" size={20} color={colors.accentHover} /> : null}
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
