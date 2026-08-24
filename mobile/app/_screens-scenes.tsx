@@ -23,6 +23,7 @@ function sceneFromConversation(conversation: SoulConversation, characters: SoulC
   if (conversation.mode !== "group") throw new Error("Ожидался групповой разговор.");
   const knownCharacters = new Map(characters.map((character) => [character.id, character]));
   const participants = conversation.participants.filter((participant) => participant.kind === "Character").sort((left, right) => left.sortOrder - right.sortOrder);
+  const participantById = new Map(conversation.participants.map((participant) => [participant.id, participant]));
   const resolveCharacter = (index: number) => {
     const participant = participants[index];
     if (!participant) return null;
@@ -46,7 +47,12 @@ function sceneFromConversation(conversation: SoulConversation, characters: SoulC
     enforceSceneContract: conversation.turnState?.enforceContract,
     advanceSceneAndAvoidRepetition: conversation.turnState?.advanceAndAvoidRepetition,
     nextTurnAt: conversation.turnState?.nextTurnAt,
-    messages: conversation.messages.map((message) => ({ kind: message.kind === "director" ? "director" : "dialogue", speakerId: message.authorParticipantId, authorKind: message.authorKind, authorPersonaId: message.authorPersonaId, author: message.author, content: message.content, createdAt: message.createdAt })),
+    messages: conversation.messages.map((message) => {
+      const participant = message.authorParticipantId ? participantById.get(message.authorParticipantId) : undefined;
+      // The API stores the conversation-participant ID on messages.  The visual
+      // lanes use the character ID, so resolve it here before rendering.
+      return { kind: message.kind === "director" ? "director" : "dialogue", speakerId: participant?.characterId || message.authorParticipantId, authorKind: message.authorKind, authorPersonaId: message.authorPersonaId, author: message.author, content: message.content, createdAt: message.createdAt };
+    }),
   };
 }
 
