@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import { Alert, FlatList, Pressable, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Pressable, ScrollView, Text, View } from "react-native";
 
 import { Avatar, Button, Field } from "@/components/soul/ui";
 import { MessengerThreadHeader } from "@/components/soul/messenger-elements";
@@ -62,19 +62,29 @@ export function NewSceneScreen({
   const [enforceSceneContract, setEnforceSceneContract] = useState(true);
   const [advanceSceneAndAvoidRepetition, setAdvanceSceneAndAvoidRepetition] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [charactersLoading, setCharactersLoading] = useState(true);
+  const [charactersError, setCharactersError] = useState("");
+
+  const loadCharacters = useCallback(async () => {
+    setCharactersLoading(true);
+    setCharactersError("");
+    try {
+      const items = await api.getCharacters();
+      setCharacters(items);
+      setCharacterAId((current) => items.some((character) => character.id === current) ? current : items[0]?.id || "");
+      setCharacterBId((current) => items.some((character) => character.id === current && character.id !== items[0]?.id) ? current : items[1]?.id || "");
+      if (items.length < 2) setCharactersError("Для группового разговора нужны два персонажа в библиотеке.");
+    } catch (error) {
+      setCharacters([]);
+      setCharactersError(error instanceof Error ? error.message : "Не удалось загрузить персонажей.");
+    } finally {
+      setCharactersLoading(false);
+    }
+  }, [api]);
 
   useEffect(() => {
-    api
-      .getCharacters()
-      .then((items) => {
-        setCharacters(items);
-        setCharacterAId(items[0]?.id || "");
-        setCharacterBId(items[1]?.id || items[0]?.id || "");
-      })
-      .catch((error) =>
-        Alert.alert("Сцена", error instanceof Error ? error.message : "Ошибка сети"),
-      );
-  }, [api]);
+    void loadCharacters();
+  }, [loadCharacters]);
 
   const create = async () => {
     if (!characterAId || !characterBId || characterAId === characterBId) {
@@ -110,8 +120,11 @@ export function NewSceneScreen({
       <MessengerThreadHeader title="Новый групповой разговор" subtitle="Настройте участников и ход истории" onBack={onBack} />
       <View style={styles.newSceneContent}>
         <Field label="Название" value={name} onChangeText={setName} placeholder="Например, Тайна старого маяка" />
-        <SceneCharacterPicker label="Первый участник" characters={characters} selectedId={characterAId} excludeId={characterBId} onSelect={setCharacterAId} />
-        <SceneCharacterPicker label="Второй участник" characters={characters} selectedId={characterBId} excludeId={characterAId} onSelect={setCharacterBId} />
+        {charactersLoading ? <View style={{ paddingVertical: 24, alignItems: "center", gap: 8 }}><ActivityIndicator color={colors.accentHover} /><Text style={styles.chatMeta}>Загружаю персонажей…</Text></View> : <>
+          <SceneCharacterPicker label="Первый участник" characters={characters} selectedId={characterAId} excludeId={characterBId} onSelect={setCharacterAId} />
+          <SceneCharacterPicker label="Второй участник" characters={characters} selectedId={characterBId} excludeId={characterAId} onSelect={setCharacterBId} />
+          {charactersError ? <View style={{ gap: 8, paddingVertical: 8 }}><Text style={{ color: colors.warning, fontSize: 12 }}>{charactersError}</Text><Button title="Обновить список" variant="secondary" icon="refresh" onPress={() => void loadCharacters()} /></View> : null}
+        </>}
         <Field label="Контекст" value={scenario} onChangeText={setScenario} placeholder="Что происходит и с чего начинается разговор" multiline style={styles.largeField} />
         <Field label="Место" value={location} onChangeText={setLocation} placeholder="Например, заброшенный маяк у моря" />
         <Field label="Время и контекст" value={timeContext} onChangeText={setTimeContext} placeholder="Например, поздний вечер после шторма" />
@@ -162,7 +175,7 @@ export function NewSceneScreen({
             <View style={[styles.markerToggleThumb, advanceSceneAndAvoidRepetition && styles.markerToggleThumbOn]} />
           </Pressable>
         </View>
-        <Button title={busy ? "Создаю…" : "Создать групповой разговор"} icon="auto-awesome" disabled={busy || !characterAId || !characterBId || characterAId === characterBId} loading={busy} onPress={create} style={{ marginTop: 8 }} />
+        <Button title={busy ? "Создаю…" : "Создать групповой разговор"} icon="auto-awesome" disabled={busy || charactersLoading || characters.length < 2 || !characterAId || !characterBId || characterAId === characterBId} loading={busy} onPress={create} style={{ marginTop: 8 }} />
       </View>
     </ScrollView>
   );
