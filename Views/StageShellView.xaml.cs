@@ -89,12 +89,23 @@ public partial class StageShellView : UserControl
             if (BackstageOverlay.Visibility == Visibility.Visible) CloseBackstage();
             if (!ReferenceEquals(PageHost.Content, null)) PageHost.Content = null;
             if (PageOverlay.Visibility != Visibility.Collapsed) PageOverlay.Visibility = Visibility.Collapsed;
+            // The floating top bar belongs to the stage only; over pages it
+            // overlapped their toolbars and stole clicks near the window top.
+            TopBar.Visibility = Visibility.Visible;
             EnsureStageContent();
             return;
         }
 
+        TopBar.Visibility = Visibility.Collapsed;
         EnsureStageContent();
         PageOverlay.Visibility = Visibility.Visible;
+        if (page == "Characters")
+        {
+            // The character editor reads SelectedCharacter at load time, so it
+            // must be rebuilt per visit instead of served from the page cache.
+            PageHost.Content = new CharactersView { DataContext = _viewModel };
+            return;
+        }
         if (!_pageCache.TryGetValue(page, out var view))
         {
             view = page switch
