@@ -1,7 +1,7 @@
-# NewStyle — полный редизайн SoulExe (Handoff для новой сессии)
+# NewStyle — SoulExe «Иммерсивный театр» (Handoff для новой сессии)
 
-> Этот файл — точка входа для нового ИИ/сессии. Прочитай целиком до любых правок.
-> Проект-оригинал не трогать: все изменения только здесь, в `Sources/NewStyle`.
+> Точка входа для нового ИИ/сессии. Прочитай целиком до любых правок.
+> Оригинал `Sources/desktop` не трогать. Все изменения только в `Sources/NewStyle`.
 
 ---
 
@@ -9,174 +9,193 @@
 
 | Параметр | Значение |
 |---|---|
-| Задача | Полный редизайн внешнего вида приложения «Тёмный премиум» + двуязычность RU/EN |
+| Задача | ПЕРЕОСМЫСЛЕНИЕ приложения: концепция «Иммерсивный театр» + двуязычность RU/EN |
+| Чего НЕ делать | Никаких «реколоров» старых макетов. Перестраиваем состав экранов и навигацию |
 | Папка редизайна | `E:\Games\backup_opencode\Sources\NewStyle` |
-| Оригинал (НЕ ТРОГАТЬ) | `E:\Games\backup_opencode\Sources\desktop` |
-| Git | В каждой папке свой репозиторий; история NewStyle продолжается от коммита оригинала |
-| GitHub | https://github.com/wericool/SoulExe |
-| Ветка текущей версии | `desktop-current` (push из Sources/desktop, master) |
-| Ветка редизайна | `new-style` (push из Sources/NewStyle) |
-| Тип проекта | WPF, .NET 8 (`net8.0-windows10.0.19041.0`), single-file self-contained |
-| Выходные пути | `Sources/OutputNewStyle/*` (НЕ пересекаются с `Sources/Output` оригинала) |
-| Состояние | сборка 0 warnings / 0 errors (`-warnaserror`), conversation checks passed |
+| Git/GitHub | remote `origin = https://github.com/wericool/SoulExe.git`, ветка **new-style** |
+| Ветка старой версии | **desktop-current** (оригинал в Sources/desktop) |
+| Выходные пути | `Sources/OutputNewStyle/*` |
+| Состояние | build 0/0 `-warnaserror`, checks passed |
 
-Логин/коммиттер git локально задаётся флагами `-c user.name="Ericool" -c user.email="ericool@local"`.
-Remote уже добавлен: `origin = https://github.com/wericool/SoulExe.git`. Push работает.
+Логин для коммитов: `-c user.name="Ericool" -c user.email="ericool@local"`.
 
 ---
 
-## 1. Что уже сделано (коммиты в ветке new-style)
+## 1. ВИДЕНИЕ: «Иммерсивный театр»
 
-### 1.1. Изоляция
-- [x] `Sources/desktop`: git init + baseline-коммит `6ee9095`, ветка запушена как `desktop-current`.
-- [x] Копия всей папки desktop → `Sources/NewStyle` (без bin/obj/.vs/.git), свой git.
-- [x] История NewStyle перебазирована soft-reset'ом на `6ee9095`, поэтому на GitHub между ветками чистая диффа.
-- [x] `SoulExe.csproj`: `BaseOutputPath` изменён `..\Output\` → `..\OutputNewStyle\` — сборки двух версий не затирают друг друга.
-- [x] Namespace/AssemblyName оставлены `SoulExe` — вся логика (ViewModels, Services, Models) работает без изменений.
+Приложение перестаёт быть «панелью управления со страницами». Оно становится **сценой**,
+где главный объект — живой персонаж и разговор с ним. Всё остальное существует как
+«закулисье», выезжающее поверх сцены.
 
-### 1.2. Дизайн-система v2 «Dark Premium» (база)
-Файл `Styles/Themes/Dark.xaml` переписан полностью. Все ключи сохранены, поэтому все экраны компилируются и сразу получили новую палитру.
+### 1.1. Ключевые решения концепции
 
-Принципы палитры:
+1. **Чат и есть приложение.** Открыв окно, пользователь сразу на сцене последнего
+   разговора — полноэкранном, кинематографичном. Никакого «дома-меню».
+2. **Сцена**: фон — арт персонажа, размытый и затемнённый скримом (ambient).
+   Сообщения парят над ним. Композер — плавающая стеклянная капсула по центру внизу.
+3. **Присутствие персонажа**: сверху по центру парит капсула присутствия
+   (аватар, имя, состояние: печатает/модель загружена/ошибка). Клик — лист персонажа.
+4. **Закулисье (Backstage)**: кнопка-логотип слева сверху открывает полноэкранный
+   оверлей-хаб: Продолжить (недавние диалоги), Персонажи, Мир (лор+персоны),
+   Каталог (Gateway), Модели, Настройки. Это ЕДИНСТВЕННАЯ точка навигации.
+5. **Никаких постоянных панелей**: sidebar исчезает. Всё вторичное — листы (sheets)
+   поверх сцены: список диалогов, сведения, поиск, настройки, редакторы.
+6. **Стеклянные поверхности**: полупрозрачные панели с тонкой светлой обводкой.
+   Настоящая глубина достигается тем, что под стеклом виден размытый ambient-фон.
+7. **Атмосфера управляется персонажем**: у каждой карточки — акцентный цвет;
+   подсвечивает капсулу присутствия, композер, выделения.
+
+### 1.2. Карта информационной архитектуры (было -> стало)
+
 ```text
-Слои (от тёмного к светлому): Window #08090E < Sidebar #0B0D14 < Panel #0F121B
-                              < Card #141826 < Elevated #191E2E; Input темнее панели #0C0F17
-Границы: тонкие low-contrast hairline (#20263A / strong #343D58), никаких жирных рамок
-Акцент: индиго-фиолетовый #6D5AE8 (hover #8A78FF, soft #211E44)
-        фирменный градиент AccentGradientBrush: #8B5CF6 -> #5B67F2 (135°)
-Текст: primary #F5F6FB / secondary #9CA3B8 / muted #686F86 / dim #484E62
-Статусы: success #2FC98C, danger #EF4668 (+hover варианты)
-Выделение списков: ListSelectedBrush с акцентным подтоном (#232946)
+БЫЛО (классика):                     СТАЛО (театр):
+Sidebar со страницами                Нет. Логотип -> Backstage (оверлей)
+Home/Library (сетка карточек)        Backstage -> Персонажи / Мир (листы-галереи)
+Chat (list+thread+details)           Сцена (весь экран); список диалогов - лист слева;
+                                     сведения персонажа - лист справа; поиск - лист сверху
+Models Hub (страница)                Backstage -> Модели (лист); статус-чип модели на сцене
+Gateway (страница)                   Backstage -> Каталог (лист)
+Settings (страница)                  Backstage -> Настройки (лист)
+Setup wizard (overlay)               Остался оверлеем, рестайл под театр
 ```
-- `Styles/Tokens.xaml`: радиусы подняты Small 10 / Default 14 / Large 18.
-- `Styles/Controls.xaml`: галочка чекбокса перекрашена под новый фон (#08090E).
-- Новый `CardShadowEffect` добавлен в тему (мягкая чёрная тень для карточек) — можно применять по экранам.
 
-### 1.3. Локализация RU/EN (инфраструктура готова и работает)
-Как устроено:
+Правило миграции: ВСЕ существующие ViewModels, команды, свойства и поведение
+сохраняются. Мы меняем ХОСТЫ и КОМПОЗИЦИЮ представлений, а не логику.
+`MainViewModel.CurrentPage/NavigateCommand` остаётся источником состояния;
+новый shell маппит маршруты на те же view, но размещённые как листы/сцена.
+
+### 1.3. Экраны и их композиция
+
+**A. Сцена (главная поверхность, всегда развёрнута)**
 ```text
-Localization/Strings.ru.xaml и Strings.en.xaml -- скомпилированные ResourceDictionary
-    со строковыми ключами (sys:String). Конвенция ключей:
-    S.<Раздел>.<Элемент>[.Hint]   -- элементы интерфейса
-    page.{route}.title|subtitle   -- заголовки страниц shell header
-Services/LocalizationService.cs   -- ЧИСТЫЙ C# без WPF (важно: его компилирует
-    ConversationChecks). Хранит таблицу строк, Tr(key, fallback), Normalize,
-    событие LanguageChanged.
-Services/LocalizationResourceLoader.cs -- WPF-часть: грузит pack://application:,,,/
-    Localization/Strings.{lang}.xaml, кормит сервис, подменяет merged dictionary.
-ViewModels/MainViewModel.Localization.cs -- partial VM: свойство AppLanguage
-    ("ru"/"en"), сохранение в Preferences.Language через _store.MutateAsync
-    ("save_language"), обновление PageTitle/PageSubtitle при смене языка.
-AppNavigation.cs -- Title/Subtitle теперь LocalizationService.Tr по ключам
-    page.{route}.*, русские свитчи остались fallback-ами.
+[лого SoulExe]              [капсула присутствия персонажа]        [чип модели]
+                                                                        (top bar, парит)
+                              лента сообщений
+                    (виртуализированный ListBox - НЕ трогать виртуализацию)
+                     [стеклянная капсула композера, центр, низ]
+[кнопка «диалоги»]                                    [кнопка «персонаж»]
 ```
-Правила для продолжающих:
-1. В XAML локализованные строки ТОЛЬКО через `{DynamicResource S.Key}` — тогда смена языка применяется живо, без перезапуска. StaticResource НЕ обновится.
-2. AutomationProperties.Name/ToolTip тоже через DynamicResource.
-3. C#-тексты (Status и т.п.) — `LocalizationService.Tr("S.Key", "русский fallback")`.
-4. Fallback всегда русский и обязателен: до первой загрузки словаря UI не должен показывать ключи.
-5. Новые строки добавлять СРАЗУ в оба файла ru/en.
-6. Не включать в ConversationChecks ничего, что тянет System.Windows.
+- Ambient-фон: Image (AvatarPath персонажа) c BlurEffect(radius ~60) + градиентный
+  скрим к #08090E по краям и снизу (читаемость). Нет арта -> чистый градиент темы.
+- Уважение ChatAppearance: если пользователь задал ChatBackgroundColor вручную —
+  плоский режим побеждает ambient (переключатель «Атмосферный фон» в настройках чата).
+- Сообщения: сохраняем систему пузырей ChatAppearance (цвета/шрифт/радиус настраиваемы),
+  но дефолтные пузыри становятся «стеклянными»: альфа ~0.86, обводка white@8%.
+- Дата-разделители: тонкая линия с подписью по центру (не пилюля).
+- Индикатор печати встроен в капсулу присутствия (точки-анимация).
 
-Уже переведено: окно (Title), sidebar (все пункты, секции, карточка МОДЕЛЬ, automation names, tooltips), заголовки/подзаголовки всех страниц shell header, статус-сообщения смены языка, карточка «Язык интерфейса» в Настройках.
+**B. Капсула присутствия (presence pill)**
+Аватар(ы) + имя + статус-строка (ModelState или «печатает…»). Групповая сцена —
+два аватара внахлёст + имя «A & B». Клик -> Character sheet (правый лист).
 
-Переключатель: Настройки → вкладка «Оформление» → первая карточка «Язык интерфейса» (ComboBox Русский/English, SelectedValue={Binding AppLanguage}). Применяется мгновенно, сохраняется в preferences (`AppPreferences.Language` уже существовал в схеме, default "ru").
-
-### 1.4. Проверено
-```powershell
-cd E:\Games\backup_opencode\Sources\NewStyle
-dotnet build SoulExe.csproj -warnaserror          # 0/0
-dotnet run --project SoulExe.ConversationChecks\SoulExe.ConversationChecks.csproj
-dotnet publish SoulExe.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-# EXE: E:\Games\backup_opencode\Sources\OutputNewStyle\Release\win-x64\publish\SoulExe.exe
+**C. Backstage (оверлей-хаб по клику на логотип или Esc->Меню)**
+Полноэкранный, фон = сильно размытая сцена + плотный скрим. Крупная типографика.
+Секции горизонтальными блоками:
+```text
+Продолжить   [карточки последних диалогов: аватар, название, превью, время]
+Персонажи    [горизонтальная галерея карточек; +Новый, +Импорт]
+Мир          [Лорбуки] [Персоны]
+Каталог      [Gateway: категории внутри листа]
+Система      [Модели] [Настройки]
 ```
-Ручная проверка в EXE пользователем: палитра применилась ко всем экранам, переключатель языка меняет sidebar/заголовки/Title окна на лету.
+Выбор -> соответствующий лист/сцена. Esc закрывает Backstage, возврат на сцену.
+
+**D. Листы (sheets)** — единый механизм:
+- Левый лист: список диалогов (текущий ConversationListView в новом хосте).
+- Правый лист: персонаж/сведения разговора (ConversationDetailsPanel).
+- Верхний лист: поиск по сообщениям.
+- Полный лист: Настройки, Модели, Каталог, редактор персонажа.
+Общие свойства листа: стекло, радиус 20, тень, анимация slide+fade 200ms,
+фокус внутрь при открытии, Escape закрывает, фокус возвращается открывшему
+(стандарт из WPF_UI_RULES.md раздел 8 соблюдать).
+
+**E. Чип модели (низ-лево или верх-право)**: точка-состояние + короткий текст;
+клик -> мини-флайаут: старт/стоп, прогресс загрузки, ссылка в лист Моделей.
+
+**F. Responsive**: минимум окна 1080x680 сохраняется. На узкой ширине листы
+становятся почти полноэкральными; топбар сжимается (имя обрезается).
+
+### 1.4. Визуальный язык
+
+```text
+Поверхности: стекло = PanelBrush @ ~78% альфа + Border white 8% + Radius 18-20
+Глубина: CardShadowEffect (мягкая тень) только у плавающих элементов
+Акцент: индиго-фиолетовый градиент #8B5CF6->#5B67F2 (уже в теме)
+Типографика: сообщения 15px, заголовки листов 22-24 SemiBold, метки SectionLabel
+Радиусы: капсулы 999->фикс (половина высоты!), листы 20, кнопки 12
+Motion: 150-200ms ease-out; fade+slide; без отскоков
+Тема: Styles/Themes/Dark.xaml v2 уже переписан под этот язык (не реколорить обратно)
+```
+
+### 1.5. Что запрещено ломать (наследие проекта)
+
+1. Virtualized ListBox транскрипта + presentation window + auto-follow (Chat rules).
+2. Global implicit templates запрещены (инцидент пустого UI). Только keyed стили.
+3. Каждый UserControl обязан иметь .xaml.cs с InitializeComponent().
+4. Один экран/компонент за шаг; после каждого: build -> checks -> publish ->
+   РУЧНАЯ проверка в EXE -> commit+push.
+5. Не переносить в VM: ActualWidth, открытые листы, scroll, focus.
+6. Persistence-циклы JsonDataStore не трогать.
+7. Полные правила: WPF_UI_RULES.md (лежит рядом, читаем перед правками XAML).
 
 ---
 
-## 2. Дорожная карта редизайна (по экрану за шаг)
+## 2. Фазы реализации (каждая = отдельные шаги с ручной проверкой)
 
-Обязательный цикл каждого шага (как в оригинале):
-```text
-1. Один экран (или один компонент).
-2. Только локальные keyed стили. ЗАПРЕЩЕНЫ global implicit templates
-   (ScrollViewer/ContentControl/ListBox/Grid/Border/UserControl) --
-   см. WPF_UI_RULES.md раздел 3, это был реальный инцидент пустого UI.
-3. Каждый UserControl обязан иметь .xaml.cs с конструктором InitializeComponent()
-   (проверка скриптом из WPF_UI_RULES.md раздел 2).
-4. dotnet build -warnaserror -> checks -> publish -> РУЧНАЯ проверка в EXE -> git commit+push.
-5. Строки экрана при переделке сразу выносить в Strings.ru/en.xaml (DynamicResource).
-```
+- [ ] **Фаза A — Каркас сцены**. Новый `Views/StageShellView.xaml(.cs)` вместо
+  AppShellView в MainWindow (AppShellView пока оставить файлом как fallback).
+  Состав: ambient-хост, топбар (лого, presence pill, чип модели), композер-хост,
+  листы-хосты, Backstage-заглушка. Маршрутизация NavigateCommand -> листы/сцена.
+- [ ] **Фаза B — Сцена чата**: перенос PersonalConversationThreadView +
+  GroupConversationThreadView в сцену: прозрачный фон, ambient за лентой,
+  композер-капсула, дата-линии, presence pill с печатью.
+- [ ] **Фаза C — Backstage**: полный оверлей-хаб с секциями; «Продолжить» на
+  ConversationSnapshots; галерея персонажей на Characters+HomeCards.
+- [ ] **Фаза D — Листы**: список диалогов (лево), сведения/персонаж (право),
+  поиск (верх). Анимации, Escape/focus-политика.
+- [ ] **Фаза E — Библиотека мира**: лорбуки+персоны как лист Backstage.
+- [ ] **Фаза F — Система**: Модели (лист), Настройки (лист), Setup-рестайл.
+- [ ] **Фаза G — Редактор персонажа** в новом виде (полный лист).
+- [ ] **Фаза H — Локализация новых строк** RU/EN по ходу каждой фазы + финальный
+  проход grep по кириллице; VM-тексты через LocalizationService.Tr.
 
-Порядок фаз (каждая = отдельная сессия/несколько шагов):
-
-- [ ] **Фаза A — Shell**: `Views/AppShellView.xaml`, `Views/NavigationView.xaml`, `Views/TitleBarView.xaml`, `MainWindow.xaml`, `Views/StatusView.xaml`.
-  Цель вида: узкий премиальный sidebar с крупными иконками Segoe MDL2, активный пункт — мягкая акцентная подложка + вертикальная полоска-акцент; header прозрачнее, без рамки снизу, заголовок 22px; статус-бар компактнее. Карточку МОДЕЛЬ сделать единой капсулой с прогрессом загрузки.
-- [ ] **Фаза B — Library** (`Views/LibraryView.xaml`, ~800 строк): сетка карточек персонажей/лорбуков/персон с hover-elevation (CardShadowEffect), крупные обложки, аккуратные бейджи, единый ритм 8/12/16/24.
-- [ ] **Фаза C — Chat workspace**: `Controls/ConversationListView`, `PersonalConversationThreadView`, `GroupConversationThreadView`, `ConversationComposerView`, `ConversationDetailsPanel`, `Views/ChatWorkspaceView`.
-  Цель: мессенджер-вид — пузыри с раздельными хвостами/радиусами, группировка подряд идущих сообщений одного автора (если дастся без изменения VM — иначе отложить), composer-капсула, аккуратные drawers.
-- [ ] **Фаза D — Characters editor** (`Views/CharactersView.xaml`): секции Info/Memory/Lore, липкий toolbar.
-- [ ] **Фаза E — Settings + Mobile** (`Views/SettingsView.xaml`, `Views/MobileAccessView.xaml`): карточки секций с иконками, язык/оформление/runtime.
-- [ ] **Фаза F — Models/Gateway** (`Views/ModelsView.xaml`, `Views/GatewayView.xaml`): карточки каталогов, состояния loading/empty/error в новом языке.
-- [ ] **Фаза G — Setup overlay** (`Views/SetupView.xaml`): онбординг в стиле premium wizard.
-- [ ] **Фаза H — Локализация остатков**: после каждой фазы переводить её строки; в конце пройтись grep по кириллице в Views/Controls и добить VM-тексты (Status, ModelStartStopText, GatewayCategorySubtitle и т.п.) через Tr.
-
-## 3. Локализация — оставшиеся работы (детальный список)
+## 3. Локализация — инфраструктура (ГОТОВА, как пользоваться)
 
 ```text
-[ ] LibraryView: тулбар (Персонажи/Лор/Персоны, Импорт, сортировка), empty states, диалоги создания/удаления, редактор лорбука, редактор персоны
-[ ] ChatWorkspaceView: 4 overlay-диалога, hints composer'а
-[ ] ConversationListView/Composer/Thread/Details: все подписи, меню (Pin/Rename/Delete...), typing indicator
-[ ] CharactersView, SetupView, ModelsView, GatewayView, SettingsView (кроме языковой карточки), MobileAccessView, StatusView
-[ ] ViewModels: Status-строки, ModelStartStopText, SceneStartPauseText, PinMenuText,
-    GatewayCategoryTitle/Subtitle, PendingDeletion.Title/Description/Warning,
-    CharacterCreation тексты -- все генерируемые в C# строки через LocalizationService.Tr
-[ ] Решить: MessageBox-тексты восстановления в App.xaml.cs (можно оставить RU)
+Localization/Strings.{ru,en}.xaml -- ключи S.* и page.*; новые строки добавлять в ОБОИХ файлах
+XAML: только {DynamicResource S.Key} (StaticResource не обновится при смене языка)
+C#: LocalizationService.Tr("S.Key", "русский fallback")
+Services/LocalizationService.cs    -- ЧИСТЫЙ C# (его компилирует ConversationChecks)
+Services/LocalizationResourceLoader.cs -- WPF-загрузка pack://application:,,,/...
+ViewModels/MainViewModel.Localization.cs -- AppLanguage ("ru"/"en"), сохранение в
+    Preferences.Language, обновление PageTitle/PageSubtitle
+Настройки -> Оформление -> «Язык интерфейса» -- переключатель (работает)
 ```
+НЕ включать в SoulExe.ConversationChecks файлы с System.Windows.
 
-## 4. Правила безопасности (из оригинального проекта, обязательны)
-
-Полные версии: `WPF_UI_RULES.md`, `UI_REDESIGN_TODO.md`, `MEMORY_GROWTH_DIAGNOSTICS.md` (лежат в этой папке, скопированы с оригинала).
-
-Критичные запреты:
-1. НЕ создавать implicit (без x:Key) Style с заменой Template у ScrollViewer, ContentControl, ItemsPresenter, ListBox, ComboBox, Grid, Border, UserControl.
-2. НЕ создавать UserControl без *.xaml.cs.
-3. НЕ переносить один WPF-элемент между host'ами в runtime без ручной проверки (drawer-инцидент).
-4. НЕ менять несколько экранов за один шаг.
-5. НЕ переносить ActualWidth/drawer state/scroll/focus в MainViewModel.
-6. Не трогать порядок merge в App.xaml без runtime smoke-test.
-7. Transcript чата: virtualized ListBox + recycling, presentation window 60, auto-follow — поведение не ломать.
-8. Persistence: mutation через snapshot→mutate→persist→restore-on-error (JsonDataStore).
-
-## 5. Команды
+## 4. Команды
 
 ```powershell
 cd E:\Games\backup_opencode\Sources\NewStyle
 dotnet build SoulExe.csproj -warnaserror
 dotnet run --project SoulExe.ConversationChecks\SoulExe.ConversationChecks.csproj
 dotnet publish SoulExe.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-git add -A; git -c user.name="Ericool" -c user.email="ericool@local" commit -m "<сообщение>"; git push origin new-style
+git add -A ; git -c user.name="Ericool" -c user.email="ericool@local" commit -m "..." ; git push origin new-style
 ```
 
-EXE для проверки: `E:\Games\backup_opencode\Sources\OutputNewStyle\Release\win-x64\publish\SoulExe.exe`
-(данные пользователей те же SoulExeData — обе версии читают одно хранилище).
+EXE: `E:\Games\backup_opencode\Sources\OutputNewStyle\Release\win-x64\publish\SoulExe.exe`
 
-## 6. Контроль качества перед передачей EXE
+## 5. Статус выполненного (обновлять!)
 
-```text
-[ ] build -warnaserror: 0/0
-[ ] conversation checks passed
-[ ] code-behind есть у всех .xaml в Views/ Controls/
-[ ] нет literal-цветов там, где есть семантический brush темы
-[ ] новые строки заведены в ОБОИХ Strings.{ru,en}.xaml
-[ ] переключение языка в EXE: sidebar/header/текущий экран обновились без рестарта
-[ ] publish собран, путь указан, названы экраны для ручной проверки
-[ ] git push origin new-style выполнен
-```
+- [x] Изоляция: NewStyle repo, ветка new-style, OutputNewStyle
+- [x] Тема Dark Premium v2 (Themes/Dark.xaml переписана, ключи сохранены)
+- [x] Tokens: радиусы 10/14/18; CardShadowEffect добавлен
+- [x] Локализация: инфраструктура + shell переведён + переключатель в Настройках
+- [x] NEWSTYLE_TODO.md (этот документ) — видение «Иммерсивный театр» зафиксировано
+- [ ] Фазы A–H (см. раздел 2)
 
-## 7. Если новая сессия начинает отсюда
+## 6. Если начинаешь отсюда
 
-1. Прочитай этот файл + `WPF_UI_RULES.md`.
-2. Убедись `git log --oneline` и `git status` чистые; синхронизируйся с веткой new-style.
-3. Возьми следующую незакрытую фазу из раздела 2 и работай малыми шагами по циклу.
-4. После подтверждения пользователем — коммит + push + отметь пункт [x] здесь.
+1. Прочитай раздел 1 (видение) и WPF_UI_RULES.md.
+2. `git log --oneline`; возьми первую незакрытую фазу из раздела 2.
+3. Работай циклом из п. 1.5 п.4. После подтверждения пользователем — [x] и push.
