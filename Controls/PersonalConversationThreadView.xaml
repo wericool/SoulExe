@@ -12,10 +12,10 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="18,13">
+        <Border Background="Transparent" Padding="8,68,12,4">
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" MinWidth="0">
+                <StackPanel Orientation="Horizontal" MinWidth="0" Visibility="Collapsed">
                     <Grid Width="40" Height="40">
                         <Ellipse Fill="{StaticResource AccentSoftBrush}" />
                         <TextBlock Text="{Binding SelectedCharacter.Initials}" FontWeight="Bold" FontSize="12" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
