@@ -63,8 +63,10 @@
     <sys:String x:Key="S.Backstage.Characters">Персонажи</sys:String>
     <sys:String x:Key="S.Backstage.NewCharacter">Новый персонаж</sys:String>
     <sys:String x:Key="S.Backstage.World">Мир</sys:String>
-    <sys:String x:Key="S.Backstage.Lore">Лор</sys:String>
+    <sys:String x:Key="S.Backstage.Lore">Лорбуки</sys:String>
     <sys:String x:Key="S.Backstage.Personas">Персоны</sys:String>
+    <sys:String x:Key="S.Backstage.Lore.Hint">Вселенные и факты для ответов персонажей</sys:String>
+    <sys:String x:Key="S.Backstage.Personas.Hint">Твои роли от первого лица</sys:String>
 
     <sys:String x:Key="S.Tab.Runtime">Runtime</sys:String>
     <sys:String x:Key="S.Tab.Appearance">Оформление</sys:String>

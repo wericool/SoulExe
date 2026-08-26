@@ -18,6 +18,10 @@ public partial class StageShellView : UserControl
     private IInputElement? _setupOpener;
     private IInputElement? _backstageOpener;
     private readonly Dictionary<string, UserControl> _pageCache = [];
+    private static readonly CubicEase SheetEase = new() { EasingMode = EasingMode.EaseOut };
+    private static readonly Duration SheetInDuration = new(TimeSpan.FromMilliseconds(200));
+    private static readonly Duration SheetOutDuration = new(TimeSpan.FromMilliseconds(150));
+    private int _pageSheetVersion;
 
     public StageShellView()
     {
@@ -34,7 +38,10 @@ public partial class StageShellView : UserControl
 
     private void StageShellView_OnUnloaded(object sender, RoutedEventArgs e)
     {
-        PageHost.Content = null;
+        // Hard reset: fade-out callbacks never run while detached, so the next
+        // attach must start from a clean, fully collapsed sheet.
+        _pageSheetVersion++;
+        CollapsePageSheet();
         StageHost.Content = null;
         Subscribe(null);
     }
@@ -85,58 +92,104 @@ public partial class StageShellView : UserControl
         if (!IsLoaded || _viewModel is null) return;
 
         var page = _viewModel.CurrentPage;
+        EnsureStageContent();
         if (page == "Chat")
         {
-            // The conversation owns the screen; overlays step aside.
+            // The conversation owns the screen; the sheet slides away and reveals it.
             if (BackstageOverlay.Visibility == Visibility.Visible) CloseBackstage();
-            if (!ReferenceEquals(PageHost.Content, null)) PageHost.Content = null;
-            if (PageOverlay.Visibility != Visibility.Collapsed)
-            {
-                PageOverlay.Visibility = Visibility.Collapsed;
-                FadeIn(StageHost);
-            }
-            // The floating top bar belongs to the stage only; over pages it
-            // overlapped their toolbars and stole clicks near the window top.
+            ClosePageSheet();
             TopBar.Visibility = Visibility.Visible;
-            EnsureStageContent();
             return;
         }
 
         TopBar.Visibility = Visibility.Collapsed;
-        EnsureStageContent();
-        if (PageOverlay.Visibility != Visibility.Visible)
-        {
-            PageOverlay.Visibility = Visibility.Visible;
-            FadeIn(PageOverlay);
-        }
+        OpenPageSheet(page);
+    }
+
+    private void OpenPageSheet(string page)
+    {
         if (page == "Characters")
         {
             // The character editor reads SelectedCharacter at load time, so it
             // must be rebuilt per visit instead of served from the page cache.
             PageHost.Content = new CharactersView { DataContext = _viewModel };
-            return;
         }
-        if (!_pageCache.TryGetValue(page, out var view))
+        else
         {
-            view = page switch
+            if (!_pageCache.TryGetValue(page, out var view))
             {
-                "Home" => new LibraryView(),
-                "Gateway" => new GatewayView(),
-                "Setup" => new SetupView(),
-                "Models" => new ModelsView(),
-                "Options" => new SettingsView(),
-                _ => null
-            };
-            if (view is null)
-            {
-                PageHost.Content = null;
-                return;
+                view = page switch
+                {
+                    "Home" => new LibraryView(),
+                    "Gateway" => new GatewayView(),
+                    "Setup" => new SetupView(),
+                    "Models" => new ModelsView(),
+                    "Options" => new SettingsView(),
+                    _ => null
+                };
+                if (view is null)
+                {
+                    PageHost.Content = null;
+                    return;
+                }
+                view.DataContext = _viewModel;
+                _pageCache.Add(page, view);
             }
-            view.DataContext = _viewModel;
-            _pageCache.Add(page, view);
+            if (!ReferenceEquals(view.DataContext, _viewModel)) view.DataContext = _viewModel;
+            if (!ReferenceEquals(PageHost.Content, view)) PageHost.Content = view;
         }
-        if (!ReferenceEquals(view.DataContext, _viewModel)) view.DataContext = _viewModel;
-        if (!ReferenceEquals(PageHost.Content, view)) PageHost.Content = view;
+
+        _pageSheetVersion++;
+        var reopening = PageSheet.Visibility == Visibility.Visible;
+        PageScrim.Visibility = Visibility.Visible;
+        PageSheet.Visibility = Visibility.Visible;
+        AnimateFade(PageScrim, reopening ? PageScrim.Opacity : 0, 1, SheetInDuration);
+        PlaySheetIn(PageSheetFrame);
+    }
+
+    private void ClosePageSheet()
+    {
+        if (PageSheet.Visibility != Visibility.Visible && PageScrim.Visibility != Visibility.Visible) return;
+        _pageSheetVersion++;
+        var version = _pageSheetVersion;
+        var translate = PageSheetFrame.RenderTransform as TranslateTransform ?? new TranslateTransform();
+        PageSheetFrame.RenderTransform = translate;
+        var slide = new DoubleAnimation(translate.Y, 26, SheetOutDuration) { EasingFunction = SheetEase };
+        var fade = new DoubleAnimation(PageSheetFrame.Opacity, 0, SheetOutDuration) { EasingFunction = SheetEase };
+        fade.Completed += (_, _) =>
+        {
+            // A sheet opened meanwhile replaced these animations; its open path owns collapse now.
+            if (_pageSheetVersion != version) return;
+            PageSheetFrame.BeginAnimation(OpacityProperty, null);
+            translate.BeginAnimation(TranslateTransform.YProperty, null);
+            CollapsePageSheet();
+        };
+        PageSheetFrame.BeginAnimation(OpacityProperty, fade);
+        translate.BeginAnimation(TranslateTransform.YProperty, slide);
+        AnimateFade(PageScrim, PageScrim.Opacity, 0, SheetOutDuration);
+    }
+
+    private void CollapsePageSheet()
+    {
+        PageScrim.Visibility = Visibility.Collapsed;
+        PageSheet.Visibility = Visibility.Collapsed;
+        PageSheetFrame.Opacity = 1;
+        // Detach the page only once fully hidden; clearing earlier would flash
+        // an empty frame during the fade-out.
+        PageHost.Content = null;
+    }
+
+    private static void PlaySheetIn(Border frame)
+    {
+        var translate = new TranslateTransform(0, 26);
+        frame.RenderTransform = translate;
+        frame.BeginAnimation(OpacityProperty, new DoubleAnimation(frame.Opacity, 1, SheetInDuration) { EasingFunction = SheetEase });
+        translate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(26, 0, SheetInDuration) { EasingFunction = SheetEase });
+    }
+
+    private static void AnimateFade(UIElement element, double from, double to, Duration duration)
+    {
+        element.BeginAnimation(OpacityProperty, new DoubleAnimation(from, to, duration) { EasingFunction = SheetEase });
     }
 
     private void EnsureStageContent()
@@ -242,6 +295,18 @@ public partial class StageShellView : UserControl
 
     private void BackstageNav_OnClick(object sender, RoutedEventArgs e) => CloseBackstage();
 
+    private void BackstageWorld_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Button raises Click before executing its Command, so the library tab
+        // is already selected when the navigation renders the sheet.
+        if (sender is FrameworkElement { Tag: string tab } && !string.IsNullOrEmpty(tab)
+            && _viewModel?.SelectLibraryTabCommand.CanExecute(tab) == true)
+        {
+            _viewModel.SelectLibraryTabCommand.Execute(tab);
+        }
+        CloseBackstage();
+    }
+
     private void BackstageConversation_OnClick(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || _viewModel is null) return;
@@ -269,6 +334,16 @@ public partial class StageShellView : UserControl
     {
         // Phase D will open the character sheet; for now jump to the character route.
         if (_viewModel?.NavigateCommand.CanExecute("Characters") == true) _viewModel.NavigateCommand.Execute("Characters");
+        e.Handled = true;
+    }
+
+    private void StageShellView_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        // Bubbling, on purpose: nested views close their own dialogs in
+        // PreviewKeyDown first; reaching here means Escape is free to leave the sheet.
+        if (e.Key != Key.Escape || PageSheet.Visibility != Visibility.Visible) return;
+        if (_viewModel?.NavigateCommand.CanExecute("Chat") != true) return;
+        _viewModel.NavigateCommand.Execute("Chat");
         e.Handled = true;
     }
 

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="clr-namespace:SoulExe.Views"
              xmlns:vm="clr-namespace:SoulExe.ViewModels"
-             PreviewKeyDown="StageShellView_OnPreviewKeyDown"
+              PreviewKeyDown="StageShellView_OnPreviewKeyDown"
+              KeyDown="StageShellView_OnKeyDown"
              Loaded="StageShellView_OnLoaded"
              Unloaded="StageShellView_OnUnloaded">
     <UserControl.Resources>
@@ -159,15 +160,20 @@
         <!-- Layer 1: the stage itself (active conversation). -->
         <ContentControl x:Name="StageHost" />
 
-        <!-- Layer 2: full-page host for non-stage routes during the transition phases. -->
-        <Grid x:Name="PageOverlay" Visibility="Collapsed" Background="{StaticResource WindowBrush}" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
-            <ContentControl x:Name="PageHost" Margin="24,48,24,20" />
-            <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,22" Style="{StaticResource StageModelChipButton}" Padding="16,9" AutomationProperties.Name="{DynamicResource S.Stage.BackToStage}" ToolTip="{DynamicResource S.Stage.BackToStage}">
+        <!-- Layer 2: full-page sheets for non-stage routes: a framed panel floating
+             over a fading scrim. Motion mirrors the chat drawers (slide+fade). -->
+        <Grid x:Name="PageScrim" Visibility="Collapsed" Background="{StaticResource OverlayBrush}" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
+            <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14" Style="{StaticResource StageModelChipButton}" Padding="16,9" AutomationProperties.Name="{DynamicResource S.Stage.BackToStage}" ToolTip="{DynamicResource S.Stage.BackToStage}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource AccentHoverBrush}" VerticalAlignment="Center" />
                     <TextBlock Text="{DynamicResource S.Stage.BackToStage}" FontSize="12" Margin="8,0,0,0" />
                 </StackPanel>
             </Button>
+        </Grid>
+        <Grid x:Name="PageSheet" Visibility="Collapsed" Margin="32,52,32,58">
+            <Border x:Name="PageSheetFrame" Background="{StaticResource WindowBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="20" Effect="{StaticResource CardShadowEffect}">
+                <ContentControl x:Name="PageHost" Margin="20,14,20,16" />
+            </Border>
         </Grid>
 
         <!-- Layer 3: floating top bar. Transparent background makes its empty band the
@@ -491,30 +497,37 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!-- Destinations: world/catalog/system. -->
+                    <!-- Destinations: world (lore/personas), catalog, system. -->
                     <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,34,0,0" AutomationProperties.Name="{DynamicResource S.Backstage.Title}">
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Backstage.World}" TabIndex="0">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="lore" AutomationProperties.Name="{DynamicResource S.Backstage.Lore}" TabIndex="0">
                             <StackPanel>
-                                <TextBlock Text="&#xE8F1;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Backstage.World}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
-                                <TextBlock Text="{DynamicResource S.Nav.Home.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                                <TextBlock Text="&#xE82D;" Style="{StaticResource BackstageIcon}" />
+                                <TextBlock Text="{DynamicResource S.Backstage.Lore}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
+                                <TextBlock Text="{DynamicResource S.Backstage.Lore.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Gateway}" TabIndex="1">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="personas" AutomationProperties.Name="{DynamicResource S.Backstage.Personas}" TabIndex="1">
+                            <StackPanel>
+                                <TextBlock Text="&#xE77B;" Style="{StaticResource BackstageIcon}" />
+                                <TextBlock Text="{DynamicResource S.Backstage.Personas}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
+                                <TextBlock Text="{DynamicResource S.Backstage.Personas.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Gateway}" TabIndex="2">
                             <StackPanel>
                                 <TextBlock Text="&#xE774;" Style="{StaticResource BackstageIcon}" />
                                 <TextBlock Text="{DynamicResource S.Nav.Gateway}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
                                 <TextBlock Text="{DynamicResource S.Nav.Gateway.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Models" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Tab.Models}" TabIndex="2">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Models" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Tab.Models}" TabIndex="3">
                             <StackPanel>
                                 <TextBlock Text="&#xE7F8;" Style="{StaticResource BackstageIcon}" />
                                 <TextBlock Text="{DynamicResource S.Tab.Models}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
                                 <TextBlock Text="{DynamicResource S.Nav.Models.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Options}" TabIndex="3">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Options}" TabIndex="4">
                             <StackPanel>
                                 <TextBlock Text="&#xE713;" Style="{StaticResource BackstageIcon}" />
                                 <TextBlock Text="{DynamicResource S.Nav.Options}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
