@@ -150,7 +150,8 @@ public partial class StageShellView : UserControl
         BackstageOverlay.Visibility = Visibility.Visible;
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
-            if (IsLoaded && BackstageOverlay.Visibility == Visibility.Visible) BackstageFirstFocus.Focus();
+            if (IsLoaded && BackstageOverlay.Visibility == Visibility.Visible)
+                BackstageOverlay.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
         }));
     }
 
@@ -186,6 +187,29 @@ public partial class StageShellView : UserControl
     }
 
     private void BackstageNav_OnClick(object sender, RoutedEventArgs e) => CloseBackstage();
+
+    private void BackstageConversation_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || _viewModel is null) return;
+        if (element.DataContext is not ConversationListItemViewModel item) return;
+        CloseBackstage();
+        // The setter opens the conversation and routes to the stage itself.
+        _viewModel.SelectedConversationItem = item;
+    }
+
+    private void BackstageCharacter_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || _viewModel is null) return;
+        if (button.DataContext is not HomeCharacterCardViewModel card) return;
+        CloseBackstage();
+        if (card.IsAddCharacter)
+        {
+            // Creation dialog lives in the Library; route there.
+            if (_viewModel.NavigateCommand.CanExecute("Home")) _viewModel.NavigateCommand.Execute("Home");
+            return;
+        }
+        if (_viewModel.OpenCharacterEditorCommand.CanExecute(card.Character)) _viewModel.OpenCharacterEditorCommand.Execute(card.Character);
+    }
 
     private void Presence_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {

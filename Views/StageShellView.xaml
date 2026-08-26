@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="clr-namespace:SoulExe.Views"
+             xmlns:vm="clr-namespace:SoulExe.ViewModels"
              PreviewKeyDown="StageShellView_OnPreviewKeyDown"
              Loaded="StageShellView_OnLoaded"
              Unloaded="StageShellView_OnUnloaded">
@@ -61,6 +62,61 @@
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="Margin" Value="14,0,0,0" />
             <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="BackstageSectionLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+            <Setter Property="Margin" Value="2,30,0,12" />
+        </Style>
+        <!-- Conversation card in the "Continue" rail: glass surface over the scrimmed stage. -->
+        <Style x:Key="BackstageConversationCard" TargetType="Button">
+            <Setter Property="Width" Value="272" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Card" Background="{StaticResource GlassPanelBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}" />
+                                <Setter TargetName="Card" Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Character chip in the "Characters" gallery. -->
+        <Style x:Key="BackstageCharacterChip" TargetType="Button">
+            <Setter Property="Width" Value="118" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Card" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" CornerRadius="16" Padding="8,12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="{StaticResource GlassPanelBrush}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -287,37 +343,169 @@
             </StackPanel>
         </Grid>
 
-        <!-- Layer 4: Backstage overlay (minimal v1; full hub arrives in Phase C). -->
-        <Grid x:Name="BackstageOverlay" Visibility="Collapsed" Background="#F2060710">
+        <!-- Layer 4: Backstage overlay-hub. Sections: Continue rail, Characters gallery, system cards. -->
+        <Grid x:Name="BackstageOverlay" Visibility="Collapsed" Background="#F2060710" KeyboardNavigation.TabNavigation="Cycle">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel MaxWidth="860" Margin="32,64" HorizontalAlignment="Center">
-                    <TextBlock Text="SoulExe" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                    <TextBlock Text="{DynamicResource S.Backstage.Subtitle}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,26" />
-                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="{DynamicResource S.Backstage.Title}">
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Chat" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Backstage.Continue}" TabIndex="0" x:Name="BackstageFirstFocus">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE8BD;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Backstage.Continue}" Style="{StaticResource BackstageLabel}" />
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Home}" TabIndex="1">
-                            <StackPanel Orientation="Horizontal">
+                <StackPanel MaxWidth="1020" Margin="40,54,40,44" HorizontalAlignment="Center">
+                    <TextBlock Text="SoulExe" FontSize="32" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    <TextBlock Text="{DynamicResource S.Backstage.Subtitle}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,4" />
+
+                    <!-- Продолжить: recent conversations as glass cards over the stage scrim. -->
+                    <TextBlock Text="{DynamicResource S.Backstage.Continue}" Style="{StaticResource BackstageSectionLabel}" />
+                    <TextBlock Text="{DynamicResource S.Backstage.Continue.Empty}" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="2,2,0,6">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ConversationItems.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding ConversationItems}" AutomationProperties.Name="{DynamicResource S.Backstage.Continue}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ConversationListItemViewModel}">
+                                <Button Style="{StaticResource BackstageConversationCard}" Click="BackstageConversation_OnClick" AutomationProperties.Name="{Binding Title}" ToolTip="{Binding Preview}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid Width="46" Height="46" VerticalAlignment="Top">
+                                            <Ellipse Fill="{StaticResource AccentSoftBrush}" />
+                                            <TextBlock Text="{Binding AvatarAInitials}" FontWeight="SemiBold" FontSize="12" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <Ellipse IsHitTestVisible="False">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding AvatarAPath}" Stretch="UniformToFill" />
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                            <Border Width="24" Height="24" CornerRadius="12" BorderBrush="#F2060710" BorderThickness="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding HasSecondAvatar}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid>
+                                                    <Ellipse Fill="{StaticResource AccentSoftBrush}" />
+                                                    <TextBlock Text="{Binding AvatarBInitials}" FontSize="7.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    <Ellipse Stroke="#F2060710" StrokeThickness="2">
+                                                        <Ellipse.Fill>
+                                                            <ImageBrush ImageSource="{Binding AvatarBPath}" Stretch="UniformToFill" />
+                                                        </Ellipse.Fill>
+                                                    </Ellipse>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Grid.Column="1" Margin="12,0,2,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Preview}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11.5" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding TypeLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Персонажи: horizontal gallery, add-card last (VM contract). -->
+                    <TextBlock Text="{DynamicResource S.Backstage.Characters}" Style="{StaticResource BackstageSectionLabel}" />
+                    <ItemsControl ItemsSource="{Binding HomeCards}" AutomationProperties.Name="{DynamicResource S.Backstage.Characters}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:HomeCharacterCardViewModel}">
+                                <Button Style="{StaticResource BackstageCharacterChip}" Click="BackstageCharacter_OnClick">
+                                    <Grid>
+                                        <!-- Existing character -->
+                                        <StackPanel>
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAddCharacter}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Grid Width="66" Height="66" HorizontalAlignment="Center">
+                                                <Ellipse Fill="{StaticResource AccentSoftBrush}" />
+                                                <TextBlock Text="{Binding Character.Initials}" FontSize="15" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Ellipse IsHitTestVisible="False">
+                                                    <Ellipse.Fill>
+                                                        <ImageBrush ImageSource="{Binding Character.AvatarPath}" Stretch="UniformToFill" />
+                                                    </Ellipse.Fill>
+                                                </Ellipse>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Character.Name}" FontSize="11.5" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Margin="0,9,0,0" MaxWidth="102" />
+                                        </StackPanel>
+                                        <!-- Add-character dashed chip -->
+                                        <StackPanel Visibility="Collapsed">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAddCharacter}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Grid Width="66" Height="66" HorizontalAlignment="Center">
+                                                <Ellipse Fill="{StaticResource GlassPanelBrush}" Stroke="{StaticResource AccentHoverBrush}" StrokeThickness="1.5" StrokeDashArray="3 2" />
+                                                <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <TextBlock Text="{DynamicResource S.Backstage.NewCharacter}" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Margin="0,9,0,0" MaxWidth="102" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Destinations: world/catalog/system. -->
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,34,0,0" AutomationProperties.Name="{DynamicResource S.Backstage.Title}">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Backstage.World}" TabIndex="0">
+                            <StackPanel>
                                 <TextBlock Text="&#xE8F1;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Nav.Home}" Style="{StaticResource BackstageLabel}" />
+                                <TextBlock Text="{DynamicResource S.Backstage.World}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
+                                <TextBlock Text="{DynamicResource S.Nav.Home.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Gateway}" TabIndex="2">
-                            <StackPanel Orientation="Horizontal">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Gateway}" TabIndex="1">
+                            <StackPanel>
                                 <TextBlock Text="&#xE774;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Nav.Gateway}" Style="{StaticResource BackstageLabel}" />
+                                <TextBlock Text="{DynamicResource S.Nav.Gateway}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
+                                <TextBlock Text="{DynamicResource S.Nav.Gateway.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                             </StackPanel>
                         </Button>
-
-
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Models" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Tab.Models}" TabIndex="2">
+                            <StackPanel>
+                                <TextBlock Text="&#xE7F8;" Style="{StaticResource BackstageIcon}" />
+                                <TextBlock Text="{DynamicResource S.Tab.Models}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
+                                <TextBlock Text="{DynamicResource S.Nav.Models.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                            </StackPanel>
+                        </Button>
                         <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Options}" TabIndex="3">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel>
                                 <TextBlock Text="&#xE713;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Nav.Options}" Style="{StaticResource BackstageLabel}" />
+                                <TextBlock Text="{DynamicResource S.Nav.Options}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
+                                <TextBlock Text="{DynamicResource S.Nav.Options.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                             </StackPanel>
                         </Button>
                     </WrapPanel>

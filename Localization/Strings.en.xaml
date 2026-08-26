@@ -59,6 +59,9 @@
     <sys:String x:Key="S.Backstage.Title">Backstage</sys:String>
     <sys:String x:Key="S.Backstage.Subtitle">Where to?</sys:String>
     <sys:String x:Key="S.Backstage.Continue">Continue the story</sys:String>
+    <sys:String x:Key="S.Backstage.Continue.Empty">Your conversations will appear here — start the first one on stage.</sys:String>
+    <sys:String x:Key="S.Backstage.Characters">Characters</sys:String>
+    <sys:String x:Key="S.Backstage.NewCharacter">New character</sys:String>
     <sys:String x:Key="S.Backstage.World">World</sys:String>
     <sys:String x:Key="S.Backstage.Lore">Lorebooks</sys:String>
     <sys:String x:Key="S.Backstage.Personas">Personas</sys:String>

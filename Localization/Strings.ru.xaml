@@ -59,6 +59,9 @@
     <sys:String x:Key="S.Backstage.Title">Закулисье</sys:String>
     <sys:String x:Key="S.Backstage.Subtitle">Куда направимся?</sys:String>
     <sys:String x:Key="S.Backstage.Continue">Продолжить историю</sys:String>
+    <sys:String x:Key="S.Backstage.Continue.Empty">Здесь появятся ваши диалоги — начните первый на сцене.</sys:String>
+    <sys:String x:Key="S.Backstage.Characters">Персонажи</sys:String>
+    <sys:String x:Key="S.Backstage.NewCharacter">Новый персонаж</sys:String>
     <sys:String x:Key="S.Backstage.World">Мир</sys:String>
     <sys:String x:Key="S.Backstage.Lore">Лор</sys:String>
     <sys:String x:Key="S.Backstage.Personas">Персоны</sys:String>
