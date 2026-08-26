@@ -539,8 +539,8 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- Layer 5: initial setup overlay (unchanged behaviour from AppShellView). -->
-        <Grid Grid.RowSpan="2" Panel.ZIndex="100" Background="{StaticResource OverlayBrush}" Visibility="Collapsed">
+        <!-- Layer 5: initial setup overlay — glass sheet over the stage scrim. -->
+        <Grid x:Name="SetupOverlay" Grid.RowSpan="2" Panel.ZIndex="100" Visibility="Collapsed" Background="#F2060810" KeyboardNavigation.TabNavigation="Cycle">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Collapsed" />
@@ -551,7 +551,7 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <Border MaxWidth="1040" MaxHeight="650" Margin="24" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderStrongBrush}" BorderThickness="1" CornerRadius="18" Padding="32" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
+            <Border MaxWidth="1040" MaxHeight="680" Margin="40" Background="{StaticResource GlassPanelBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="20" Effect="{StaticResource CardShadowEffect}" Padding="28" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
