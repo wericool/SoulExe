@@ -558,7 +558,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Добро пожаловать в SoulExe" FontSize="27" FontWeight="SemiBold" />
+                    <TextBlock Text="{DynamicResource S.Setup.WelcomeTitle}" FontSize="27" FontWeight="SemiBold" />
                     <TextBlock Grid.Row="1" Text="{Binding InitialSetupStepTitle}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="1,4,0,20" />
                     <views:SetupView x:Name="InitialSetupView" Grid.Row="2" />
                 </Grid>
@@ -568,22 +568,22 @@
         <!-- Layer 6: window chrome buttons. CaptionHeight is 1, so these are plain
              client-area buttons floating above every route. -->
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,8,12,0" Panel.ZIndex="210">
-            <Button Click="MinimizeWindowButton_OnClick" Style="{StaticResource StageWindowButton}" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="Свернуть окно" ToolTip="Свернуть" />
-            <Button Click="ToggleMaximizeWindowButton_OnClick" AutomationProperties.Name="Развернуть или восстановить окно" FontFamily="Segoe MDL2 Assets">
+            <Button Click="MinimizeWindowButton_OnClick" Style="{StaticResource StageWindowButton}" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="{DynamicResource S.Window.Minimize}" ToolTip="{DynamicResource S.Window.Minimize}" />
+            <Button Click="ToggleMaximizeWindowButton_OnClick" AutomationProperties.Name="{DynamicResource S.Window.Maximize}" FontFamily="Segoe MDL2 Assets">
                 <Button.Style>
                     <Style TargetType="Button" BasedOn="{StaticResource StageWindowButton}">
                         <Setter Property="Content" Value="&#xE922;" />
-                        <Setter Property="ToolTip" Value="Развернуть" />
+                        <Setter Property="ToolTip" Value="{DynamicResource S.Window.Maximize}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="Maximized">
                                 <Setter Property="Content" Value="&#xE923;" />
-                                <Setter Property="ToolTip" Value="Восстановить размер" />
+                                <Setter Property="ToolTip" Value="{DynamicResource S.Window.Restore}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Click="CloseWindowButton_OnClick" Style="{StaticResource StageWindowCloseButton}" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="Закрыть окно" ToolTip="Закрыть" />
+            <Button Click="CloseWindowButton_OnClick" Style="{StaticResource StageWindowCloseButton}" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="{DynamicResource S.Window.Close}" ToolTip="{DynamicResource S.Window.Close}" />
         </StackPanel>
     </Grid>
 </UserControl>

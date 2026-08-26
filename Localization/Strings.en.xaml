@@ -67,6 +67,7 @@
     <sys:String x:Key="S.Backstage.Personas">Personas</sys:String>
     <sys:String x:Key="S.Backstage.Lore.Hint">Universes and facts behind the answers</sys:String>
     <sys:String x:Key="S.Backstage.Personas.Hint">Your first-person roles</sys:String>
+    <sys:String x:Key="S.Setup.WelcomeTitle">Welcome to SoulExe</sys:String>
 
     <sys:String x:Key="S.Tab.Runtime">Runtime</sys:String>
     <sys:String x:Key="S.Tab.Appearance">Appearance</sys:String>
@@ -74,4 +75,8 @@
     <sys:String x:Key="S.Tab.Setup">Quick start</sys:String>
     <sys:String x:Key="S.Tab.Mobile">Mobile</sys:String>
     <sys:String x:Key="S.Settings.Tabs">Settings sections</sys:String>
+    <sys:String x:Key="S.Window.Minimize">Minimize</sys:String>
+    <sys:String x:Key="S.Window.Maximize">Maximize</sys:String>
+    <sys:String x:Key="S.Window.Restore">Restore size</sys:String>
+    <sys:String x:Key="S.Window.Close">Close</sys:String>
 </ResourceDictionary>
