@@ -477,6 +477,16 @@
                                         <StackPanel>
                                             <Border Style="{StaticResource SettingsSectionCard}">
                                                 <StackPanel>
+                                                    <TextBlock Text="{DynamicResource S.Settings.Language}" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.Language.Hint}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,12" />
+                                                    <ComboBox SelectedValue="{Binding AppLanguage}" SelectedValuePath="Tag" MinHeight="42" Width="260" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource S.Settings.Language}">
+                                                        <ComboBoxItem Content="Русский" Tag="ru" />
+                                                        <ComboBoxItem Content="English" Tag="en" />
+                                                    </ComboBox>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource SettingsSectionCard}">
+                                                <StackPanel>
                                                     <TextBlock Text="Цвета разметки" FontSize="18" FontWeight="SemiBold" />
                                                     <TextBlock Text="Выберите акцентные оттенки для разных типов текста. Изменения применяются к чату и предпросмотру сразу." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
                                                     <Grid Margin="0,12,0,0">

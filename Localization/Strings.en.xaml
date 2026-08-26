@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- English UI strings. Keys mirror Strings.ru.xaml; consumed via DynamicResource
+         so switching the language applies instantly without restart. -->
+
+    <sys:String x:Key="S.Window.Title">SoulExe — local AI studio</sys:String>
+
+    <sys:String x:Key="S.Nav.Section.Workspace">WORKSPACE</sys:String>
+    <sys:String x:Key="S.Nav.Section.System">SYSTEM</sys:String>
+    <sys:String x:Key="S.Nav.ModelCard">MODEL</sys:String>
+    <sys:String x:Key="S.Nav.NoModels">No local models yet. Open Models Hub.</sys:String>
+
+    <sys:String x:Key="S.Nav.Chat">Chats</sys:String>
+    <sys:String x:Key="S.Nav.Chat.Hint">Personal and group conversations</sys:String>
+    <sys:String x:Key="S.Nav.Home">Library</sys:String>
+    <sys:String x:Key="S.Nav.Home.Hint">Characters, lorebooks and personas</sys:String>
+    <sys:String x:Key="S.Nav.Gateway">Hub</sys:String>
+    <sys:String x:Key="S.Nav.Gateway.Hint">External content catalog</sys:String>
+    <sys:String x:Key="S.Nav.Setup">Quick start</sys:String>
+    <sys:String x:Key="S.Nav.Setup.Hint">Engine and first model setup</sys:String>
+    <sys:String x:Key="S.Nav.Models">Models Hub</sys:String>
+    <sys:String x:Key="S.Nav.Models.Hint">Catalog, recommendations and installed GGUF</sys:String>
+    <sys:String x:Key="S.Nav.Options">Settings</sys:String>
+    <sys:String x:Key="S.Nav.Options.Hint">Runtime, appearance and phone access</sys:String>
+
+    <sys:String x:Key="page.home.title">Library</sys:String>
+    <sys:String x:Key="page.home.subtitle">Characters and your lorebooks</sys:String>
+    <sys:String x:Key="page.chat.title">Conversations</sys:String>
+    <sys:String x:Key="page.chat.subtitle">Chats and history of all characters</sys:String>
+    <sys:String x:Key="page.scene.title">Group conversation</sys:String>
+    <sys:String x:Key="page.scene.subtitle">A conversation between two characters</sys:String>
+    <sys:String x:Key="page.characters.title">Character card</sys:String>
+    <sys:String x:Key="page.characters.subtitle">Configure the selected character from the Library</sys:String>
+    <sys:String x:Key="page.gateway.title">Hub</sys:String>
+    <sys:String x:Key="page.gateway.subtitle">Catalog of ready-made characters, lorebooks and scenarios</sys:String>
+    <sys:String x:Key="page.models.title">Models Hub</sys:String>
+    <sys:String x:Key="page.models.subtitle">Install and select local GGUF models</sys:String>
+    <sys:String x:Key="page.memory.title">Memory</sys:String>
+    <sys:String x:Key="page.memory.subtitle">Soul Memory and summary</sys:String>
+    <sys:String x:Key="page.mobile.title">Mobile access</sys:String>
+    <sys:String x:Key="page.mobile.subtitle">Phone access on the same Wi-Fi network</sys:String>
+    <sys:String x:Key="page.options.title">Settings</sys:String>
+    <sys:String x:Key="page.options.subtitle">Runtime, appearance and mobile device access</sys:String>
+    <sys:String x:Key="page.setup.title">Quick start</sys:String>
+    <sys:String x:Key="page.setup.subtitle">llama.cpp engine and your first model</sys:String>
+    <sys:String x:Key="page.fallback.title">SoulExe</sys:String>
+    <sys:String x:Key="page.fallback.subtitle">Local text AI</sys:String>
+
+    <sys:String x:Key="S.Settings.Language">Interface language</sys:String>
+    <sys:String x:Key="S.Settings.Language.Hint">Applied instantly, no restart required.</sys:String>
+    <sys:String x:Key="S.Status.LanguageChanged">Interface language changed.</sys:String>
+    <sys:String x:Key="S.Status.LanguageSaveFailed">Failed to save the interface language.</sys:String>
+</ResourceDictionary>

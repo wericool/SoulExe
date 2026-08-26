@@ -422,6 +422,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         OnPropertyChanged(nameof(GatewayCategoryTitle));
         OnPropertyChanged(nameof(GatewayCategorySubtitle));
         OnPropertyChanged(nameof(ShowGatewayNsfw));
+        InitializeLocalization(data.Preferences.Language);
         LoadLlamaOptions(data.Preferences);
         ChatAppearance = (data.Preferences.ChatAppearance ?? new ChatAppearanceSettings()).Clone();
         LoadPromptPresetOptions(data.PromptPresets);

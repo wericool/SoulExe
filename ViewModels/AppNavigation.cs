@@ -1,6 +1,10 @@
+using SoulExe.Services;
+
 namespace SoulExe.ViewModels;
 
-/// <summary>Page route aliases and display titles for the main shell.</summary>
+/// <summary>Page route aliases and display titles for the main shell.
+/// Titles are localized through LocalizationService; the inline switches are
+/// the Russian fallbacks so the shell stays correct before/without dictionaries.</summary>
 public static class AppNavigation
 {
     public static string NormalizePage(string? page)
@@ -17,9 +21,14 @@ public static class AppNavigation
     public static string? OptionsTabForRoute(string? page) =>
         string.Equals(page, "Mobile", StringComparison.OrdinalIgnoreCase) ? "mobile" : null;
 
-    // Titles are rendered by the shell header at a large type size. Keep sentence case so the
-    // header matches the sidebar labels instead of shouting for two routes only.
-    public static string Title(string page) => page switch
+    public static string Title(string page) => Localized(page, "title", FallbackTitle(page));
+
+    public static string Subtitle(string page) => Localized(page, "subtitle", FallbackSubtitle(page));
+
+    private static string Localized(string page, string kind, string fallback) =>
+        LocalizationService.Tr($"page.{page.ToLowerInvariant()}.{kind}", fallback);
+
+    private static string FallbackTitle(string page) => page switch
     {
         "Home" => "Библиотека",
         "Chat" => "Разговоры",
@@ -31,10 +40,10 @@ public static class AppNavigation
         "Mobile" => "Мобильный доступ",
         "Options" => "Настройки",
         "Setup" => "Быстрый старт",
-        _ => "SoulExe"
+        _ => LocalizationService.Tr("page.fallback.title", "SoulExe")
     };
 
-    public static string Subtitle(string page) => page switch
+    private static string FallbackSubtitle(string page) => page switch
     {
         "Home" => "Персонажи и загруженные лорбуки",
         "Chat" => "Диалоги и история всех персонажей",
@@ -43,10 +52,10 @@ public static class AppNavigation
         "Gateway" => "Каталог готовых персонажей, лорбуков и сценариев",
         "Models" => "Установка и выбор локальных GGUF-моделей",
         "Memory" => "Soul Memory и summary",
-        "Mobile" => "Доступ с телефона в той же Wi‑Fi сети",
+        "Mobile" => "Доступ с телефона в той же Wi-Fi сети",
         "Options" => "Runtime, оформление интерфейса и доступ с мобильных устройств",
         "Setup" => "Движок llama.cpp и первая модель",
-        _ => "Локальный текстовый AI"
+        _ => LocalizationService.Tr("page.fallback.subtitle", "Локальный текстовый AI")
     };
 
     public static string NormalizeModelsHubTab(string? tab) =>

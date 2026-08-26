@@ -1,0 +1,54 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- Русский (основной язык интерфейса). Ключи S.* читаются через DynamicResource,
+         чтобы смена языка применялась без перезапуска приложения. -->
+
+    <sys:String x:Key="S.Window.Title">SoulExe — локальная AI-студия</sys:String>
+
+    <sys:String x:Key="S.Nav.Section.Workspace">РАБОЧАЯ ОБЛАСТЬ</sys:String>
+    <sys:String x:Key="S.Nav.Section.System">СИСТЕМА</sys:String>
+    <sys:String x:Key="S.Nav.ModelCard">МОДЕЛЬ</sys:String>
+    <sys:String x:Key="S.Nav.NoModels">Нет локальных моделей. Откройте Models Hub.</sys:String>
+
+    <sys:String x:Key="S.Nav.Chat">Разговоры</sys:String>
+    <sys:String x:Key="S.Nav.Chat.Hint">Личные и групповые разговоры</sys:String>
+    <sys:String x:Key="S.Nav.Home">Библиотека</sys:String>
+    <sys:String x:Key="S.Nav.Home.Hint">Персонажи, лор и персоны</sys:String>
+    <sys:String x:Key="S.Nav.Gateway">Хаб</sys:String>
+    <sys:String x:Key="S.Nav.Gateway.Hint">Каталог внешних материалов</sys:String>
+    <sys:String x:Key="S.Nav.Setup">Быстрый старт</sys:String>
+    <sys:String x:Key="S.Nav.Setup.Hint">Установка движка и первой модели</sys:String>
+    <sys:String x:Key="S.Nav.Models">Models Hub</sys:String>
+    <sys:String x:Key="S.Nav.Models.Hint">Каталог, рекомендации и установленные GGUF</sys:String>
+    <sys:String x:Key="S.Nav.Options">Настройки</sys:String>
+    <sys:String x:Key="S.Nav.Options.Hint">Runtime, оформление и доступ с телефона</sys:String>
+
+    <sys:String x:Key="page.home.title">Библиотека</sys:String>
+    <sys:String x:Key="page.home.subtitle">Персонажи и загруженные лорбуки</sys:String>
+    <sys:String x:Key="page.chat.title">Разговоры</sys:String>
+    <sys:String x:Key="page.chat.subtitle">Диалоги и история всех персонажей</sys:String>
+    <sys:String x:Key="page.scene.title">Групповой разговор</sys:String>
+    <sys:String x:Key="page.scene.subtitle">Групповой разговор двух персонажей</sys:String>
+    <sys:String x:Key="page.characters.title">Карточка персонажа</sys:String>
+    <sys:String x:Key="page.characters.subtitle">Настройка выбранного персонажа из Библиотеки</sys:String>
+    <sys:String x:Key="page.gateway.title">Хаб</sys:String>
+    <sys:String x:Key="page.gateway.subtitle">Каталог готовых персонажей, лорбуков и сценариев</sys:String>
+    <sys:String x:Key="page.models.title">Models Hub</sys:String>
+    <sys:String x:Key="page.models.subtitle">Установка и выбор локальных GGUF-моделей</sys:String>
+    <sys:String x:Key="page.memory.title">Память</sys:String>
+    <sys:String x:Key="page.memory.subtitle">Soul Memory и summary</sys:String>
+    <sys:String x:Key="page.mobile.title">Мобильный доступ</sys:String>
+    <sys:String x:Key="page.mobile.subtitle">Доступ с телефона в той же Wi-Fi сети</sys:String>
+    <sys:String x:Key="page.options.title">Настройки</sys:String>
+    <sys:String x:Key="page.options.subtitle">Runtime, оформление интерфейса и доступ с мобильных устройств</sys:String>
+    <sys:String x:Key="page.setup.title">Быстрый старт</sys:String>
+    <sys:String x:Key="page.setup.subtitle">Движок llama.cpp и первая модель</sys:String>
+    <sys:String x:Key="page.fallback.title">SoulExe</sys:String>
+    <sys:String x:Key="page.fallback.subtitle">Локальный текстовый AI</sys:String>
+
+    <sys:String x:Key="S.Settings.Language">Язык интерфейса</sys:String>
+    <sys:String x:Key="S.Settings.Language.Hint">Применяется сразу, без перезапуска приложения.</sys:String>
+    <sys:String x:Key="S.Status.LanguageChanged">Язык интерфейса изменён.</sys:String>
+    <sys:String x:Key="S.Status.LanguageSaveFailed">Не удалось сохранить язык интерфейса.</sys:String>
+</ResourceDictionary>

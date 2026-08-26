@@ -38,6 +38,7 @@
     <Compile Include="..\ViewModels\ConversationMessageSearch.cs" Link="ViewModels\ConversationMessageSearch.cs" />
     <Compile Include="..\ViewModels\ConversationListModels.cs" Link="ViewModels\ConversationListModels.cs" />
     <Compile Include="..\ViewModels\ConversationPresentationWindow.cs" Link="ViewModels\ConversationPresentationWindow.cs" />
+    <Compile Include="..\Services\LocalizationService.cs" Link="Services\LocalizationService.cs" />
     <Compile Include="..\ViewModels\AppNavigation.cs" Link="ViewModels\AppNavigation.cs" />
   </ItemGroup>
 </Project>
