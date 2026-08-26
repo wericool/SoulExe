@@ -17,6 +17,13 @@
             <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="42" />
         </Style>
+        <Style x:Key="StageModelChipButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource GlassPanelBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
         <Style x:Key="BackstageCard" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Width" Value="252" />
             <Setter Property="Height" Value="118" />
@@ -87,7 +94,7 @@
         <!-- Layer 2: full-page host for non-stage routes during the transition phases. -->
         <Grid x:Name="PageOverlay" Visibility="Collapsed" Background="{StaticResource WindowBrush}">
             <ContentControl x:Name="PageHost" />
-            <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,24,0" Style="{StaticResource StageTopIconButton}" Content="&#xE72B;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="{DynamicResource S.Stage.BackToStage}" ToolTip="{DynamicResource S.Stage.BackToStage}" />
+            <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,22" Style="{StaticResource StageModelChipButton}" Padding="18,9" Content="&#xE72B;&#xA0; На сцену" FontFamily="Segoe MDL2 Assets" FontSize="12" AutomationProperties.Name="{DynamicResource S.Stage.BackToStage}" ToolTip="{DynamicResource S.Stage.BackToStage}" />
         </Grid>
 
         <!-- Layer 3: floating top bar. The grid itself must not swallow stage clicks. -->
@@ -189,7 +196,7 @@
             </Border>
 
             <!-- Model chip -->
-            <Button Grid.Column="2" Command="{Binding NavigateCommand}" CommandParameter="Options" Style="{StaticResource StageGlassPanel}" Padding="14,8" VerticalAlignment="Center" AutomationProperties.Name="{DynamicResource S.Stage.Model}" ToolTip="{Binding ModelState}">
+            <Button Grid.Column="2" Command="{Binding NavigateCommand}" CommandParameter="Options" Style="{StaticResource StageModelChipButton}" Padding="14,8" AutomationProperties.Name="{DynamicResource S.Stage.Model}" ToolTip="{Binding ModelState}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Chip" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="28" Padding="{TemplateBinding Padding}">
