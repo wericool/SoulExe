@@ -9,7 +9,7 @@
     <sys:Double x:Key="Space.6">24</sys:Double>
     <sys:Double x:Key="ControlHeight.Compact">32</sys:Double>
     <sys:Double x:Key="ControlHeight.Default">40</sys:Double>
-    <CornerRadius x:Key="Radius.Small">8</CornerRadius>
-    <CornerRadius x:Key="Radius.Default">12</CornerRadius>
-    <CornerRadius x:Key="Radius.Large">16</CornerRadius>
+    <CornerRadius x:Key="Radius.Small">10</CornerRadius>
+    <CornerRadius x:Key="Radius.Default">14</CornerRadius>
+    <CornerRadius x:Key="Radius.Large">18</CornerRadius>
 </ResourceDictionary>

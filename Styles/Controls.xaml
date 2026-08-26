@@ -90,7 +90,7 @@
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Box" Property="Background" Value="{StaticResource AccentBrush}" />
                             <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                            <Setter TargetName="Mark" Property="Stroke" Value="#0B0D12" />
+                            <Setter TargetName="Mark" Property="Stroke" Value="#08090E" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource CheckBorderHoverBrush}" />
