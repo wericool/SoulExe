@@ -1,0 +1,13 @@
+<UserControl x:Class="SoulExe.Views.StatusView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border MinHeight="38" Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16,8">
+        <Grid ToolTip="{Binding ModelDownloadStatus}">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Width="8" Height="8" CornerRadius="4" Margin="0,0,8,0" VerticalAlignment="Center">
+                <Border.Style><Style TargetType="Border"><Setter Property="Background" Value="{StaticResource TextDimBrush}" /><Style.Triggers><DataTrigger Binding="{Binding CanResumeModelDownload}" Value="True"><Setter Property="Background" Value="{StaticResource WarningBrush}" /></DataTrigger><DataTrigger Binding="{Binding IsModelDownloadInProgress}" Value="True"><Setter Property="Background" Value="{StaticResource WarningBrush}" /></DataTrigger><DataTrigger Binding="{Binding IsModelRunning}" Value="True"><Setter Property="Background" Value="{StaticResource SuccessBrush}" /></DataTrigger></Style.Triggers></Style></Border.Style>
+            </Border>
+            <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            <Border Grid.Column="2" Padding="8,3" Margin="12,0,0,0" VerticalAlignment="Center"><Border.Style><Style TargetType="Border" BasedOn="{StaticResource Chip}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsModelDownloadInProgress}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger><DataTrigger Binding="{Binding CanResumeModelDownload}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style><TextBlock Text="{Binding ModelDownloadPauseResumeText}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" /></Border>
+            <TextBlock Grid.Column="3" Text="{Binding ModelState}" FontSize="11" Foreground="{StaticResource TextDimBrush}" TextTrimming="CharacterEllipsis" MaxWidth="320" VerticalAlignment="Center" Margin="16,0,0,0" />
+        </Grid>
+    </Border>
+</UserControl>

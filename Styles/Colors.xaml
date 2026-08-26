@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Semantic aliases refer to the active theme; legacy Nightfall values live in Themes/Dark.xaml.
+         Two WPF constraints shape this file:
+         1. A Color cannot be aliased through element content. <Color x:Key="X">{StaticResource Y}</Color>
+            is parsed as a literal string, so such an alias throws XamlParseException on first lookup.
+         2. A brush value is realized when the dictionary entry is first requested, and that lookup only
+            sees this dictionary and its own merged dictionaries - not sibling dictionaries merged next to
+            it in App.xaml. Deferred Style setters do resolve across siblings, plain brushes do not.
+         Therefore the theme is merged here as well, and aliases bind the theme Color keys in attribute
+         position. Themes/Dark.xaml stays the single source of palette values. -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Themes/Dark.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <SolidColorBrush x:Key="Brush.Canvas" Color="{StaticResource WindowColor}" />
+    <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource PanelColor}" />
+    <SolidColorBrush x:Key="Brush.SurfaceRaised" Color="{StaticResource ElevatedColor}" />
+    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="{StaticResource CardHoverColor}" />
+    <SolidColorBrush x:Key="Brush.Border" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="Brush.BorderStrong" Color="{StaticResource BorderStrongColor}" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="Brush.AccentHover" Color="{StaticResource AccentHoverColor}" />
+    <SolidColorBrush x:Key="Brush.TextPrimary" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="Brush.TextSecondary" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="Brush.TextMuted" Color="{StaticResource TextMutedColor}" />
+    <SolidColorBrush x:Key="Brush.Danger" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="Brush.Success" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="Brush.OverlayDrawer" Color="{StaticResource OverlayDrawerColor}" />
+    <SolidColorBrush x:Key="Brush.OverlayModal" Color="{StaticResource OverlayModalColor}" />
+    <SolidColorBrush x:Key="Brush.ChatOutboundMeta" Color="{StaticResource ChatOutboundMetaColor}" />
+    <SolidColorBrush x:Key="Brush.IconButtonSurface" Color="{StaticResource IconButtonSurfaceColor}" />
+    <SolidColorBrush x:Key="Brush.TextOnAccent" Color="{StaticResource TextOnAccentColor}" />
+    <SolidColorBrush x:Key="Brush.CharacterHeroScrim" Color="{StaticResource CharacterHeroScrimColor}" />
+    <SolidColorBrush x:Key="Brush.CardScrimText" Color="{StaticResource CardScrimTextColor}" />
+</ResourceDictionary>

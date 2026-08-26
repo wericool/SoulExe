@@ -1,0 +1,139 @@
+<UserControl x:Class="SoulExe.Views.NavigationView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!-- Local-only styles. Never register implicit templates for layout controls here. -->
+        <Style x:Key="NavIcon" TargetType="TextBlock">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+        </Style>
+        <Style x:Key="NavLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="11,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+        </Style>
+        <Style x:Key="NavSectionLabel" TargetType="TextBlock" BasedOn="{StaticResource SectionLabel}">
+            <Setter Property="Margin" Value="14,0,14,6" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Brand -->
+            <StackPanel Orientation="Horizontal" Margin="16,18,16,20">
+                <Border Width="38" Height="38" CornerRadius="12" Background="{StaticResource AccentGradientBrush}" ClipToBounds="True" Effect="{StaticResource AccentGlowEffect}">
+                    <Image Source="pack://application:,,,/Assets/SoulExeWindowIcon.png" Stretch="UniformToFill" />
+                </Border>
+                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="SoulExe" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="local AI studio" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+                    <TextBlock Text="{Binding BuildInfoDisplay, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="9" Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Navigation -->
+            <StackPanel Grid.Row="1" Margin="10,0,10,0" KeyboardNavigation.DirectionalNavigation="Cycle">
+                <TextBlock Text="РАБОЧАЯ ОБЛАСТЬ" Style="{StaticResource NavSectionLabel}" />
+
+                <Button Style="{StaticResource NavChat}" Command="{Binding NavigateCommand}" CommandParameter="Chat" AutomationProperties.Name="Разговоры" ToolTip="Личные и групповые разговоры">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8BD;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource NavIcon}" />
+                        <TextBlock Text="Разговоры" Style="{StaticResource NavLabel}" />
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource NavHome}" Command="{Binding NavigateCommand}" CommandParameter="Home" AutomationProperties.Name="Библиотека" ToolTip="Персонажи, лор и персоны">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource NavIcon}" />
+                        <TextBlock Text="Библиотека" Style="{StaticResource NavLabel}" />
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource NavGateway}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" AutomationProperties.Name="Хаб" ToolTip="Каталог внешних материалов">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource NavIcon}" />
+                        <TextBlock Text="Хаб" Style="{StaticResource NavLabel}" />
+                    </StackPanel>
+                </Button>
+
+                <TextBlock Text="СИСТЕМА" Style="{StaticResource NavSectionLabel}" Margin="14,22,14,6" />
+
+                <Button Style="{StaticResource NavSetup}" Command="{Binding NavigateCommand}" CommandParameter="Setup" AutomationProperties.Name="Быстрый старт" ToolTip="Установка движка и первой модели">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE945;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource NavIcon}" />
+                        <TextBlock Text="Быстрый старт" Style="{StaticResource NavLabel}" />
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource NavModels}" Command="{Binding NavigateCommand}" CommandParameter="Models" AutomationProperties.Name="Models Hub" ToolTip="Каталог, рекомендации и установленные GGUF">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE7F8;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource NavIcon}" />
+                        <TextBlock Text="Models Hub" Style="{StaticResource NavLabel}" />
+                    </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource NavOptions}" Command="{Binding NavigateCommand}" CommandParameter="Options" AutomationProperties.Name="Параметры" ToolTip="Runtime, оформление и доступ с телефона">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource NavIcon}" />
+                        <TextBlock Text="Параметры" Style="{StaticResource NavLabel}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Model card -->
+            <Border Grid.Row="2" Margin="12,12,12,14" Background="{StaticResource CardGradientBrush}" CornerRadius="14" Padding="14" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <StackPanel>
+                    <DockPanel LastChildFill="False">
+                        <TextBlock DockPanel.Dock="Left" Text="МОДЕЛЬ" Style="{StaticResource SectionLabel}" VerticalAlignment="Center" />
+                        <Border DockPanel.Dock="Right" Width="8" Height="8" CornerRadius="4" VerticalAlignment="Center">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{StaticResource TextDimBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsModelRunning}" Value="True">
+                                            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </DockPanel>
+
+                    <ComboBox ItemsSource="{Binding InstalledModels}" SelectedItem="{Binding SelectedInstalledModel}" Margin="0,10,0,0" FontSize="12" ToolTip="Локальные GGUF" AutomationProperties.Name="Локальная модель">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Text="Нет локальных моделей. Откройте Models Hub." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasInstalledModels}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Button Content="{Binding ModelStartStopText}" Command="{Binding ToggleModelStartStopCommand}" Style="{StaticResource AccentButton}" Margin="0,12,0,0" HorizontalAlignment="Stretch" Padding="12,9" />
+
+                    <TextBlock Text="{Binding ModelState}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis" Margin="0,10,0,0" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

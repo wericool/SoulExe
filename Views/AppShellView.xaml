@@ -1,0 +1,60 @@
+<UserControl x:Class="SoulExe.Views.AppShellView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:views="clr-namespace:SoulExe.Views" PreviewKeyDown="AppShellView_OnPreviewKeyDown" Loaded="AppShellView_OnLoaded" Unloaded="AppShellView_OnUnloaded">
+    <UserControl.Resources>
+        <!-- Local-only styles. Never register implicit templates for layout controls here. -->
+        <Style x:Key="InitialSetupOverlay" TargetType="Grid"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsInitialSetupVisible}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style>
+        <Style x:Key="ShellHeaderChip" TargetType="Border" BasedOn="{StaticResource Chip}">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="16,0,0,0" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <!-- Border does not clamp CornerRadius to half the height: the inherited 999 turns a short
+                 wide pill into an ellipse. Pin the radius to half the measured chip height instead. -->
+            <Setter Property="CornerRadius" Value="14" />
+            <!-- Without this the pill stretches to the full header height and its text sticks to the top. -->
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="ShellHeaderStateDot" TargetType="Border">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{StaticResource TextDimBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsModelRunning}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Grid><Grid.RowDefinitions><RowDefinition Height="42" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition x:Name="NavigationColumn" Width="232" MinWidth="180" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+        <views:TitleBarView Grid.Row="0" Grid.ColumnSpan="2" />
+        <!-- Sidebar is a separate component. It requires its own code-behind so that
+             InitializeComponent runs; without it the control renders empty. -->
+        <views:NavigationView Grid.Row="1" Grid.Column="0" />
+        <Grid x:Name="ContentRoot" Grid.Row="1" Grid.Column="1" Background="{StaticResource WindowBrush}" Focusable="True"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+            <!-- Shell header. Left/right padding matches PageHost so the title aligns with page content.
+                 A star column keeps the title measurable, so long subtitles trim instead of clipping. -->
+            <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="24,16" MinHeight="88">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PageTitle}" Style="{StaticResource PageHeaderTitle}" TextTrimming="CharacterEllipsis" />
+                        <!-- PageHeaderSubtitle is consumed only by the shell header; raise
+                             contrast here: TextMuted on the panel surface measures ~3.6:1, below AA. -->
+                        <TextBlock Text="{Binding PageSubtitle}" Style="{StaticResource PageHeaderSubtitle}" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding PageSubtitle}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Style="{StaticResource ShellHeaderChip}" ToolTip="{Binding ModelState}" AutomationProperties.Name="Состояние локальной модели" AutomationProperties.HelpText="{Binding ModelState}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource ShellHeaderStateDot}" />
+                            <TextBlock Text="{Binding ModelState}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="220" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+            <ContentControl x:Name="PageHost" Grid.Row="1" Margin="24,16,24,20" />
+        </Grid>
+        <views:StatusView Grid.Row="2" Grid.ColumnSpan="2" />
+        <Grid Grid.Row="1" Grid.RowSpan="2" Grid.ColumnSpan="2" Panel.ZIndex="100" Background="{StaticResource OverlayBrush}" Style="{StaticResource InitialSetupOverlay}"><Border x:Name="InitialSetupDialog" MaxWidth="1040" MaxHeight="650" Margin="24" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderStrongBrush}" BorderThickness="1" CornerRadius="12" Padding="32" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions><TextBlock Text="Добро пожаловать в SoulExe" FontSize="27" FontWeight="SemiBold" /><TextBlock Grid.Row="1" Text="{Binding InitialSetupStepTitle}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="1,4,0,20" /><views:SetupView x:Name="InitialSetupView" Grid.Row="2" /></Grid></Border></Grid>
+    </Grid>
+</UserControl>

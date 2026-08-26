@@ -1,0 +1,19 @@
+<UserControl x:Class="SoulExe.Views.TitleBarView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" xmlns:views="clr-namespace:SoulExe.Views">
+    <Border Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                <Border Width="21" Height="21" CornerRadius="7" Background="{StaticResource AccentGradientBrush}" ClipToBounds="True" Effect="{StaticResource AccentGlowEffect}"><Image Source="pack://application:,,,/Assets/SoulExeWindowIcon.png" Stretch="UniformToFill" /></Border>
+                <TextBlock Text="SoulExe" FontSize="13" FontWeight="SemiBold" Margin="9,0,0,0" VerticalAlignment="Center" />
+                <TextBlock Text="локальный AI-чат" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="8,1,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button Content="−" Click="MinimizeWindowButton_OnClick" Style="{StaticResource WindowChromeButton}" AutomationProperties.Name="Свернуть окно" ToolTip="Свернуть" />
+                <Button Click="ToggleMaximizeWindowButton_OnClick" AutomationProperties.Name="Развернуть или восстановить окно">
+                    <Button.Style><Style TargetType="Button" BasedOn="{StaticResource WindowChromeButton}"><Setter Property="Content" Value="□" /><Setter Property="ToolTip" Value="Развернуть" /><Style.Triggers><DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="Maximized"><Setter Property="Content" Value="❐" /><Setter Property="ToolTip" Value="Восстановить размер" /></DataTrigger></Style.Triggers></Style></Button.Style>
+                </Button>
+                <Button Content="×" Click="CloseWindowButton_OnClick" Style="{StaticResource WindowCloseButton}" AutomationProperties.Name="Закрыть окно" ToolTip="Закрыть" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

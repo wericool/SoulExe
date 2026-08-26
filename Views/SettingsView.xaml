@@ -1,0 +1,885 @@
+<UserControl x:Class="SoulExe.Views.SettingsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:SoulExe" xmlns:views="clr-namespace:SoulExe.Views">
+    <Grid>
+
+                    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border Background="{StaticResource ElevatedBrush}" HorizontalAlignment="Left" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="5" Margin="0,0,0,14">
+                                    <WrapPanel KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="Вкладки настроек">
+                                        <Button Content="Runtime" Command="{Binding SelectOptionsTabCommand}" CommandParameter="llm" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="Runtime" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="3" TabIndex="0">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLlmOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="Оформление" Command="{Binding SelectOptionsTabCommand}" CommandParameter="appearance" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="Оформление" AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="3" TabIndex="1">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAppearanceOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="Мобильный" Command="{Binding SelectOptionsTabCommand}" CommandParameter="mobile" Padding="16,9" AutomationProperties.Name="Мобильный" AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="3" TabIndex="2">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsMobileOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </WrapPanel>
+                            </Border>
+                            <Grid Grid.Row="1">
+                                <Grid Margin="0,0,0,0">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLlmOptionsTab}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel>
+                                            <TextBlock Text="Runtime" FontSize="22" FontWeight="SemiBold" />
+                                            <TextBlock Text="Генерация, вычислительный движок и совместимость prompt. Сначала настройте основные параметры, затем открывайте расширенные." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,18" />
+                                            <!-- Cognitive Architecture is configured inside each character card. -->
+                                            <!-- Основная генерация. -->
+                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                                                <StackPanel>
+                                                    <TextBlock Text="Основные параметры генерации" FontSize="17" FontWeight="SemiBold" />
+                                                    <DockPanel Margin="0,18,0,8">
+                                                        <TextBlock Text="Ответ" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Макс. токенов" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Макс. длина ответа. Ограничивает максимальное количество слов, которое может написать персонаж за один раз. Слишком длинные ответы забивают контекст. Оптимально: 300–500 токенов." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="128" Maximum="65536" Ticks="128,256,512,768,1024,1536,2048,3072,4096,8192,16384,32768,65536" IsSnapToTickEnabled="True" TickPlacement="BottomRight" AutoToolTipPlacement="BottomRight" Value="{Binding LlamaOptions.MaxTokens}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.MaxTokens}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal" IsEnabled="{Binding LlamaOptions.ReasoningMode}">
+                                                            <TextBlock Text="Бюджет рассуждений" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Лимит скрытых токенов рассуждений для локальной модели через llama-server. Работает только у GGUF-моделей с поддержкой reasoning. −1: не передавать лимит и оставить поведение модели по умолчанию. 0: не выделять токены на рассуждения. Положительное число: максимум токенов рассуждений на один ответ; больше значение может улучшить сложный ответ, но замедляет генерацию." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="-1" Maximum="8192" SmallChange="64" Value="{Binding LlamaOptions.ReasoningBudget}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.ReasoningBudget}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <DockPanel Margin="0,18,0,8">
+                                                        <TextBlock Text="Креативность" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Temperature" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Температура (Креативность). Контролирует базовый уровень хаоса в ответах. Низкая (0.1–0.5): логично и предсказуемо. Высокая (0.8–1.5): очень креативно, эмоционально и непредсказуемо. Рекомендуется: 0.8–1.0. При высоких значениях обязательно используйте Min-P для защиты от бреда." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="2" SmallChange="0.05" Value="{Binding LlamaOptions.Temperature}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.Temperature}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Top-P" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Top-P. Старый метод сэмплинга, ограничивающий выбор слов суммарным процентом вероятности. Если вы используете Min-P, обязательно отключите Top-P, установив его на 1.0." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.01" Value="{Binding LlamaOptions.TopP}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.TopP}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <DockPanel Margin="0,18,0,8">
+                                                        <TextBlock Text="Повторы" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Штраф за частоту" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Штраф за частоту (Frequency Penalty). Штрафует слова в зависимости от того, сколько раз они уже встречались в тексте. Заставляет ИИ использовать богатый словарный запас и искать синонимы, а не повторять одни и те же прилагательные. Слишком высокие значения ломают грамматику. Оптимально: 0.0 - 0.5." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="2" SmallChange="0.05" Value="{Binding LlamaOptions.FrequencyPenalty}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.FrequencyPenalty}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Штраф за присутствие" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Штраф за присутствие (Presence Penalty). Накладывает штраф на слово, если оно встретилось хотя бы один раз. В отличие от штрафа за частоту, это заставляет ИИ менять тему разговора и вводить новые концепции, не давая диалогу застрять в одной точке. При высоких значениях ИИ будет хаотично прыгать по темам. Оптимально: 0.0 - 0.4." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="2" SmallChange="0.05" Value="{Binding LlamaOptions.PresencePenalty}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.PresencePenalty}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                            <!-- Оборудование. -->
+                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                                                <StackPanel>
+                                                    <TextBlock Text="Движок и производительность" FontSize="17" FontWeight="SemiBold" />
+                                                    <DockPanel Margin="0,18,0,8">
+                                                        <TextBlock Text="Движок" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Команда запуска сервера" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Фактическая команда, с которой SoulExe запускает локальный llama-server. Это диагностическое поле, а не сетевой облачный сервис." />
+                                                        </StackPanel>
+                                                        <TextBox Grid.Column="1" Text="{Binding ModelLaunchCommand, Mode=OneWay}" IsReadOnly="True" ToolTip="Фактическая команда запуска llama.cpp" />
+                                                    </Grid>
+                                                    <Grid Margin="0,10,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Вычислительный движок" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Выбирает сборку llama.cpp: CPU для любого ПК; CUDA для NVIDIA; Vulkan для совместимых GPU; ROCm для AMD; SYCL для Intel." />
+                                                        </StackPanel>
+                                                        <ComboBox Grid.Column="1" ItemsSource="{Binding LlamaBackends}" SelectedItem="{Binding SelectedLlamaBackend}" DisplayMemberPath="DisplayName" />
+                                                        <Button Grid.Column="2" Content="Установить" Command="{Binding InstallEngineCommand}" Background="{StaticResource BorderStrongBrush}" />
+                                                    </Grid>
+                                                    <Grid Margin="0,10,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Тип KV-кэша" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Квантизируйте Context Cache, чтобы сэкономить значительный объем видеопамяти при работе с длинными контекстами." />
+                                                        </StackPanel>
+                                                        <ComboBox Grid.Column="1" SelectedValue="{Binding LlamaOptions.KvCacheType}" SelectedValuePath="Content">
+                                                            <ComboBoxItem Content="f16" />
+                                                            <ComboBoxItem Content="q8_0" />
+                                                            <ComboBoxItem Content="q4_1" />
+                                                            <ComboBoxItem Content="q4_0" />
+                                                        </ComboBox>
+                                                    </Grid>
+                                                    <WrapPanel Margin="170,10,0,0">
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
+                                                            <CheckBox Content="MLock" IsChecked="{Binding LlamaOptions.UseMlock}" />
+                                                            <ui:HelpHint Hint="MLock (Блокировка памяти). Эта функция предотвращает выгрузку языковой модели из оперативной памяти (RAM) в файл подкачки на диске. Когда опция включена, модель остается полностью загруженной в памяти, что гарантирует максимально быстрый отклик без микрофризов при генерации каждого нового сообщения. Рекомендуется включать только при наличии достаточного объема ОЗУ, так как эта память будет постоянно заблокирована системой. На ПК с малым объемом памяти лучше оставить отключенной." />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
+                                                            <CheckBox Content="Использовать отображение модели в память (MMAP)" IsChecked="{Binding LlamaOptions.UseMmap}" />
+                                                            <ui:HelpHint Hint="Включено: llama.cpp использует отображение файла модели в память (mmap) и считывает страницы с диска по требованию. Выключено: передаётся режим No MMAP, модель загружается в ОЗУ заранее; это требует больше RAM и может уменьшить задержки при генерации." />
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <CheckBox Content="Flash Attention" IsChecked="{Binding LlamaOptions.FlashAttention}" />
+                                                            <ui:HelpHint Hint="Flash Attention. Новейшая технология, ускоряющая генерацию и снижающая потребление VRAM при обработке длинных чатов. Оптимизирует вычисления внутри нейросети на больших размерах контекста (4K, 8K и выше). Настоятельно рекомендуется всегда держать включенным." />
+                                                        </StackPanel>
+                                                    </WrapPanel>
+                                                    <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="11" Margin="0,12,0,0">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="225" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <CheckBox Content="Режим рассуждений" IsChecked="{Binding LlamaOptions.ReasoningMode}" FontWeight="SemiBold" />
+                                                                <ui:HelpHint Hint="Режим размышлений (Thinking Mode). Создан для мыслящих моделей вроде DeepSeek-R1 или QwQ, которые генерируют внутренние рассуждения перед ответом. При включении интерфейс прячет теги &lt;think&gt; в красивый блок и запрещает голосовому движку (TTS) читать мысли вслух. Оставьте выключенным для обычных моделей (Llama-3, Mistral, обычный Qwen)." />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="1" IsEnabled="{Binding LlamaOptions.ReasoningMode}">
+                                                                <TextBlock Text="При включении настройте бюджет рассуждений выше." Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                    <DockPanel Margin="0,20,0,8">
+                                                        <TextBlock Text="Производительность" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Слои в GPU" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Загрузка слоев в GPU. Позволяет контролировать, какая часть модели обрабатывается видеокартой (VRAM), а какая — процессором (RAM). Чем больше слоев в видеокарте, тем быстрее генерация, но тем выше требования к памяти. Особенно полезно для больших моделей (от 13B). Если у вас мощная видеокарта, выкручивайте на максимум." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding LlamaOptions.GpuLayers}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.GpuLayers}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="MoE-слои на CPU" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="0 = Отключено. Количество слоев «Mixture of Experts» (MoE), размещаемых в оперативной памяти (CPU RAM). Крайне важно для работы с моделями архитектуры MoE." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding LlamaOptions.CpuMoeLayers}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.CpuMoeLayers}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Размер контекста" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Контекстное окно. Это максимальное количество токенов, которое модель может обработать за раз (её рабочая память). Включает историю чата, авторские заметки и записи из lorebook. Большее контекстное окно позволяет персонажу помнить больше, но значительно увеличивает потребление VRAM. Уменьшите это значение на слабых ПК. Для долгосрочной памяти лучше держите включённым модуль «Soul Memory», а не выкручивайте контекст на максимум." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="2048" Maximum="131072" Ticks="2048,4096,8192,16384,32768,65536,131072" IsSnapToTickEnabled="True" TickPlacement="BottomRight" AutoToolTipPlacement="BottomRight" Value="{Binding LlamaOptions.ContextSize}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.ContextSize}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Размер пакета prompt" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Количество токенов, обрабатываемых одновременно при оценке промпта. Значение 512 является безопасным. Чем выше значение, тем быстрее загрузка и тем больше требуется VRAM." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="8192" LargeChange="128" Value="{Binding LlamaOptions.BatchSize}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.BatchSize}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <Grid Margin="0,9,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Потоки CPU" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="0 = Автоматически. Укажите количество физических ядер процессора для обеспечения оптимальной скорости инференса на процессоре." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="64" Value="{Binding LlamaOptions.CpuThreads}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.CpuThreads}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                    </Grid>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,15,0,4">
+                                                        <TextBlock Text="Пользовательские аргументы llama.cpp" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                        <ui:HelpHint Hint="Пользовательские аргументы. Позволяет передавать дополнительные аргументы командной строки напрямую локальному LLM-серверу (llama.cpp). Это предназначено для опытных пользователей, которые хотят точно настроить специфические параметры движка (например, масштабирование RoPE или параметры кэширования), не представленные в графическом интерфейсе. Используйте с осторожностью. Неверные флаги могут привести к сбою сервера или переопределить настройки интерфейса. Пример: --rope-freq-base 10000." />
+                                                    </StackPanel>
+                                                    <TextBox Text="{Binding LlamaOptions.ExtraArguments}" />
+                                                </StackPanel>
+                                            </Border>
+                                            <!-- Prompt и расширенный sampling. -->
+                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                                                <StackPanel>
+                                                    <TextBlock Text="Промпт" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <DockPanel Margin="0,18,0,8">
+                                                        <TextBlock Text="Шаблон и стоп-строки" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
+                                                    </DockPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Шаблон чата" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Шаблон чата (Chat Template). Определяет, в каком формате ваш текст отправляется нейросети. Разные ИИ обучены на разных форматах. Если шаблон не совпадает с моделью, бот начнет галлюцинировать или выводить спецсимволы (например, &lt;|im_end|&gt;). Auto берет шаблон прямо из GGUF файла. Если модель ведет себя странно, выберите вручную ChatML или Llama-3." />
+                                                        </StackPanel>
+                                                        <ComboBox Grid.Column="1" SelectedValue="{Binding LlamaOptions.ChatTemplate}" SelectedValuePath="Content">
+                                                            <ComboBoxItem Content="auto" />
+                                                            <ComboBoxItem Content="chatml" />
+                                                            <ComboBoxItem Content="llama-3" />
+                                                            <ComboBoxItem Content="deepseek" />
+                                                            <ComboBoxItem Content="qwen" />
+                                                            <ComboBoxItem Content="mistral" />
+                                                            <ComboBoxItem Content="alpaca" />
+                                                        </ComboBox>
+                                                    </Grid>
+                                                    <Grid Margin="0,10,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Стоп-строки" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Стоп-строки (Stop Strings). Список слов или тегов, при появлении которых ИИ немедленно прекращает генерацию. Это важнейший инструмент, чтобы запретить ИИ говорить или действовать за вас (например, генерировать User: и отвечать на свои же вопросы). Перечисляйте через запятую. Пример: User:, &lt;/s&gt;, &lt;|eot_id|&gt;." />
+                                                        </StackPanel>
+                                                        <TextBox Grid.Column="1" Text="{Binding LlamaOptions.StopStrings}" ToolTip="Разделяйте значения символом | или новой строкой" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18">
+                                                <Expander IsExpanded="False">
+                                                    <Expander.Header>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <CheckBox Content="Расширенный sampling LLM" IsChecked="{Binding LlamaOptions.EnableAdvancedSampling}" FontSize="17" FontWeight="SemiBold" />
+                                                            <ui:HelpHint Hint="Если эта опция отключена, используются стандартные настройки генерации с первой панели. Расширенные настройки игнорируются." />
+                                                        </StackPanel>
+                                                    </Expander.Header>
+                                                    <Grid IsEnabled="{Binding LlamaOptions.EnableAdvancedSampling}" Margin="0,17,0,0">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="112" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="Min-P" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Min-P (Умное отсечение). Новый золотой стандарт RolePlay. Динамически отсекает мусорные слова на основе вероятности самого лучшего слова. Если ИИ уверен в ответе, Min-P безжалостно режет бред. Если ИИ нужно проявить фантазию, барьер снижается, впуская красивые синонимы. Замена Top-P. Установите Top-P на 1.0, а Min-P на 0.05 - 0.10 для идеальной логики при высокой Температуре." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.01" Value="{Binding LlamaOptions.MinP}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding LlamaOptions.MinP}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
+                                                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Мин. динамич. темп." VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Динамическая Температура. Вместо фиксированного значения, температура плавает между Мин. и Макс. границами в зависимости от уверенности ИИ. Описывая факты, температура падает для логики. Описывая эмоции, температура взлетает для креатива." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding LlamaOptions.DynamicTemperatureMin}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding LlamaOptions.DynamicTemperatureMin}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Макс. динамич. темп." VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Динамическая Температура. Вместо фиксированного значения, температура плавает между Мин. и Макс. границами в зависимости от уверенности ИИ. Описывая факты, температура падает для логики. Описывая эмоции, температура взлетает для креатива." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding LlamaOptions.DynamicTemperatureMax}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding LlamaOptions.DynamicTemperatureMax}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Вероятность XTC" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="XTC (Удаление банальностей). Революция для RP. Принудительно удаляет самые очевидные и клишированные слова из вариантов выбора ИИ. Устали от фраз «мурашки пробежали по спине» или «хищная ухмылка»? XTC заставит модель искать уникальные, литературные альтернативы. Вероятность: шанс срабатывания алгоритма (оптимально 0.3 - 0.5)." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LlamaOptions.XtcProbability}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding LlamaOptions.XtcProbability}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Порог XTC" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Порог XTC (Threshold). Определяет, насколько популярным (вероятным) должно быть слово, чтобы алгоритм XTC имел право его удалить. Оптимально: 0.1 (удаляются только слова с вероятностью выше 10%)." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LlamaOptions.XtcThreshold}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding LlamaOptions.XtcThreshold}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Множитель DRY" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="DRY (Множитель). В отличие от старых алгоритмов, DRY (Don’t Repeat Yourself) распознает и штрафует повторения целых предложений и структур. Если Вайфу постоянно начинает сообщения фразой «Я вздыхаю и смотрю на тебя», DRY сломает этот паттерн и заставит ее действовать иначе. Множитель: сила штрафа (оптимально 0.8)." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding LlamaOptions.DryMultiplier}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="5" Grid.Column="2" Text="{Binding LlamaOptions.DryMultiplier}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="База DRY" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="DRY База. Базовый коэффициент масштабирования алгоритма. Определяет, насколько агрессивно растет штраф от длины повторяющейся фразы. Оптимально: 1.75." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="6" Grid.Column="1" Minimum="0" Maximum="3" Value="{Binding LlamaOptions.DryBase}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="6" Grid.Column="2" Text="{Binding LlamaOptions.DryBase}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Допуск длины DRY" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Допуск длины DRY. Количество токенов (слов/слогов), которым разрешено повторяться до того, как сработает штраф DRY. Оптимально: 2 (чтобы не штрафовать короткие связки типа «Я есть» или «И тут»)." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="7" Grid.Column="1" Minimum="0" Maximum="32" Value="{Binding LlamaOptions.DryAllowedLength}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="7" Grid.Column="2" Text="{Binding LlamaOptions.DryAllowedLength}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                        <StackPanel Grid.Row="8" Orientation="Horizontal" Margin="0,9,0,0">
+                                                            <TextBlock Text="Экспонента дин. темп." VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="Экспонента динамической температуры (`dynatemp_exponent`). Отдельно задаёт кривую изменения температуры между минимальным и максимальным значениями. 1.0 — линейное изменение; больше 1.0 сильнее удерживает температуру у нижней границы; меньше 1.0 быстрее смещает её к верхней границе." />
+                                                        </StackPanel>
+                                                        <Slider Grid.Row="8" Grid.Column="1" Minimum="0.1" Maximum="5" SmallChange="0.1" Value="{Binding LlamaOptions.DynamicTemperatureExponent}" Margin="0,9,0,0" />
+                                                        <TextBox Grid.Row="8" Grid.Column="2" Text="{Binding LlamaOptions.DynamicTemperatureExponent}" TextAlignment="Center" Margin="0,9,0,0" />
+                                                    </Grid>
+                                                </Expander>
+                                            </Border>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                    <Border Grid.Row="1" Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,12,0,0">
+                                        <DockPanel>
+                                            <TextBlock Text="Изменения вступят в силу после сохранения; для уже запущенной модели перезапустите сервер." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center" />
+                                            <Button DockPanel.Dock="Right" Content="Сохранить настройки" Command="{Binding SaveModelSettingsCommand}" Background="{StaticResource SuccessBrush}" FontWeight="SemiBold" />
+                                        </DockPanel>
+                                    </Border>
+                                </Grid>
+                                <Grid x:Name="AppearanceLayout" Margin="0,0,0,0">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsAppearanceOptionsTab}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="24" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ScrollViewer x:Name="AppearanceEditor" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                                        <StackPanel>
+                                            <Border Style="{StaticResource SettingsSectionCard}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Цвета разметки" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="Выберите акцентные оттенки для разных типов текста. Изменения применяются к чату и предпросмотру сразу." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Основной текст" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Базовый текст сообщений" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.TextColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F3F6FF" ToolTip="#F3F6FF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#F3F6FF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DDE6F7" ToolTip="#DDE6F7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#DDE6F7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FFF4D8" ToolTip="#FFF4D8" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FFF4D8" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DDF7E5" ToolTip="#DDF7E5" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#DDF7E5" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F7DDF0" ToolTip="#F7DDF0" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#F7DDF0" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FFFFFF" ToolTip="#FFFFFF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FFFFFF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#C7D2FE" ToolTip="#C7D2FE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#C7D2FE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FFE2A7" ToolTip="#FFE2A7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FFE2A7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#E0F2FE" ToolTip="#E0F2FE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#E0F2FE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#EDE9FE" ToolTip="#EDE9FE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#EDE9FE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FCE7F3" ToolTip="#FCE7F3" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FCE7F3" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FEF3C7" ToolTip="#FEF3C7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FEF3C7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DCFCE7" ToolTip="#DCFCE7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#DCFCE7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#CCFBF1" ToolTip="#CCFBF1" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#CCFBF1" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FFE4E6" ToolTip="#FFE4E6" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FFE4E6" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#E5E7EB" ToolTip="#E5E7EB" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#E5E7EB" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Действия и акценты" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Текст между звёздочками" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.ActionColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F4B860" ToolTip="#F4B860" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#F4B860" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F59E0B" ToolTip="#F59E0B" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#F59E0B" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#E8A0BF" ToolTip="#E8A0BF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#E8A0BF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#8ED6A7" ToolTip="#8ED6A7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#8ED6A7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#90C8F4" ToolTip="#90C8F4" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#90C8F4" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#EAD8FF" ToolTip="#EAD8FF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#EAD8FF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F9A8D4" ToolTip="#F9A8D4" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#F9A8D4" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#A7F3D0" ToolTip="#A7F3D0" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#A7F3D0" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FB7185" ToolTip="#FB7185" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#FB7185" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FDBA74" ToolTip="#FDBA74" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#FDBA74" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FDE047" ToolTip="#FDE047" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#FDE047" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#A3E635" ToolTip="#A3E635" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#A3E635" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#5EEAD4" ToolTip="#5EEAD4" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#5EEAD4" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#93C5FD" ToolTip="#93C5FD" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#93C5FD" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#C4B5FD" ToolTip="#C4B5FD" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#C4B5FD" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F0ABFC" ToolTip="#F0ABFC" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ActionColor|#F0ABFC" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Прямая речь" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Выделение реплик в кавычках" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.QuoteColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#8ECCFF" ToolTip="#8ECCFF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#8ECCFF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#AFA2FF" ToolTip="#AFA2FF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#AFA2FF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#72D5C0" ToolTip="#72D5C0" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#72D5C0" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F4B879" ToolTip="#F4B879" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#F4B879" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FF9EB8" ToolTip="#FF9EB8" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#FF9EB8" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#BAE6FD" ToolTip="#BAE6FD" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#BAE6FD" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DDD6FE" ToolTip="#DDD6FE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#DDD6FE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FDE68A" ToolTip="#FDE68A" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#FDE68A" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#BFDBFE" ToolTip="#BFDBFE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#BFDBFE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#A5B4FC" ToolTip="#A5B4FC" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#A5B4FC" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#99F6E4" ToolTip="#99F6E4" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#99F6E4" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FBCFE8" ToolTip="#FBCFE8" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#FBCFE8" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FED7AA" ToolTip="#FED7AA" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#FED7AA" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FDE047" ToolTip="#FDE047" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#FDE047" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#BBF7D0" ToolTip="#BBF7D0" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#BBF7D0" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#E9D5FF" ToolTip="#E9D5FF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="QuoteColor|#E9D5FF" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Встроенный код" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Короткие технические фрагменты" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.CodeColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#C084FC" ToolTip="#C084FC" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#C084FC" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#8FA5FF" ToolTip="#8FA5FF" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#8FA5FF" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#6CD4B7" ToolTip="#6CD4B7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#6CD4B7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F4C36B" ToolTip="#F4C36B" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#F4C36B" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F38FA4" ToolTip="#F38FA4" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#F38FA4" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F0ABFC" ToolTip="#F0ABFC" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#F0ABFC" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#67E8F9" ToolTip="#67E8F9" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#67E8F9" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#BEF264" ToolTip="#BEF264" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#BEF264" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DDD6FE" ToolTip="#DDD6FE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#DDD6FE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#BFDBFE" ToolTip="#BFDBFE" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#BFDBFE" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#99F6E4" ToolTip="#99F6E4" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#99F6E4" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FDE68A" ToolTip="#FDE68A" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#FDE68A" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FBCFE8" ToolTip="#FBCFE8" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#FBCFE8" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#FDBA74" ToolTip="#FDBA74" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#FDBA74" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#A7F3D0" ToolTip="#A7F3D0" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#A7F3D0" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#F0ABFC" ToolTip="#F0ABFC" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="CodeColor|#F0ABFC" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource SettingsSectionCard}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Фоны и пузыри" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="Настройте области диалога и сообщения обеих сторон. Выбранный вариант отмечен галочкой." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Фон персонажа" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Левые пузыри персонажей" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.AssistantBubbleColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#1F2633" ToolTip="#1F2633" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#1F2633" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#2A213B" ToolTip="#2A213B" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#2A213B" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#17333C" ToolTip="#17333C" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#17333C" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#30251E" ToolTip="#30251E" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#30251E" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#242424" ToolTip="#242424" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#242424" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#1B3152" ToolTip="#1B3152" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#1B3152" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#3A243D" ToolTip="#3A243D" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#3A243D" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#1B3A33" ToolTip="#1B3A33" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#1B3A33" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#111827" ToolTip="Графит" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#111827" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#172554" ToolTip="Ночной синий" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#172554" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#3B0764" ToolTip="Тёмный фиолетовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#3B0764" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#4C0519" ToolTip="Винный" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#4C0519" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#451A03" ToolTip="Кофейный" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#451A03" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#052E16" ToolTip="Лесной" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#052E16" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#083344" ToolTip="Нефритовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#083344" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#3F3F46" ToolTip="Сланцевый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="AssistantBubbleColor|#3F3F46" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Фон пользователя" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Правые пузыри пользователя" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.UserBubbleColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#2F58F5" ToolTip="#2F58F5" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#2F58F5" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#6937D7" ToolTip="#6937D7" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#6937D7" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#0B8C7A" ToolTip="#0B8C7A" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#0B8C7A" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#C7547A" ToolTip="#C7547A" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#C7547A" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#B76A21" ToolTip="#B76A21" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#B76A21" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#4355C9" ToolTip="#4355C9" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#4355C9" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#9B3A72" ToolTip="#9B3A72" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#9B3A72" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#167A6F" ToolTip="#167A6F" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#167A6F" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#2563EB" ToolTip="Синий" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#2563EB" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#7C3AED" ToolTip="Фиолетовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#7C3AED" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DB2777" ToolTip="Розовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#DB2777" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#DC2626" ToolTip="Красный" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#DC2626" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#EA580C" ToolTip="Оранжевый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#EA580C" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#CA8A04" ToolTip="Золотой" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#CA8A04" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#16A34A" ToolTip="Зелёный" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#16A34A" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#0891B2" ToolTip="Бирюзовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="UserBubbleColor|#0891B2" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="156" />
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="Фон области чата" FontWeight="SemiBold" />
+                                                            <TextBlock Text="Рабочая область ленты" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.ChatBackgroundColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <WrapPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#12151D" ToolTip="#12151D" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#12151D" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#0D1017" ToolTip="#0D1017" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#0D1017" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#17121F" ToolTip="#17121F" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#17121F" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#101B20" ToolTip="#101B20" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#101B20" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#1A1712" ToolTip="#1A1712" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#1A1712" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#152238" ToolTip="#152238" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#152238" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#22182F" ToolTip="#22182F" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#22182F" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#142923" ToolTip="#142923" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#142923" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#030712" ToolTip="Почти чёрный" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#030712" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#0F172A" ToolTip="Графитовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#0F172A" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#172554" ToolTip="Ночной синий" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#172554" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#2E1065" ToolTip="Глубокий фиолетовый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#2E1065" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#3F0A1E" ToolTip="Винный" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#3F0A1E" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#3F2008" ToolTip="Тёплый коричневый" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#3F2008" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#064E3B" ToolTip="Тёмный изумруд" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#064E3B" />
+                                                            <Button Style="{StaticResource SwatchButton}" Background="#164E63" ToolTip="Тёмный циан" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#164E63" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource SettingsSectionCard}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Шрифт и размеры" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="Комбинация форматирования и масштаба помогает сохранить удобочитаемость длинных диалогов." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,14" />
+                                                    <WrapPanel>
+                                                        <CheckBox Content="Курсив для действий" IsChecked="{Binding ChatAppearance.FormatActions}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="Подсветка прямой речи" IsChecked="{Binding ChatAppearance.FormatQuotes}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="Жирный текст" IsChecked="{Binding ChatAppearance.FormatBold}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="Встроенный код" IsChecked="{Binding ChatAppearance.FormatCode}" Margin="0,0,24,12" />
+                                                    </WrapPanel>
+                                                    <Grid Margin="0,8,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="86" />
+                                                            <ColumnDefinition Width="24" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="Размер текста" VerticalAlignment="Center" />
+                                                        <Slider Grid.Column="1" Minimum="11" Maximum="24" IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding ChatAppearance.FontSize}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding ChatAppearance.FontSize}" TextAlignment="Center" Margin="12,0,0,0" />
+                                                        <TextBlock Grid.Column="3" Text="px" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="86" />
+                                                            <ColumnDefinition Width="24" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="Макс. ширина пузыря" VerticalAlignment="Center" />
+                                                        <Slider Grid.Column="1" Minimum="360" Maximum="960" TickFrequency="40" Value="{Binding ChatAppearance.BubbleMaxWidth}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding ChatAppearance.BubbleMaxWidth}" TextAlignment="Center" Margin="12,0,0,0" />
+                                                        <TextBlock Grid.Column="3" Text="px" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    </Grid>
+                                                    <Grid Margin="0,12,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="170" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="86" />
+                                                            <ColumnDefinition Width="24" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="Скругление пузыря" VerticalAlignment="Center" />
+                                                        <Slider Grid.Column="1" Minimum="0" Maximum="28" IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding ChatAppearance.BubbleCornerRadius}" />
+                                                        <TextBox Grid.Column="2" Text="{Binding ChatAppearance.BubbleCornerRadius}" TextAlignment="Center" Margin="12,0,0,0" />
+                                                        <TextBlock Grid.Column="3" Text="px" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="14" Padding="16" Margin="0,0,0,16">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="42" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="32" Height="32" CornerRadius="10" Background="{StaticResource AccentGradientBrush}">
+                                                        <TextBlock Text="✦" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="Оформление применяется ко всем чатам и обновляется мгновенно." FontWeight="SemiBold" />
+                                                        <TextBlock Text="Можно в любой момент сбросить значения или сохранить свою комбинацию." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                    <Border x:Name="AppearancePreview" Grid.Column="2" Style="{StaticResource PreviewPanelCard}" VerticalAlignment="Stretch" MinWidth="380">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <DockPanel LastChildFill="False">
+                                                <Border DockPanel.Dock="Right" Background="{StaticResource SuccessBrush}" CornerRadius="10" Padding="9,4" VerticalAlignment="Center">
+                                                    <TextBlock Text="В реальном времени" Foreground="{StaticResource SuccessTextBrush}" FontSize="10" FontWeight="SemiBold" />
+                                                </Border>
+                                                <StackPanel>
+                                                    <TextBlock Text="Предпросмотр чата" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="Пузыри, текст, ширина и фон обновляются сразу." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,5,0,0" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                            <Border Grid.Row="1" Background="{Binding ChatAppearance.ChatBackgroundColor}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="14" Margin="0,16,0,16" MinHeight="470" ClipToBounds="True">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="*" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="14,11">
+                                                        <DockPanel LastChildFill="False">
+                                                            <TextBlock DockPanel.Dock="Right" Text="сейчас" Foreground="{StaticResource TextMutedBrush}" FontSize="10" VerticalAlignment="Center" />
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Border Width="34" Height="34" CornerRadius="17" Background="{StaticResource AccentGradientBrush}">
+                                                                    <TextBlock Text="П" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+                                                                <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="Персонаж" FontWeight="SemiBold" FontSize="12" />
+                                                                    <TextBlock Text="последнее сообщение только что" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                    </Border>
+                                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" Padding="14,12">
+                                                        <StackPanel VerticalAlignment="Bottom">
+                                                            <Border Background="{Binding ChatAppearance.AssistantBubbleColor}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{Binding ChatAppearance.BubbleCornerRadius}" Padding="12,10" MaxWidth="{Binding ChatAppearance.BubbleMaxWidth}" HorizontalAlignment="Left">
+                                                                <StackPanel>
+                                                                    <DockPanel LastChildFill="False" Margin="0,0,0,6">
+                                                                        <Border DockPanel.Dock="Left" Width="24" Height="24" CornerRadius="12" Background="{StaticResource AccentSoftBrush}" Margin="0,0,7,0">
+                                                                            <TextBlock Text="П" Foreground="{StaticResource AccentHoverBrush}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                        </Border>
+                                                                        <TextBlock Text="Персонаж" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                                        <TextBlock DockPanel.Dock="Right" Text="12:44" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                                                    </DockPanel>
+                                                                    <ui:SelectableFormattedChatBox ContentText="{Binding ChatAppearancePreviewText}" Appearance="{Binding ChatAppearance}" Foreground="{Binding ChatAppearance.TextColor}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border Background="{Binding ChatAppearance.AssistantBubbleColor}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{Binding ChatAppearance.BubbleCornerRadius}" Padding="12,9" MaxWidth="{Binding ChatAppearance.BubbleMaxWidth}" HorizontalAlignment="Left" Margin="0,10,48,0">
+                                                                <DockPanel LastChildFill="False">
+                                                                    <TextBlock DockPanel.Dock="Right" Text="12:45" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="10,0,0,0" VerticalAlignment="Bottom" />
+                                                                    <TextBlock Text="*Она на мгновение задумалась и улыбнулась.*" FontStyle="Italic" FontSize="{Binding ChatAppearance.FontSize}" Foreground="{Binding ChatAppearance.ActionColor}" TextWrapping="Wrap" />
+                                                                </DockPanel>
+                                                            </Border>
+                                                            <Border Background="{Binding ChatAppearance.UserBubbleColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="{Binding ChatAppearance.BubbleCornerRadius}" Padding="12,10" MaxWidth="{Binding ChatAppearance.BubbleMaxWidth}" HorizontalAlignment="Right" Margin="48,12,0,0">
+                                                                <StackPanel>
+                                                                    <DockPanel LastChildFill="False" Margin="0,0,0,6">
+                                                                        <TextBlock Text="Вы" FontWeight="SemiBold" FontSize="11" Foreground="White" />
+                                                                        <TextBlock DockPanel.Dock="Right" Text="12:46" Foreground="{StaticResource ChatOutboundMetaBrush}" FontSize="9" Margin="12,0,0,0" />
+                                                                    </DockPanel>
+                                                                    <TextBlock Text="Понятно. Я хочу продолжить разговор и узнать больше." FontSize="{Binding ChatAppearance.FontSize}" Foreground="White" TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </ScrollViewer>
+                                                    <Border Grid.Row="2" Background="{StaticResource InputBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,1,0,0" Padding="12,10">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="32" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="Сообщение..." Foreground="{StaticResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" />
+                                                            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="9" Background="{StaticResource AccentGradientBrush}" HorizontalAlignment="Right">
+                                                                <TextBlock Text="➤" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                            <DockPanel Grid.Row="2" LastChildFill="False">
+                                                <Button DockPanel.Dock="Right" Content="Сохранить оформление" Command="{Binding SaveChatAppearanceCommand}" Style="{StaticResource AccentButton}" />
+                                                <Button Content="↻  Сбросить" Command="{Binding ResetChatAppearanceCommand}" Style="{StaticResource GhostButton}" />
+                                            </DockPanel>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                                <Grid>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMobileOptionsTab}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <views:MobileAccessView />
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    </Grid>
+</UserControl>

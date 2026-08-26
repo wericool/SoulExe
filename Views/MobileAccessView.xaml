@@ -1,0 +1,39 @@
+<UserControl x:Class="SoulExe.Views.MobileAccessView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid x:Name="MobileAccessLayout" MaxWidth="1040" HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="20" /><ColumnDefinition Width="300" /></Grid.ColumnDefinitions>
+            <StackPanel x:Name="MobileAccessControls">
+                <TextBlock Text="Мобильный доступ" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="Безопасный локальный веб-клиент для устройств в вашей Wi-Fi или LAN-сети." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,18" />
+                <Border Style="{StaticResource SettingsSectionCard}">
+                    <StackPanel>
+                        <TextBlock Text="Подключение" FontSize="17" FontWeight="SemiBold" />
+                        <TextBlock Text="Откройте этот адрес на телефоне, подключённом к той же частной сети. Сервер доступен, пока SoulExe запущен." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12" Margin="0,5,0,14" />
+                        <DockPanel x:Name="NetworkAddressRow" LastChildFill="True"><Button x:Name="CopyNetworkAddressButton" Command="{Binding CopyNetworkAddressCommand}" Content="Копировать адрес" Style="{StaticResource GhostButton}" Margin="10,0,0,0" DockPanel.Dock="Right" /><TextBox Text="{Binding NetworkAccessUrl, Mode=OneWay}" IsReadOnly="True" /></DockPanel>
+                        <StackPanel x:Name="NetworkStartRow" Orientation="Horizontal" Margin="0,14,0,0"><Button Command="{Binding ToggleNetworkCommand}" Padding="18,10"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource AccentButton}"><Setter Property="Content" Value="Запустить сервер" /><Style.Triggers><DataTrigger Binding="{Binding NetworkRunning}" Value="True"><Setter Property="Content" Value="Остановить сервер" /><Setter Property="Background" Value="{StaticResource DangerBrush}" /></DataTrigger></Style.Triggers></Style></Button.Style></Button><TextBlock x:Name="NetworkStartHint" Text="Сначала сохраните учётные данные, затем запустите сервер и откройте адрес в браузере телефона." Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" FontSize="11" VerticalAlignment="Center" Margin="12,0,0,0" /></StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource SettingsSectionCard}">
+                    <StackPanel>
+                        <TextBlock Text="Учётные данные" FontSize="17" FontWeight="SemiBold" />
+                        <TextBlock Text="Логин и пароль защищают локальный веб-клиент. В хранилище сохраняется только хэш пароля." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12" Margin="0,5,0,14" />
+                        <TextBlock Text="Логин" Style="{StaticResource SectionLabel}" /><TextBox Text="{Binding MobileAccessUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12" ToolTip="Можно использовать даже один символ." />
+                        <TextBlock Text="Новый пароль" Style="{StaticResource SectionLabel}" /><PasswordBox PasswordChanged="MobileAccessPassword_OnPasswordChanged" Margin="0,6,0,4" ToolTip="Оставьте пустым, чтобы сохранить действующий пароль." Background="{StaticResource InputBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderStrongBrush}" BorderThickness="1" Padding="10,8" CaretBrush="{StaticResource AccentHoverBrush}" />
+                        <TextBlock Text="Оставьте поле пустым, чтобы не менять пароль. Пароль из пробелов недопустим; при изменении текущие сессии будут завершены." Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" FontSize="11" Margin="0,0,0,14" />
+                        <Button Content="Сохранить учётные данные" Command="{Binding SaveMobileAccessCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource SettingsSectionCard}">
+                    <StackPanel><TextBlock Text="Сервер" FontSize="17" FontWeight="SemiBold" /><CheckBox Content="Запускать мобильный сервер вместе с SoulExe" IsChecked="{Binding StartMobileServerOnLaunch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,14,0,5" /><TextBlock Text="Состояние автозапуска сохраняется вместе с учётными данными. Разрешайте Windows Firewall только для частной сети." Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" FontSize="11" /></StackPanel>
+                </Border>
+            </StackPanel>
+            <Border x:Name="MobileAccessStatus" Grid.Column="2" Style="{StaticResource PreviewPanelCard}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Статус доступа" FontSize="17" FontWeight="SemiBold" />
+                    <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,14,0,16"><StackPanel><TextBlock FontWeight="SemiBold"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Сервер остановлен" /><Style.Triggers><DataTrigger Binding="{Binding NetworkRunning}" Value="True"><Setter Property="Text" Value="Сервер запущен" /><Setter Property="Foreground" Value="{StaticResource SuccessTextBrush}" /></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock><TextBlock Text="{Binding NetworkAccessUrl}" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" FontSize="11" Margin="0,5,0,0" /></StackPanel></Border>
+                    <TextBlock Text="Как подключиться" Style="{StaticResource SectionLabel}" /><TextBlock Text="1. Сохраните логин и пароль." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" /><TextBlock Text="2. Запустите локальный сервер." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" /><TextBlock Text="3. Скопируйте адрес и откройте его на телефоне." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" /><TextBlock Text="Для ответа в чате локальная модель должна быть запущена; для входа и просмотра сервера достаточно SoulExe." Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" FontSize="11" Margin="0,16,0,0" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

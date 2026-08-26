@@ -1,0 +1,24 @@
+<UserControl x:Class="SoulExe.Controls.ConversationDetailsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:SoulExe.Controls">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Background="{StaticResource PanelBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="14,10">
+            <TextBlock Text="Информация" FontSize="12" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondaryBrush}" />
+        </Border>
+
+        <controls:CharacterConversationDetailsView Grid.Row="2" />
+        <controls:GroupConversationSettingsView Grid.Row="2" />
+    </Grid>
+</UserControl>

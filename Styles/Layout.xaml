@@ -1,0 +1,78 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Shell layout and navigation only. Typography belongs to Typography.xaml. -->
+    <Style x:Key="ShellNavButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <!-- Navigation contract preserved from the original sidebar. -->
+    <Style x:Key="NavButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Border x:Name="Rail" Width="3" HorizontalAlignment="Left" Margin="-12,2,0,2" CornerRadius="2" Background="Transparent" />
+                            <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavPressedBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="Bd" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="NavHome" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsHomePage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavChat" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsChatPage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavScene" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsScenePage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavCharacters" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsCharactersPage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavGateway" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsGatewayPage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavSetup" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsSetupPage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavModels" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsModelsPage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavMobile" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsMobilePage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+    <Style x:Key="NavOptions" TargetType="Button" BasedOn="{StaticResource NavButton}">
+        <Style.Triggers><DataTrigger Binding="{Binding IsOptionsPage}" Value="True"><Setter Property="Background" Value="{StaticResource AccentGradientBrush}" /><Setter Property="Foreground" Value="White" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="AutomationProperties.ItemStatus" Value="Текущий раздел" /></DataTrigger></Style.Triggers>
+    </Style>
+</ResourceDictionary>
