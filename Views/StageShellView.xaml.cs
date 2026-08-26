@@ -186,6 +186,43 @@ public partial class StageShellView : UserControl
         else OpenBackstage();
     }
 
+    // WindowChrome.CaptionHeight is 1 so page toolbars stay clickable; these handlers
+    // restore window dragging from the shell's own empty surfaces instead.
+    private void TopBar_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // Only the empty band of the top bar drags; its buttons and pill keep their clicks.
+        if (!ReferenceEquals(e.OriginalSource, TopBar)) return;
+        var window = Window.GetWindow(this);
+        if (window is null) return;
+        if (e.ClickCount == 2)
+        {
+            window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        }
+        else if (window.WindowState != WindowState.Maximized)
+        {
+            window.DragMove();
+        }
+        e.Handled = true;
+    }
+
+    private void ChromeArea_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // Page overlay frame and backstage scrim drag the window; page content does not.
+        if (sender is not Grid grid || !ReferenceEquals(e.OriginalSource, grid)) return;
+        Window.GetWindow(this)?.DragMove();
+        e.Handled = true;
+    }
+
+    private void MinimizeWindowButton_OnClick(object sender, RoutedEventArgs e) => Window.GetWindow(this)!.WindowState = WindowState.Minimized;
+
+    private void ToggleMaximizeWindowButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var window = Window.GetWindow(this)!;
+        window.WindowState = window.WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    }
+
+    private void CloseWindowButton_OnClick(object sender, RoutedEventArgs e) => Window.GetWindow(this)!.Close();
+
     private void BackstageNav_OnClick(object sender, RoutedEventArgs e) => CloseBackstage();
 
     private void BackstageConversation_OnClick(object sender, RoutedEventArgs e)

@@ -212,6 +212,17 @@ EXE: `E:\Games\backup_opencode\Sources\OutputNewStyle\Release\win-x64\publish\So
   (кириллица в MDL2 = квадраты); маршрут Characters рендерит свежий
   CharactersView вместо пустого оверлея.
 - [x] Фазы A–C (см. раздел 2)
+- [x] Фикс chrome окна: `CaptionHeight 42 → 1`. Верхние 42px окна были зоной
+  заголовка (перетаскивание) и «съедали» клики по тулбарам страниц и верхним
+  кнопкам сцены. Проверено по исходникам WPF: `IsHitTestVisibleInChrome`
+  проверяется ТОЛЬКО на самом глубоком элементе (без обхода предков), пометить
+  им динамический контент страниц нельзя. Решение: caption отключён; drag
+  окна восстановлен вручную — пустая полоса топбара сцены (Background=
+  Transparent + OriginalSource==TopBar, двойной клик = maximize), рамки
+  PageOverlay и фон Backstage (OriginalSource==Grid). Кнопки окна
+  (− □ ×) возвращены как Layer 6 (ZIndex 210, всегда видны); TopBar и PageHost
+  получили правый отступ 140 под этот кластер. Заголовки тредов 68 → 76
+  (зазор под drag-полосу).
 
 ## 6. Если начинаешь отсюда
 

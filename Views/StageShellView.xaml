@@ -148,8 +148,8 @@
         <ContentControl x:Name="StageHost" />
 
         <!-- Layer 2: full-page host for non-stage routes during the transition phases. -->
-        <Grid x:Name="PageOverlay" Visibility="Collapsed" Background="{StaticResource WindowBrush}">
-            <ContentControl x:Name="PageHost" Margin="24,16,24,20" />
+        <Grid x:Name="PageOverlay" Visibility="Collapsed" Background="{StaticResource WindowBrush}" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
+            <ContentControl x:Name="PageHost" Margin="24,16,140,20" />
             <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,22" Style="{StaticResource StageModelChipButton}" Padding="16,9" AutomationProperties.Name="{DynamicResource S.Stage.BackToStage}" ToolTip="{DynamicResource S.Stage.BackToStage}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource AccentHoverBrush}" VerticalAlignment="Center" />
@@ -158,8 +158,9 @@
             </Button>
         </Grid>
 
-        <!-- Layer 3: floating top bar. The grid itself must not swallow stage clicks. -->
-        <Grid x:Name="TopBar" VerticalAlignment="Top" Margin="20,14,20,0" Background="{x:Null}">
+        <!-- Layer 3: floating top bar. Transparent background makes its empty band the
+             window drag area (CaptionHeight is 1, so nothing native steals clicks). -->
+        <Grid x:Name="TopBar" VerticalAlignment="Top" Margin="20,14,140,0" Background="Transparent" MouseLeftButtonDown="TopBar_OnMouseLeftButtonDown">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -344,7 +345,7 @@
         </Grid>
 
         <!-- Layer 4: Backstage overlay-hub. Sections: Continue rail, Characters gallery, system cards. -->
-        <Grid x:Name="BackstageOverlay" Visibility="Collapsed" Background="#F2060710" KeyboardNavigation.TabNavigation="Cycle">
+        <Grid x:Name="BackstageOverlay" Visibility="Collapsed" Background="#F2060710" KeyboardNavigation.TabNavigation="Cycle" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel MaxWidth="1020" Margin="40,54,40,44" HorizontalAlignment="Center">
                     <TextBlock Text="SoulExe" FontSize="32" FontWeight="SemiBold" HorizontalAlignment="Center" />
@@ -538,5 +539,26 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <!-- Layer 6: window chrome buttons. CaptionHeight is 1, so these are plain
+             client-area buttons floating above every route. -->
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,10,12,0" Panel.ZIndex="210">
+            <Button Click="MinimizeWindowButton_OnClick" Style="{StaticResource WindowChromeButton}" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" FontSize="10" AutomationProperties.Name="Свернуть окно" ToolTip="Свернуть" />
+            <Button Click="ToggleMaximizeWindowButton_OnClick" AutomationProperties.Name="Развернуть или восстановить окно" FontFamily="Segoe MDL2 Assets" FontSize="10">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource WindowChromeButton}">
+                        <Setter Property="Content" Value="&#xE922;" />
+                        <Setter Property="ToolTip" Value="Развернуть" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="Maximized">
+                                <Setter Property="Content" Value="&#xE923;" />
+                                <Setter Property="ToolTip" Value="Восстановить размер" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Click="CloseWindowButton_OnClick" Style="{StaticResource WindowCloseButton}" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10" AutomationProperties.Name="Закрыть окно" ToolTip="Закрыть" />
+        </StackPanel>
     </Grid>
 </UserControl>
