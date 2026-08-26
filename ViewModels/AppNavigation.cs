@@ -13,13 +13,18 @@ public static class AppNavigation
         // Memory and lore now live inside the selected character card; scenes live inside Chats.
         if (string.Equals(value, "Memory", StringComparison.OrdinalIgnoreCase)) return "Characters";
         if (string.Equals(value, "Scene", StringComparison.OrdinalIgnoreCase)) return "Chat";
-        // Mobile access is a Settings tab, not a standalone shell page.
+        // Mobile access, Models Hub and Quick Start live inside Settings as tabs.
         if (string.Equals(value, "Mobile", StringComparison.OrdinalIgnoreCase)) return "Options";
+        if (string.Equals(value, "Models", StringComparison.OrdinalIgnoreCase)) return "Options";
+        if (string.Equals(value, "Setup", StringComparison.OrdinalIgnoreCase)) return "Options";
         return value;
     }
 
     public static string? OptionsTabForRoute(string? page) =>
-        string.Equals(page, "Mobile", StringComparison.OrdinalIgnoreCase) ? "mobile" : null;
+        string.Equals(page, "Mobile", StringComparison.OrdinalIgnoreCase) ? "mobile"
+        : string.Equals(page, "Models", StringComparison.OrdinalIgnoreCase) ? "models"
+        : string.Equals(page, "Setup", StringComparison.OrdinalIgnoreCase) ? "setup"
+        : null;
 
     public static string Title(string page) => Localized(page, "title", FallbackTitle(page));
 
@@ -64,5 +69,7 @@ public static class AppNavigation
     public static string NormalizeOptionsTab(string? tab) =>
         string.Equals(tab, "appearance", StringComparison.OrdinalIgnoreCase) ? "appearance"
         : string.Equals(tab, "mobile", StringComparison.OrdinalIgnoreCase) ? "mobile"
+        : string.Equals(tab, "models", StringComparison.OrdinalIgnoreCase) ? "models"
+        : string.Equals(tab, "setup", StringComparison.OrdinalIgnoreCase) ? "setup"
         : "llm";
 }

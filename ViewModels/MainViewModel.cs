@@ -482,6 +482,8 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         OnPropertyChanged(nameof(IsLlmOptionsTab));
         OnPropertyChanged(nameof(IsAppearanceOptionsTab));
         OnPropertyChanged(nameof(IsMobileOptionsTab));
+        OnPropertyChanged(nameof(IsModelsOptionsTab));
+        OnPropertyChanged(nameof(IsSetupOptionsTab));
     }
     private void ChooseServer()
     {

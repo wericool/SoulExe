@@ -158,6 +158,16 @@ public partial class StageShellView : UserControl
         }
     }
 
+    private void ModelChip_OnClick(object sender, RoutedEventArgs e)
+    {
+        ModelChipPopup.IsOpen = !ModelChipPopup.IsOpen;
+    }
+
+    private void ModelChipNav_OnClick(object sender, RoutedEventArgs e)
+    {
+        ModelChipPopup.IsOpen = false;
+    }
+
     private void BackstageButton_OnClick(object sender, RoutedEventArgs e)
     {
         if (BackstageOverlay.Visibility == Visibility.Visible) CloseBackstage();
@@ -176,6 +186,12 @@ public partial class StageShellView : UserControl
     private void StageShellView_OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Escape) return;
+        if (ModelChipPopup.IsOpen)
+        {
+            ModelChipPopup.IsOpen = false;
+            e.Handled = true;
+            return;
+        }
         if (_viewModel?.IsInitialSetupVisible == true)
         {
             if (!_viewModel.SkipInitialSetupCommand.CanExecute(null)) return;

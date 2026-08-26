@@ -8,8 +8,8 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Border Background="{StaticResource ElevatedBrush}" HorizontalAlignment="Left" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="5" Margin="0,0,0,14">
-                                    <WrapPanel KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="Вкладки настроек">
-                                        <Button Content="Runtime" Command="{Binding SelectOptionsTabCommand}" CommandParameter="llm" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="Runtime" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="3" TabIndex="0">
+                                    <WrapPanel KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="{DynamicResource S.Settings.Tabs}">
+                                        <Button Content="{DynamicResource S.Tab.Runtime}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="llm" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Runtime}" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="5" TabIndex="0">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                     <Style.Triggers>
@@ -24,7 +24,37 @@
                                                 </Style>
                                             </Button.Style>
                                         </Button>
-                                        <Button Content="Оформление" Command="{Binding SelectOptionsTabCommand}" CommandParameter="appearance" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="Оформление" AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="3" TabIndex="1">
+                                        <Button Content="{DynamicResource S.Tab.Models}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="models" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Models}" AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="5" TabIndex="1">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsModelsOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="{DynamicResource S.Tab.Setup}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="setup" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Setup}" AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="5" TabIndex="2">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSetupOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="{DynamicResource S.Tab.Appearance}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="appearance" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Appearance}" AutomationProperties.PositionInSet="4" AutomationProperties.SizeOfSet="5" TabIndex="3">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                     <Style.Triggers>
@@ -39,7 +69,7 @@
                                                 </Style>
                                             </Button.Style>
                                         </Button>
-                                        <Button Content="Мобильный" Command="{Binding SelectOptionsTabCommand}" CommandParameter="mobile" Padding="16,9" AutomationProperties.Name="Мобильный" AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="3" TabIndex="2">
+                                        <Button Content="{DynamicResource S.Tab.Mobile}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="mobile" Padding="16,9" AutomationProperties.Name="{DynamicResource S.Tab.Mobile}" AutomationProperties.PositionInSet="5" AutomationProperties.SizeOfSet="5" TabIndex="4">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                     <Style.Triggers>
@@ -887,6 +917,32 @@
                                         </Style>
                                     </Grid.Style>
                                     <views:MobileAccessView />
+                                </Grid>
+                                <Grid>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsModelsOptionsTab}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <views:ModelsView />
+                                </Grid>
+                                <Grid>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSetupOptionsTab}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <views:SetupView />
                                 </Grid>
                             </Grid>
                         </Grid>

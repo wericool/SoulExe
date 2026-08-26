@@ -62,4 +62,11 @@
     <sys:String x:Key="S.Backstage.World">Мир</sys:String>
     <sys:String x:Key="S.Backstage.Lore">Лор</sys:String>
     <sys:String x:Key="S.Backstage.Personas">Персоны</sys:String>
+
+    <sys:String x:Key="S.Tab.Runtime">Runtime</sys:String>
+    <sys:String x:Key="S.Tab.Appearance">Оформление</sys:String>
+    <sys:String x:Key="S.Tab.Models">Модели</sys:String>
+    <sys:String x:Key="S.Tab.Setup">Быстрый старт</sys:String>
+    <sys:String x:Key="S.Tab.Mobile">Мобильный</sys:String>
+    <sys:String x:Key="S.Settings.Tabs">Разделы настроек</sys:String>
 </ResourceDictionary>

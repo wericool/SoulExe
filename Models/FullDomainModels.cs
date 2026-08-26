@@ -30,7 +30,7 @@ public sealed class ChatAppearanceSettings : INotifyPropertyChanged
     private string _codeColor = "#C084FC";
     private string _assistantBubbleColor = "#1F2633";
     private string _userBubbleColor = "#2F58F5";
-    private string _chatBackgroundColor = "#12151D";
+    private string _chatBackgroundColor = "";
     private int _fontSize = 15;
     private double _bubbleMaxWidth = 720;
     private double _bubbleCornerRadius = 16;

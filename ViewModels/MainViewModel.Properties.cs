@@ -33,6 +33,8 @@ public sealed partial class MainViewModel
     public bool IsLlmOptionsTab => string.Equals(_optionsTab, "llm", StringComparison.OrdinalIgnoreCase);
     public bool IsAppearanceOptionsTab => string.Equals(_optionsTab, "appearance", StringComparison.OrdinalIgnoreCase);
     public bool IsMobileOptionsTab => string.Equals(_optionsTab, "mobile", StringComparison.OrdinalIgnoreCase);
+    public bool IsModelsOptionsTab => string.Equals(_optionsTab, "models", StringComparison.OrdinalIgnoreCase);
+    public bool IsSetupOptionsTab => string.Equals(_optionsTab, "setup", StringComparison.OrdinalIgnoreCase);
     public string ChatAppearancePreviewText => "*Она медленно прищурилась и улыбнулась.* «Я помню достаточно». **Главное**: `status: active`.";
     public ObservableCollection<SoulLorebook> Lorebooks { get; }
     public ObservableCollection<SoulPersona> Personas { get; }

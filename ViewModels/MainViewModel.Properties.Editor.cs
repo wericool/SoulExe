@@ -97,7 +97,7 @@ public sealed partial class MainViewModel
         if (optionsTab is not null) SelectOptionsTab(optionsTab);
         CurrentPage = page;
         if (page == "Gateway" && GatewayItems.Count == 0 && !IsBusy) _ = LoadGatewayAsync();
-        if (page == "Models" && !IsBusy)
+        if (optionsTab == "models" && !IsBusy)
         {
             _ = RefreshInstalledModelsAsync();
             if (RecommendedModels.Count == 0) _ = LoadRecommendedModelsAsync(false);

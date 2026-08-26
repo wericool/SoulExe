@@ -8,10 +8,12 @@
         <Setter Property="ClipToBounds" Value="True"/>
     </Style>
     <Style x:Key="ConversationComposerBar" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource PanelBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-        <Setter Property="BorderThickness" Value="0,1,0,0"/>
-        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="Background" Value="{DynamicResource GlassPanelBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="26"/>
+        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="Margin" Value="28,0,28,18"/>
     </Style>
     <Style x:Key="ConversationComposerInput" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource InputBrush}"/>
