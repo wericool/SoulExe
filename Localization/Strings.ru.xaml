@@ -51,4 +51,15 @@
     <sys:String x:Key="S.Settings.Language.Hint">Применяется сразу, без перезапуска приложения.</sys:String>
     <sys:String x:Key="S.Status.LanguageChanged">Язык интерфейса изменён.</sys:String>
     <sys:String x:Key="S.Status.LanguageSaveFailed">Не удалось сохранить язык интерфейса.</sys:String>
+
+    <sys:String x:Key="S.Stage.Menu">Меню</sys:String>
+    <sys:String x:Key="S.Stage.BackToStage">На сцену</sys:String>
+    <sys:String x:Key="S.Stage.Model">Модель</sys:String>
+    <sys:String x:Key="S.Stage.Presence.Typing">печатает…</sys:String>
+    <sys:String x:Key="S.Backstage.Title">Закулисье</sys:String>
+    <sys:String x:Key="S.Backstage.Subtitle">Куда направимся?</sys:String>
+    <sys:String x:Key="S.Backstage.Continue">Продолжить историю</sys:String>
+    <sys:String x:Key="S.Backstage.World">Мир</sys:String>
+    <sys:String x:Key="S.Backstage.Lore">Лор</sys:String>
+    <sys:String x:Key="S.Backstage.Personas">Персоны</sys:String>
 </ResourceDictionary>

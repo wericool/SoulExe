@@ -30,6 +30,12 @@
     <Color x:Key="TextOnAccentColor">#FFFFFF</Color>
     <Color x:Key="CharacterHeroScrimColor">#F20C0E18</Color>
     <Color x:Key="CardScrimTextColor">#D9DEEC</Color>
+    <!-- Immersive stage surfaces: translucent glass over the ambient art, hairline light borders,
+         and a vertical scrim that keeps the top bar and composer readable over any artwork. -->
+    <Color x:Key="GlassPanelColor">#B8131724</Color>
+    <Color x:Key="GlassBorderColor">#2EFFFFFF</Color>
+    <Color x:Key="StageScrimTopColor">#8708090E</Color>
+    <Color x:Key="StageScrimBottomColor">#F808090E</Color>
     <SolidColorBrush x:Key="WindowBrush" Color="{StaticResource WindowColor}" />
     <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}" />
     <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
@@ -57,6 +63,14 @@
     <SolidColorBrush x:Key="TextOnAccentBrush" Color="{StaticResource TextOnAccentColor}" />
     <SolidColorBrush x:Key="CharacterHeroScrimBrush" Color="{StaticResource CharacterHeroScrimColor}" />
     <SolidColorBrush x:Key="CardScrimTextBrush" Color="{StaticResource CardScrimTextColor}" />
+    <SolidColorBrush x:Key="GlassPanelBrush" Color="{StaticResource GlassPanelColor}" />
+    <SolidColorBrush x:Key="GlassBorderBrush" Color="{StaticResource GlassBorderColor}" />
+    <LinearGradientBrush x:Key="StageScrimBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource StageScrimTopColor}" Offset="0" />
+        <GradientStop Color="#0008090E" Offset="0.38" />
+        <GradientStop Color="#0008090E" Offset="0.60" />
+        <GradientStop Color="{StaticResource StageScrimBottomColor}" Offset="1" />
+    </LinearGradientBrush>
     <SolidColorBrush x:Key="SuccessTextBrush" Color="#7BEBC0" />
     <SolidColorBrush x:Key="WarningBrush" Color="#3D3520" />
     <SolidColorBrush x:Key="InfoTextBrush" Color="#A5C4FF" />

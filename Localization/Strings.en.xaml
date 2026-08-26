@@ -51,4 +51,15 @@
     <sys:String x:Key="S.Settings.Language.Hint">Applied instantly, no restart required.</sys:String>
     <sys:String x:Key="S.Status.LanguageChanged">Interface language changed.</sys:String>
     <sys:String x:Key="S.Status.LanguageSaveFailed">Failed to save the interface language.</sys:String>
+
+    <sys:String x:Key="S.Stage.Menu">Menu</sys:String>
+    <sys:String x:Key="S.Stage.BackToStage">Back to stage</sys:String>
+    <sys:String x:Key="S.Stage.Model">Model</sys:String>
+    <sys:String x:Key="S.Stage.Presence.Typing">typing…</sys:String>
+    <sys:String x:Key="S.Backstage.Title">Backstage</sys:String>
+    <sys:String x:Key="S.Backstage.Subtitle">Where to?</sys:String>
+    <sys:String x:Key="S.Backstage.Continue">Continue the story</sys:String>
+    <sys:String x:Key="S.Backstage.World">World</sys:String>
+    <sys:String x:Key="S.Backstage.Lore">Lorebooks</sys:String>
+    <sys:String x:Key="S.Backstage.Personas">Personas</sys:String>
 </ResourceDictionary>

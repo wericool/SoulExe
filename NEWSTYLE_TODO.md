@@ -142,10 +142,20 @@ Motion: 150-200ms ease-out; fade+slide; без отскоков
 
 ## 2. Фазы реализации (каждая = отдельные шаги с ручной проверкой)
 
-- [ ] **Фаза A — Каркас сцены**. Новый `Views/StageShellView.xaml(.cs)` вместо
-  AppShellView в MainWindow (AppShellView пока оставить файлом как fallback).
-  Состав: ambient-хост, топбар (лого, presence pill, чип модели), композер-хост,
-  листы-хосты, Backstage-заглушка. Маршрутизация NavigateCommand -> листы/сцена.
+- [x] **Фаза A — Каркас сцены** (ГОТОВО, ожидает подтверждения в EXE).
+  `Views/StageShellView.xaml(.cs)` подключён в MainWindow вместо AppShellView
+  (файлы AppShellView сохранены как fallback, нигде не используются).
+  Состав: ambient-фон (арт персонажа/сцены A, Blur 70 + StageScrimBrush),
+  парящий топбар (лого-меню, капсула присутствия personal/scene с «печатает…»,
+  чип модели с точкой состояния -> Настройки), PageOverlay для не-чатовых маршрутов
+  (кэш страниц как в AppShellView; Characters создаётся свежим), минимальный
+  Backstage v1 (6 карточек навигации, Escape закрывает, фокус восстанавливается),
+  initial setup overlay перенесён без изменений.
+  Новые ключи темы: GlassPanelColor/GlassBorderColor/StageScrimTopColor/
+  StageScrimBottomColor (+GlassPanelBrush/GlassBorderBrush/StageScrimBrush).
+  Новые строки: S.Stage.*, S.Backstage.* в обоих словарях.
+  Известный переходный артефакт до Фазы B: у ленты чата остаётся собственный
+  серый header и рамка — дублирует капсулу присутствия. Это следующий шаг.
 - [ ] **Фаза B — Сцена чата**: перенос PersonalConversationThreadView +
   GroupConversationThreadView в сцену: прозрачный фон, ambient за лентой,
   композер-капсула, дата-линии, presence pill с печатью.

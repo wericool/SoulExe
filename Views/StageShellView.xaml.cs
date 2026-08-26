@@ -1,0 +1,203 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
+using SoulExe.ViewModels;
+
+namespace SoulExe.Views;
+
+/// <summary>Immersive "theater" shell. The conversation is the stage; every other
+/// route renders as a full-page overlay above it, and Backstage is the only hub.
+/// Page caching semantics mirror the previous AppShellView.</summary>
+public partial class StageShellView : UserControl
+{
+    private MainViewModel? _viewModel;
+    private IInputElement? _setupOpener;
+    private IInputElement? _backstageOpener;
+    private readonly Dictionary<string, UserControl> _pageCache = [];
+
+    public StageShellView()
+    {
+        InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+    }
+
+    private void StageShellView_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        Subscribe(DataContext as MainViewModel);
+        UpdateStage();
+        FocusInitialSetupIfVisible();
+    }
+
+    private void StageShellView_OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        PageHost.Content = null;
+        StageHost.Content = null;
+        Subscribe(null);
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        Subscribe(e.NewValue as MainViewModel);
+        UpdateStage();
+    }
+
+    private void Subscribe(MainViewModel? viewModel)
+    {
+        if (ReferenceEquals(_viewModel, viewModel)) return;
+        if (_viewModel is not null) _viewModel.PropertyChanged -= ViewModel_OnPropertyChanged;
+        _viewModel = viewModel;
+        if (_viewModel is not null) _viewModel.PropertyChanged += ViewModel_OnPropertyChanged;
+    }
+
+    private void ViewModel_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.CurrentPage))
+        {
+            UpdateStage();
+            return;
+        }
+
+        if (e.PropertyName != nameof(MainViewModel.IsInitialSetupVisible)) return;
+        var viewModel = _viewModel;
+        if (viewModel?.IsInitialSetupVisible == true)
+        {
+            _setupOpener = Keyboard.FocusedElement;
+            FocusInitialSetupIfVisible();
+        }
+        else if (_setupOpener is not null)
+        {
+            var opener = _setupOpener;
+            _setupOpener = null;
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                if (IsLoaded && ReferenceEquals(_viewModel, viewModel)) opener.Focus();
+            }));
+        }
+    }
+
+    private void UpdateStage()
+    {
+        if (!IsLoaded || _viewModel is null) return;
+
+        var page = _viewModel.CurrentPage;
+        if (page == "Chat")
+        {
+            // The conversation owns the screen; overlays step aside.
+            if (BackstageOverlay.Visibility == Visibility.Visible) CloseBackstage();
+            if (!ReferenceEquals(PageHost.Content, null)) PageHost.Content = null;
+            if (PageOverlay.Visibility != Visibility.Collapsed) PageOverlay.Visibility = Visibility.Collapsed;
+            EnsureStageContent();
+            return;
+        }
+
+        EnsureStageContent();
+        PageOverlay.Visibility = Visibility.Visible;
+        if (!_pageCache.TryGetValue(page, out var view))
+        {
+            view = page switch
+            {
+                "Home" => new LibraryView(),
+                "Gateway" => new GatewayView(),
+                "Setup" => new SetupView(),
+                "Models" => new ModelsView(),
+                "Options" => new SettingsView(),
+                _ => null
+            };
+            if (view is null)
+            {
+                PageHost.Content = null;
+                return;
+            }
+            view.DataContext = _viewModel;
+            _pageCache.Add(page, view);
+        }
+        if (!ReferenceEquals(view.DataContext, _viewModel)) view.DataContext = _viewModel;
+        if (!ReferenceEquals(PageHost.Content, view)) PageHost.Content = view;
+    }
+
+    private void EnsureStageContent()
+    {
+        if (!_pageCache.TryGetValue("Chat", out var chat))
+        {
+            chat = new ChatWorkspaceView { DataContext = _viewModel };
+            _pageCache.Add("Chat", chat);
+        }
+        else if (!ReferenceEquals(chat.DataContext, _viewModel))
+        {
+            chat.DataContext = _viewModel;
+        }
+        if (!ReferenceEquals(StageHost.Content, chat)) StageHost.Content = chat;
+    }
+
+    private void OpenBackstage()
+    {
+        if (_viewModel?.IsInitialSetupVisible == true) return;
+        _backstageOpener = Keyboard.FocusedElement;
+        BackstageOverlay.Visibility = Visibility.Visible;
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (IsLoaded && BackstageOverlay.Visibility == Visibility.Visible) BackstageFirstFocus.Focus();
+        }));
+    }
+
+    private void CloseBackstage()
+    {
+        if (BackstageOverlay.Visibility != Visibility.Visible) return;
+        BackstageOverlay.Visibility = Visibility.Collapsed;
+        if (_backstageOpener is not null)
+        {
+            var opener = _backstageOpener;
+            _backstageOpener = null;
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                if (IsLoaded) opener.Focus();
+            }));
+        }
+    }
+
+    private void BackstageButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (BackstageOverlay.Visibility == Visibility.Visible) CloseBackstage();
+        else OpenBackstage();
+    }
+
+    private void BackstageNav_OnClick(object sender, RoutedEventArgs e) => CloseBackstage();
+
+    private void Presence_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // Phase D will open the character sheet; for now jump to the character route.
+        if (_viewModel?.NavigateCommand.CanExecute("Characters") == true) _viewModel.NavigateCommand.Execute("Characters");
+        e.Handled = true;
+    }
+
+    private void StageShellView_OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape) return;
+        if (_viewModel?.IsInitialSetupVisible == true)
+        {
+            if (!_viewModel.SkipInitialSetupCommand.CanExecute(null)) return;
+            _viewModel.SkipInitialSetupCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+        if (BackstageOverlay.Visibility == Visibility.Visible)
+        {
+            CloseBackstage();
+            e.Handled = true;
+        }
+    }
+
+    private void FocusInitialSetupIfVisible()
+    {
+        var viewModel = _viewModel;
+        if (viewModel?.IsInitialSetupVisible != true) return;
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+        {
+            if (IsLoaded && ReferenceEquals(_viewModel, viewModel) && viewModel.IsInitialSetupVisible)
+                InitialSetupView.FocusInitialControl();
+        }));
+    }
+}
