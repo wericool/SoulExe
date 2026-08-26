@@ -2,6 +2,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using SoulExe.ViewModels;
 
@@ -88,7 +90,11 @@ public partial class StageShellView : UserControl
             // The conversation owns the screen; overlays step aside.
             if (BackstageOverlay.Visibility == Visibility.Visible) CloseBackstage();
             if (!ReferenceEquals(PageHost.Content, null)) PageHost.Content = null;
-            if (PageOverlay.Visibility != Visibility.Collapsed) PageOverlay.Visibility = Visibility.Collapsed;
+            if (PageOverlay.Visibility != Visibility.Collapsed)
+            {
+                PageOverlay.Visibility = Visibility.Collapsed;
+                FadeIn(StageHost);
+            }
             // The floating top bar belongs to the stage only; over pages it
             // overlapped their toolbars and stole clicks near the window top.
             TopBar.Visibility = Visibility.Visible;
@@ -98,7 +104,11 @@ public partial class StageShellView : UserControl
 
         TopBar.Visibility = Visibility.Collapsed;
         EnsureStageContent();
-        PageOverlay.Visibility = Visibility.Visible;
+        if (PageOverlay.Visibility != Visibility.Visible)
+        {
+            PageOverlay.Visibility = Visibility.Visible;
+            FadeIn(PageOverlay);
+        }
         if (page == "Characters")
         {
             // The character editor reads SelectedCharacter at load time, so it
@@ -148,6 +158,7 @@ public partial class StageShellView : UserControl
         if (_viewModel?.IsInitialSetupVisible == true) return;
         _backstageOpener = Keyboard.FocusedElement;
         BackstageOverlay.Visibility = Visibility.Visible;
+        FadeIn(BackstageOverlay);
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             if (IsLoaded && BackstageOverlay.Visibility == Visibility.Visible)
@@ -222,6 +233,12 @@ public partial class StageShellView : UserControl
     }
 
     private void CloseWindowButton_OnClick(object sender, RoutedEventArgs e) => Window.GetWindow(this)!.Close();
+
+    private static void FadeIn(UIElement element)
+    {
+        var animation = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+        element.BeginAnimation(OpacityProperty, animation);
+    }
 
     private void BackstageNav_OnClick(object sender, RoutedEventArgs e) => CloseBackstage();
 

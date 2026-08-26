@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using SoulExe.Controls;
 using SoulExe.ViewModels;
@@ -13,6 +15,10 @@ public partial class ChatWorkspaceView : UserControl
 {
     public static readonly RoutedUICommand ShowConversationListCommand = new("Показать диалоги", nameof(ShowConversationListCommand), typeof(ChatWorkspaceView));
     public static readonly RoutedUICommand ShowConversationDetailsCommand = new("Показать информацию", nameof(ShowConversationDetailsCommand), typeof(ChatWorkspaceView));
+
+    private static readonly CubicEase SheetEase = new() { EasingMode = EasingMode.EaseOut };
+    private static readonly Duration SheetInDuration = new(TimeSpan.FromMilliseconds(200));
+    private static readonly Duration SheetOutDuration = new(TimeSpan.FromMilliseconds(150));
 
     private MainViewModel? _viewModel;
     private readonly HashSet<SceneMessageViewModel> _subscribedSceneMessages = [];
@@ -97,8 +103,11 @@ public partial class ChatWorkspaceView : UserControl
         CloseDrawer(false);
         _drawerOpener = Keyboard.FocusedElement;
         _openDrawer = drawer;
+        var sheet = drawer == Drawer.List ? ListDrawer : DetailsDrawer;
         DrawerScrim.Visibility = Visibility.Visible;
-        (drawer == Drawer.List ? ListDrawer : DetailsDrawer).Visibility = Visibility.Visible;
+        AnimateFade(DrawerScrim, 0, 1, SheetInDuration);
+        sheet.Visibility = Visibility.Visible;
+        PlaySheetIn(sheet, drawer == Drawer.List ? -28 : 28);
         var lifecycleVersion = _lifecycleVersion;
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
@@ -111,12 +120,55 @@ public partial class ChatWorkspaceView : UserControl
     private void CloseDrawer(bool restoreFocus = true)
     {
         if (_openDrawer == Drawer.None) return;
+        var sheet = _openDrawer == Drawer.List ? ListDrawer : DetailsDrawer;
+        _openDrawer = Drawer.None;
+        var opener = _drawerOpener;
+        _drawerOpener = null;
+        // The sheets collapse when the fade-out completes, unless another sheet
+        // opened meanwhile (its animations replace these and the callback skips).
+        AnimateSheetOut(sheet, sheet == ListDrawer ? -28 : 28);
+        AnimateFade(DrawerScrim, DrawerScrim.Opacity, 0, SheetOutDuration, CollapseSheets);
+        if (restoreFocus && opener is not null) opener.Focus();
+    }
+
+    private void CollapseSheets()
+    {
         ListDrawer.Visibility = Visibility.Collapsed;
         DetailsDrawer.Visibility = Visibility.Collapsed;
         DrawerScrim.Visibility = Visibility.Collapsed;
-        _openDrawer = Drawer.None;
-        if (restoreFocus && _drawerOpener is not null) _drawerOpener.Focus();
-        _drawerOpener = null;
+    }
+
+    private static void AnimateFade(UIElement element, double from, double to, Duration duration, Action? completed = null)
+    {
+        var animation = new DoubleAnimation(from, to, duration) { EasingFunction = SheetEase };
+        if (completed is not null) animation.Completed += (_, _) => completed();
+        element.BeginAnimation(OpacityProperty, animation);
+    }
+
+    private static void PlaySheetIn(Border sheet, double fromX)
+    {
+        var translate = new TranslateTransform(fromX, 0);
+        sheet.RenderTransform = translate;
+        sheet.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, SheetInDuration) { EasingFunction = SheetEase });
+        translate.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(fromX, 0, SheetInDuration) { EasingFunction = SheetEase });
+    }
+
+    private void AnimateSheetOut(Border sheet, double toX)
+    {
+        var translate = sheet.RenderTransform as TranslateTransform ?? new TranslateTransform();
+        sheet.RenderTransform = translate;
+        var slide = new DoubleAnimation(translate.X, toX, SheetOutDuration) { EasingFunction = SheetEase };
+        var fade = new DoubleAnimation(sheet.Opacity, 0, SheetOutDuration) { EasingFunction = SheetEase };
+        fade.Completed += (_, _) =>
+        {
+            sheet.BeginAnimation(OpacityProperty, null);
+            translate.BeginAnimation(TranslateTransform.XProperty, null);
+            translate.X = 0;
+            sheet.Opacity = 1;
+            if (_openDrawer == Drawer.None) CollapseSheets();
+        };
+        sheet.BeginAnimation(OpacityProperty, fade);
+        translate.BeginAnimation(TranslateTransform.XProperty, slide);
     }
 
     private void DrawerScrim_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -167,6 +219,9 @@ public partial class ChatWorkspaceView : UserControl
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         CloseDrawer(false);
+        // The fade-out callback may never run while detached; start the next
+        // attach from a clean, fully collapsed state.
+        CollapseSheets();
         _dialogOpener = null;
         _lifecycleVersion++;
         Unsubscribe(_viewModel);
