@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using System.Collections.Specialized;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -24,6 +26,75 @@ public partial class MainWindow : Window
         Loaded += OnLoaded;
         Closing += OnClosing;
     }
+
+    // --- Развёртывание без перекрытия панели задач. ---
+    // WindowStyle=None разворачивается на весь монитор; WM_GETMINMAXINFO
+    // принудительно ограничивает развёрнутый прямоугольник рабочей областью
+    // монитора, на котором находится окно.
+    private const int WM_GETMINMAXINFO = 0x0024;
+    private const uint MONITOR_DEFAULTTONEAREST = 2;
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        ((HwndSource?)PresentationSource.FromVisual(this))?.AddHook(MaximizeWorkAreaHook);
+    }
+
+    private static IntPtr MaximizeWorkAreaHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg != WM_GETMINMAXINFO) return IntPtr.Zero;
+        var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+        var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        var info = new MONITORINFO();
+        info.cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+        if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info))
+        {
+            mmi.ptMaxPosition = new POINT
+            {
+                X = Math.Abs(info.rcWork.Left - info.rcMonitor.Left),
+                Y = Math.Abs(info.rcWork.Top - info.rcMonitor.Top)
+            };
+            mmi.ptMaxSize = new POINT
+            {
+                X = Math.Abs(info.rcWork.Right - info.rcWork.Left),
+                Y = Math.Abs(info.rcWork.Bottom - info.rcWork.Top)
+            };
+        }
+        Marshal.StructureToPtr(mmi, lParam, false);
+        handled = true;
+        return IntPtr.Zero;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT { public int X; public int Y; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MINMAXINFO
+    {
+        public POINT ptReserved;
+        public POINT ptMaxSize;
+        public POINT ptMaxPosition;
+        public POINT ptMinTrackSize;
+        public POINT ptMaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public int dwFlags;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
     private void ApplyExecutableIconSafely()
     {

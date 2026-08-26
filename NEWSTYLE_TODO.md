@@ -229,6 +229,19 @@ EXE: `E:\Games\backup_opencode\Sources\OutputNewStyle\Release\win-x64\publish\So
   (− □ ×) возвращены как Layer 6 (ZIndex 210, всегда видны); TopBar и PageHost
   получили правый отступ 140 под этот кластер. Заголовки тредов 68 → 76
   (зазор под drag-полосу).
+- [x] Фикс развёртывания: `WM_GETMINMAXINFO` хук в MainWindow — развёрнутый
+  прямоугольник = рабочая область монитора (панель задач не перекрывается).
+- [x] ИНЦИДЕНТ КОДИРОВКИ (закрыт): коммит b933451 испортил кириллицу в
+  Personal/GroupConversationThreadView.xaml — `Get-Content`/`Set-Content` в
+  PowerShell 5.1 без `-Encoding UTF8` читают BOM-less UTF-8 как CP1251 и
+  записывают двойное кодирование. Симптом: «Персонаж печатает…» и другие
+  подписи чата квадратами/мусором. Данные (soulexe.json) НЕ пострадали —
+  JSON хранит текст \uXXXX-эскейпами, путь llama.cpp UTF-8 корректен.
+  Файлы восстановлены из e436004, правки (padding 76, анимация поиска)
+  наложены заново безопасным edit-инструментом.
+  ПРАВИЛО: не использовать Get-Content/Set-Content/-replace для правки
+  файлов с кириллицей; только edit-инструмент или явный
+  [IO.File]::ReadAllText/WriteAllText с UTF8.
 
 ## 6. Если начинаешь отсюда
 
