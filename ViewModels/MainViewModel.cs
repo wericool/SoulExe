@@ -208,7 +208,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         ]);
         StateVariableValues = new ObservableCollection<StateVariableContextItem>();
         SceneMessages = new ObservableCollection<SceneMessageViewModel>();
-        _network = new NetworkChatServer(AskFromNetworkAsync, () => Characters, ControlSceneFromNetworkAsync, () => (MobileAccessUsername, _mobileAccessPasswordHash), GenerateCharacterFromNetworkAsync, ExpandCharacterFieldFromNetworkAsync, RefreshDesktopAfterNetworkMutationAsync);
+        _network = new NetworkChatServer(AskFromNetworkAsync, () => Characters, ControlSceneFromNetworkAsync, () => (MobileAccessUsername, _mobileAccessPasswordHash), GenerateCharacterFromNetworkAsync, GeneratePersonaFromNetworkAsync, ExpandCharacterFieldFromNetworkAsync, RefreshDesktopAfterNetworkMutationAsync);
         _cognitiveScheduler = new CognitiveBackgroundScheduler(ReportCognitiveBackground);
         _memoryDiagnostics = new MemoryDiagnosticsSampler(
             () => MemoryDiagnosticsSampler.Capture(_llama.ProcessId, _cognitiveScheduler.PendingCount, _cognitiveScheduler.RunningCount, _network.SessionCount),
@@ -324,6 +324,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         SaveLorebookCommand = new AsyncRelayCommand(_ => SaveLorebookAsync(), _ => !IsBusy && SelectedLorebook is not null);
         AddLoreEntryCommand = new AsyncRelayCommand(_ => AddLoreEntryAsync(), _ => !IsBusy && SelectedLorebook is not null);
         AddPersonaCommand = new AsyncRelayCommand(_ => AddPersonaAsync(), _ => !IsBusy);
+        GeneratePersonaDescriptionCommand = new AsyncRelayCommand(_ => GeneratePersonaDescriptionAsync(), _ => !IsBusy && SelectedPersona is not null);
         OpenPersonaEditorCommand = new RelayCommand(value => OpenPersonaEditor(value as SoulPersona), _ => !IsBusy);
         ClosePersonaEditorCommand = new RelayCommand(_ => IsPersonaEditorOpen = false);
         SavePersonaCommand = new AsyncRelayCommand(_ => SavePersonaAsync(), _ => !IsBusy && SelectedPersona is not null);
@@ -428,10 +429,13 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         LoadPromptPresetOptions(data.PromptPresets);
         NormalizeDiscreteGenerationLimits();
         var existingSetup = _installer.IsBackendInstalled(data.Preferences.ActiveBackend) && !string.IsNullOrWhiteSpace(data.Preferences.ModelPath) && File.Exists(data.Preferences.ModelPath);
-        var needsInitialSetup = !data.Preferences.InitialSetupCompleted && !existingSetup;
+        // Quick Start is a first-run flow, not a “model is missing” flow. A
+        // preconfigured portable install must still show it once; after it has
+        // been completed, regular launches go straight to the chat workspace.
+        var needsInitialSetup = !data.Preferences.InitialSetupCompleted;
         IsInitialSetupVisible = needsInitialSetup;
         InitialSetupStep = 1;
-        CurrentPage = "Home";
+        CurrentPage = needsInitialSetup ? "Home" : "Chat";
         if (needsInitialSetup) _ = LoadRecommendedModelsAsync(false);
         RefreshBackendInstallStates();
         SelectedLlamaBackend = LlamaBackends.FirstOrDefault(x => string.Equals(x.Id, LlamaOptions.EngineBackend, StringComparison.OrdinalIgnoreCase)) ?? LlamaBackends.FirstOrDefault();
@@ -588,6 +592,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         yield return SaveLorebookCommand;
         yield return AddLoreEntryCommand;
         yield return AddPersonaCommand;
+        yield return GeneratePersonaDescriptionCommand;
         yield return OpenPersonaEditorCommand;
         yield return SavePersonaCommand;
         yield return ConfirmDeletePersonaCommand;

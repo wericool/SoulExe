@@ -18,8 +18,9 @@ public partial class ConversationComposerView : UserControl
 
     private void GroupDraft_OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        // Key.Enter is not raised for IME-processed composition keys, so composition remains with TextBox.
-        if (e.Key != Key.Enter || Keyboard.Modifiers != ModifierKeys.Control) return;
+        // Shift+Enter remains available for multi-line roleplay text; a plain
+        // Enter behaves the same as in a personal conversation.
+        if (e.Key != Key.Enter || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) return;
         if (DataContext is not MainViewModel viewModel || !viewModel.SendGroupMessageCommand.CanExecute(null)) return;
 
         e.Handled = true;

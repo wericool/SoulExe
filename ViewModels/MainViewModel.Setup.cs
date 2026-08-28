@@ -27,7 +27,7 @@ public sealed partial class MainViewModel
         {
             await _store.MutateAsync(root => root.Preferences.InitialSetupCompleted = true, "complete_initial_setup");
             IsInitialSetupVisible = false;
-            CurrentPage = "Home";
+            CurrentPage = "Chat";
             Status = string.IsNullOrWhiteSpace(ModelPath)
                 ? "Начальная настройка закрыта. Движок и модель можно установить позже в Models Hub."
                 : "Начальная настройка завершена. Можно выбрать персонажа и начать чат.";

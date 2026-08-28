@@ -2,9 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="clr-namespace:SoulExe">
-<Border Grid.Column="4" Panel.ZIndex="20" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
+    <UserControl.Resources><ui:AvatarAwareChatSurfaceBrushConverter x:Key="AvatarAwareChatSurfaceBrushConverter" /></UserControl.Resources>
+<Border Grid.Column="4" Panel.ZIndex="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
+    <Border.Background><MultiBinding Converter="{StaticResource AvatarAwareChatSurfaceBrushConverter}"><Binding Path="ChatAppearance.UseCharacterAvatarBackground" /><Binding Path="IsSceneChatActive" /><Binding Path="SelectedCharacter.AvatarPath" /><Binding Path="SelectedSceneCharacterA.AvatarPath" /><Binding Source="{StaticResource PanelBrush}" /></MultiBinding></Border.Background>
     <Border.Style>
-        <Style TargetType="Border">
+        <Style TargetType="Border" BasedOn="{StaticResource SystemStatusCard}">
             <Setter Property="Visibility" Value="Collapsed" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsSceneChatActive}" Value="True">
@@ -15,6 +17,8 @@
     </Border.Style>
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel>
+            <Border Style="{StaticResource SheetSection}" Padding="12" Margin="0,0,0,12">
+            <StackPanel>
             <TextBlock Text="Участники" Style="{StaticResource SectionLabel}" />
             <Grid Margin="0,9,0,0">
                 <Grid.ColumnDefinitions>
@@ -54,7 +58,11 @@
                     <TextBlock Text="{Binding SelectedSceneCharacterB.Title}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Grid>
+            </StackPanel>
+            </Border>
             <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,14" />
+            <Border Style="{StaticResource SheetSection}" Padding="12" Margin="0,0,0,12">
+            <StackPanel>
             <TextBlock Text="Параметры группового разговора" Style="{StaticResource SectionLabel}" />
             <TextBlock Text="Название" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,9,0,3" />
             <TextBox Text="{Binding SelectedGroupConversation.Name, UpdateSourceTrigger=PropertyChanged}" />
@@ -90,23 +98,15 @@
             <TextBox Text="{Binding SelectedGroupConversation.RelationshipContext, UpdateSourceTrigger=PropertyChanged}" ToolTip="Установившиеся отношения участников: друзья, коллеги, незнакомцы и т. п." AcceptsReturn="True" TextWrapping="Wrap" MinHeight="48" />
             <TextBlock Text="Следующий говорящий" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,9,0,3" />
             <ComboBox ItemsSource="{Binding SceneParticipants}" SelectedValuePath="Id" DisplayMemberPath="Name" SelectedValue="{Binding SelectedGroupConversation.NextCharacterId}" />
-            <TextBlock Text="Режим ходов и пауза" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,9,0,3" />
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="86" />
-                </Grid.ColumnDefinitions>
-                <ComboBox SelectedValue="{Binding SelectedGroupConversation.TurnMode}" SelectedValuePath="Tag">
-                    <ComboBoxItem Tag="alternate" Content="По очереди" />
-                    <ComboBoxItem Tag="manual" Content="Вручную" />
-                </ComboBox>
-                <TextBox Grid.Column="1" Text="{Binding SelectedGroupConversation.DelaySeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" />
-            </Grid>
+            <TextBlock Text="Пауза между репликами, сек" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,9,0,3" />
+            <TextBox Text="{Binding SelectedGroupConversation.DelaySeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" />
             <CheckBox Content="Соблюдать рамки разговора" IsChecked="{Binding SelectedGroupConversation.EnforceConversationContract}" Margin="0,10,0,0" />
             <CheckBox Content="Развивать разговор и избегать повторов" IsChecked="{Binding SelectedGroupConversation.AdvanceAndAvoidRepetition}" Margin="0,8,0,0" ToolTip="Не позволяет повторять последние реплики; модель должна двигать разговор к цели естественными небольшими шагами." />
             <TextBlock Text="Включено: модель развивает ситуацию и не повторяет недавний диалог." Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="24,4,0,0" />
             <Button Content="Сохранить параметры" Command="{Binding SaveSceneCommand}" Style="{StaticResource SuccessButton}" Margin="0,10,0,0" />
             <Button Content="Удалить разговор" Command="{Binding DeleteSceneCommand}" Style="{StaticResource DangerButton}" Margin="0,7,0,0" />
+            </StackPanel>
+            </Border>
             <Expander Header="Контекст и общий Summary" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,12,0,0">
                 <StackPanel Margin="0,7,0,0">
                     <TextBlock Text="{Binding SelectedGroupConversation.SummaryText}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />

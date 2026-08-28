@@ -14,8 +14,8 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="Персонажи" FontSize="15" FontWeight="SemiBold" />
-                                <TextBlock Text="Библиотека карточек" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,3,0,0" />
+                                <TextBlock Text="{DynamicResource S.Character.Editor.Characters}" FontSize="15" FontWeight="SemiBold" />
+                                <TextBlock Text="{DynamicResource S.Character.Editor.CardLibrary}" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,3,0,0" />
                             </StackPanel>
                             <ListBox Grid.Row="1" ItemsSource="{Binding Characters}" SelectedItem="{Binding SelectedCharacter}" Background="Transparent" BorderThickness="0">
                                 <ListBox.ItemTemplate>
@@ -45,8 +45,8 @@
                                 </ListBox.ItemTemplate>
                             </ListBox>
                             <StackPanel Grid.Row="2" Margin="0,12,0,0">
-                                <Button Content="＋ Создать" Command="{Binding AddCharacterCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
-                                <Button Content="Сгенерировать" Command="{Binding ToggleCharacterGeneratorCommand}" Style="{StaticResource CompactButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                                <Button Content="{DynamicResource S.Character.Editor.Create}" Command="{Binding AddCharacterCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                                <Button Content="{DynamicResource S.Character.Editor.Generate}" Command="{Binding ToggleCharacterGeneratorCommand}" Style="{StaticResource CompactButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
                                 <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,0,6">
                                     <Border.Style>
                                         <Style TargetType="Border">
@@ -59,14 +59,14 @@
                                         </Style>
                                     </Border.Style>
                                     <StackPanel>
-                                        <TextBlock Text="Идея персонажа" Style="{StaticResource SectionLabel}" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.CharacterIdea}" Style="{StaticResource SectionLabel}" />
                                         <TextBox Text="{Binding CharacterGenerationIdea, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" Margin="0,8,0,0" />
-                                        <Button Content="Сгенерировать" Command="{Binding GenerateCharacterFromIdeaCommand}" Style="{StaticResource SuccessButton}" Margin="0,8,0,0" HorizontalAlignment="Stretch" />
+                                        <Button Content="{DynamicResource S.Character.Editor.Generate}" Command="{Binding GenerateCharacterFromIdeaCommand}" Style="{StaticResource SuccessButton}" Margin="0,8,0,0" HorizontalAlignment="Stretch" />
                                     </StackPanel>
                                 </Border>
-                                <Button Content="Импорт Card V2" Command="{Binding ImportCharacterCommand}" Style="{StaticResource CompactButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
-                                <Button Content="Импорт Soul-of-Waifu" Command="{Binding ImportSoulOfWaifuCommand}" Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
-                                <Button Content="Удалить" Command="{Binding DeleteCharacterCommand}" Style="{StaticResource DangerButton}" HorizontalAlignment="Stretch" />
+                                <Button Content="{DynamicResource S.Character.Editor.ImportCard}" Command="{Binding ImportCharacterCommand}" Style="{StaticResource CompactButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                                <Button Content="{DynamicResource S.Character.Editor.ImportSoul}" Command="{Binding ImportSoulOfWaifuCommand}" Style="{StaticResource GhostButton}" HorizontalAlignment="Stretch" Margin="0,0,0,6" />
+                                <Button Content="{DynamicResource S.Character.Editor.Delete}" Command="{Binding DeleteCharacterCommand}" Style="{StaticResource DangerButton}" HorizontalAlignment="Stretch" />
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -78,20 +78,22 @@
                         </Grid.RowDefinitions>
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MinWidth="0">
                             <StackPanel>
-                                    <DockPanel Margin="0,0,0,14" LastChildFill="False">
+                                    <Border Style="{StaticResource SheetSectionElevated}" Padding="18" Margin="0,0,0,14">
+                                    <DockPanel LastChildFill="False">
                                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                            <Button Content="← Библиотека" Command="{Binding NavigateCommand}" CommandParameter="Home" Style="{StaticResource GhostButton}" Margin="0,0,8,0" />
-                                            <Button Content="Экспорт" Command="{Binding ExportCharacterCommand}" Style="{StaticResource CompactButton}" />
+                                            <Button Content="{DynamicResource S.Character.Editor.BackToLibrary}" Command="{Binding NavigateCommand}" CommandParameter="Home" Style="{StaticResource GhostButton}" Margin="0,0,8,0" />
+                                            <Button Content="{DynamicResource S.Character.Editor.Export}" Command="{Binding ExportCharacterCommand}" Style="{StaticResource CompactButton}" />
                                         </StackPanel>
                                         <StackPanel>
-                                            <TextBlock Text="Карточка персонажа" FontSize="18" FontWeight="SemiBold" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.Title}" FontSize="18" FontWeight="SemiBold" />
                                             <TextBlock Text="{Binding SelectedCharacter.Name}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" Margin="0,2,0,0" />
                                         </StackPanel>
                                     </DockPanel>
+                                    </Border>
                                     <!-- Segment tabs -->
-                                    <Border Background="{StaticResource ElevatedBrush}" CornerRadius="10" Padding="4" Margin="0,0,0,16" HorizontalAlignment="Left">
-                                        <StackPanel Orientation="Horizontal" KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="Вкладки редактора персонажа">
-                                            <Button Content="Информация" Command="{Binding SelectCharacterEditorTabCommand}" CommandParameter="info" Padding="16,9" Margin="0,0,6,0" AutomationProperties.Name="Информация" AutomationProperties.HelpText="Вкладка. Используйте клавиши влево и вправо для перехода." AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="3" AutomationProperties.ItemStatus="Не выбрана" TabIndex="0">
+                                    <Border Background="{StaticResource GlassPanelBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="4" Margin="0,0,0,16" HorizontalAlignment="Left">
+                                        <StackPanel Orientation="Horizontal" KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="{DynamicResource S.Character.Editor.Tabs}">
+                                            <Button Content="{DynamicResource S.Character.Editor.TabInfo}" Command="{Binding SelectCharacterEditorTabCommand}" CommandParameter="info" Padding="16,9" Margin="0,0,6,0" AutomationProperties.Name="{DynamicResource S.Character.Editor.TabInfo}" AutomationProperties.HelpText="{DynamicResource S.Character.Editor.TabHelp}" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="3" AutomationProperties.ItemStatus="{DynamicResource S.Character.Editor.TabUnselected}" TabIndex="0">
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                         <Setter Property="Background" Value="Transparent" />
@@ -101,13 +103,13 @@
                                                                 <Setter Property="Background" Value="{StaticResource AccentSoftBrush}" />
                                                                 <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                                                                 <Setter Property="FontWeight" Value="SemiBold" />
-                                                                <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                                <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Character.Editor.TabSelected}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
                                             </Button>
-                                            <Button Content="Память" Command="{Binding SelectCharacterEditorTabCommand}" CommandParameter="memory" Padding="16,9" Margin="0,0,6,0" AutomationProperties.Name="Память" AutomationProperties.HelpText="Вкладка. Используйте клавиши влево и вправо для перехода." AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="3" AutomationProperties.ItemStatus="Не выбрана" TabIndex="1">
+                                            <Button Content="{DynamicResource S.Character.Editor.TabMemory}" Command="{Binding SelectCharacterEditorTabCommand}" CommandParameter="memory" Padding="16,9" Margin="0,0,6,0" AutomationProperties.Name="{DynamicResource S.Character.Editor.TabMemory}" AutomationProperties.HelpText="{DynamicResource S.Character.Editor.TabHelp}" AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="3" AutomationProperties.ItemStatus="{DynamicResource S.Character.Editor.TabUnselected}" TabIndex="1">
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                         <Setter Property="Background" Value="Transparent" />
@@ -117,13 +119,13 @@
                                                                 <Setter Property="Background" Value="{StaticResource AccentSoftBrush}" />
                                                                 <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                                                                 <Setter Property="FontWeight" Value="SemiBold" />
-                                                                <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                                <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Character.Editor.TabSelected}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
                                             </Button>
-                                            <Button Content="Лор" Command="{Binding SelectCharacterEditorTabCommand}" CommandParameter="lore" Padding="16,9" Margin="0,0,6,0" AutomationProperties.Name="Лор" AutomationProperties.HelpText="Вкладка. Используйте клавиши влево и вправо для перехода." AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="3" AutomationProperties.ItemStatus="Не выбрана" TabIndex="2">
+                                            <Button Content="{DynamicResource S.Character.Editor.TabLore}" Command="{Binding SelectCharacterEditorTabCommand}" CommandParameter="lore" Padding="16,9" Margin="0,0,6,0" AutomationProperties.Name="{DynamicResource S.Character.Editor.TabLore}" AutomationProperties.HelpText="{DynamicResource S.Character.Editor.TabHelp}" AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="3" AutomationProperties.ItemStatus="{DynamicResource S.Character.Editor.TabUnselected}" TabIndex="2">
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                         <Setter Property="Background" Value="Transparent" />
@@ -133,7 +135,7 @@
                                                                 <Setter Property="Background" Value="{StaticResource AccentSoftBrush}" />
                                                                 <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                                                                 <Setter Property="FontWeight" Value="SemiBold" />
-                                                                <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                                <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Character.Editor.TabSelected}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -152,7 +154,7 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </StackPanel.Style>
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,14,0,18">
+                                        <Border Style="{StaticResource SheetSection}" Padding="14" Margin="0,0,0,18">
                                             <DockPanel LastChildFill="False">
                                                 <Grid DockPanel.Dock="Left" Width="68" Height="68" Margin="0,0,14,0">
                                                     <Ellipse Fill="{StaticResource AccentSoftBrush}" />
@@ -164,77 +166,92 @@
                                                     </Ellipse>
                                                 </Grid>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="Аватар" Style="{StaticResource SectionLabel}" Margin="0,0,0,7" />
-                                                    <Button Content="Выбрать фото-аватар" Command="{Binding ChooseAvatarCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" />
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.Avatar}" Style="{StaticResource SectionLabel}" Margin="0,0,0,7" />
+                                                    <Button Content="{DynamicResource S.Character.Editor.ChooseAvatar}" Command="{Binding ChooseAvatarCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" />
                                                 </StackPanel>
                                             </DockPanel>
                                         </Border>
-                                        <TextBlock Text="Основные сведения" Style="{StaticResource SectionLabel}" Margin="0,0,0,8" />
+                                        <Border Style="{StaticResource SheetSection}" Padding="18">
+                                        <StackPanel>
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.Identity}" FontSize="17" FontWeight="SemiBold" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.IdentityHelp}" Style="{StaticResource InlineHelp}" Margin="0,4,0,16" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.BasicDetails}" Style="{StaticResource SectionLabel}" Margin="0,0,0,8" />
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Имя" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.Name}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Отображаемое имя персонажа в чатах, библиотеке и списках." />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Padding="12,10" />
-                                        <TextBlock Text="Характер и сцена" Style="{StaticResource SectionLabel}" Margin="0,20,0,2" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.CharacterAndScene}" Style="{StaticResource SectionLabel}" Margin="0,20,0,2" />
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Подзаголовок" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.TitleField}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Коткая роль или статус персонажа (например «рыцарь ордена» или «одноклассница»). Показывается под именем." />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Padding="12,10" />
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Описание" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.Description}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Кто этот персонаж: внешность, биография, важные факты. Модель использует текст как контекст образа." />
-                                            <Button Content="✦" Command="{Binding ExpandCharacterFieldCommand}" CommandParameter="description" Background="Transparent" Foreground="{StaticResource AccentHoverBrush}" Padding="6,0" Margin="5,0,0,0" FontWeight="Bold" ToolTip="Дополнить это поле локальной моделью" />
+                                            <Button Content="✦" Command="{Binding ExpandCharacterFieldCommand}" CommandParameter="description" Background="Transparent" Foreground="{StaticResource AccentHoverBrush}" Padding="6,0" Margin="5,0,0,0" FontWeight="Bold" ToolTip="{DynamicResource S.Character.Editor.ExpandField}" AutomationProperties.Name="{DynamicResource S.Character.Editor.ExpandField}" />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.Description, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="78" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" />
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Личность" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.Personality}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Черты характера, манера речи, привычки. Помогает модели держать стабильный стиль ответов." />
-                                            <Button Content="✦" Command="{Binding ExpandCharacterFieldCommand}" CommandParameter="personality" Background="Transparent" Foreground="{StaticResource AccentHoverBrush}" Padding="6,0" Margin="5,0,0,0" FontWeight="Bold" ToolTip="Дополнить это поле локальной моделью" />
+                                            <Button Content="✦" Command="{Binding ExpandCharacterFieldCommand}" CommandParameter="personality" Background="Transparent" Foreground="{StaticResource AccentHoverBrush}" Padding="6,0" Margin="5,0,0,0" FontWeight="Bold" ToolTip="{DynamicResource S.Character.Editor.ExpandField}" AutomationProperties.Name="{DynamicResource S.Character.Editor.ExpandField}" />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.Personality, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" />
-                                        <Grid Margin="0,8,0,0">
+                                        </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource SheetSection}" Padding="18">
+                                        <StackPanel>
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.VoiceAndScene}" FontSize="17" FontWeight="SemiBold" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.VoiceAndSceneHelp}" Style="{StaticResource InlineHelp}" Margin="0,4,0,16" />
+                                        <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="250" />
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <TextBlock Text="Проявление черт личности" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.PersonalityExpression}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
                                                 <ui:HelpHint Hint="Определяет, как часто модель показывает качества из поля «Личность»: ярко, естественно или ненавязчиво. Не меняет описание и сценарий." />
                                             </StackPanel>
                                             <ComboBox Grid.Column="1" SelectedValue="{Binding SelectedCharacter.PersonalityExpressionLevel}" SelectedValuePath="Tag">
-                                                <ComboBoxItem Tag="vivid" Content="Ярко выражено" />
-                                                <ComboBoxItem Tag="natural" Content="Естественно" />
-                                                <ComboBoxItem Tag="subtle" Content="Ненавязчиво" />
+                                                <ComboBoxItem Tag="vivid" Content="{DynamicResource S.Character.Editor.ExpressionVivid}" />
+                                                <ComboBoxItem Tag="natural" Content="{DynamicResource S.Character.Editor.ExpressionNatural}" />
+                                                <ComboBoxItem Tag="subtle" Content="{DynamicResource S.Character.Editor.ExpressionSubtle}" />
                                             </ComboBox>
                                         </Grid>
-                                        <TextBlock Text="Ярко — заметно часто; естественно — по ситуации; ненавязчиво — остаётся фоном до подходящего повода." Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ExpressionHelp}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" />
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Сценарий" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.Scenario}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Общая ситуация и сеттинг, в котором начинается или проходит диалог." />
-                                            <Button Content="✦" Command="{Binding ExpandCharacterFieldCommand}" CommandParameter="scenario" Background="Transparent" Foreground="{StaticResource AccentHoverBrush}" Padding="6,0" Margin="5,0,0,0" FontWeight="Bold" ToolTip="Дополнить это поле локальной моделью" />
+                                            <Button Content="✦" Command="{Binding ExpandCharacterFieldCommand}" CommandParameter="scenario" Background="Transparent" Foreground="{StaticResource AccentHoverBrush}" Padding="6,0" Margin="5,0,0,0" FontWeight="Bold" ToolTip="{DynamicResource S.Character.Editor.ExpandField}" AutomationProperties.Name="{DynamicResource S.Character.Editor.ExpandField}" />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.Scenario, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" />
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13" Margin="0,14,0,0">
+                                        <Border Style="{StaticResource SystemStatusCard}" Padding="14" Margin="0,16,0,0">
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Профиль для новых чатов" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.NewChatProfile}" FontWeight="SemiBold" />
                                                     <ui:HelpHint Hint="Эти сведения копируются только при создании нового чата персонажа. В каждом существующем диалоге их можно изменить отдельно на вкладке «Память»." />
                                                 </StackPanel>
-                                                <TextBlock Text="Задайте только начальные факты. Более поздние сообщения, Summary и Soul Memory будут важнее и естественно обновят отношения по сюжету." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,9" />
-                                                <TextBlock Text="Что персонаж знает о пользователе в начале" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
-                                                <TextBox Text="{Binding SelectedCharacter.DefaultUserProfile, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="55" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" ToolTip="Например: Его зовут Эрик, ему 17 лет, он учится в этом классе и любит чипсы." />
-                                                <TextBlock Text="Начальные отношения и ситуация" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,9,0,0" />
-                                                <TextBox Text="{Binding SelectedCharacter.DefaultRelationshipContext, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="55" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" ToolTip="Например: Они одноклассники; или: пока незнакомы, но персонажу хочется познакомиться." />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.NewChatProfileHelp}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,9" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.InitialUserFacts}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                <TextBox Text="{Binding SelectedCharacter.DefaultUserProfile, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="55" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" ToolTip="{DynamicResource S.Character.Editor.InitialUserFactsExample}" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.InitialRelationship}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,9,0,0" />
+                                                <TextBox Text="{Binding SelectedCharacter.DefaultRelationshipContext, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="55" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" ToolTip="{DynamicResource S.Character.Editor.InitialRelationshipExample}" />
                                             </StackPanel>
                                         </Border>
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13" Margin="0,14,0,0">
+                                        </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource SheetSection}" Padding="18">
+                                        <StackPanel>
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.UserPersona}" FontSize="17" FontWeight="SemiBold" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.UserPersonaHelp}" Style="{StaticResource InlineHelp}" Margin="0,4,0,14" />
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <CheckBox Content="Использовать персону пользователя" IsChecked="{Binding IsSelectedCharacterPersonaEnabled}" FontWeight="SemiBold" />
+                                                    <CheckBox Content="{DynamicResource S.Character.Editor.UseUserPersona}" IsChecked="{Binding IsSelectedCharacterPersonaEnabled}" FontWeight="SemiBold" />
                                                     <ui:HelpHint Hint="Персона — сохранённый образ пользователя: имя, роль, характер, биография и важные факты. При включении её текст добавляется в системный контекст перед историей чата, поэтому персонаж лучше понимает, кто вы. Отношения в поле выше остаются отдельным начальным контекстом конкретного чата." />
                                                 </StackPanel>
-                                                <TextBlock Text="Выберите один из образов из вкладки «Библиотека → Персоны». Одна персона может использоваться у нескольких карточек." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,0" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.PersonaSelectionHelp}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,0" />
                                                 <StackPanel Margin="0,10,0,0">
                                                     <StackPanel.Style>
                                                         <Style TargetType="StackPanel">
@@ -246,21 +263,26 @@
                                                             </Style.Triggers>
                                                         </Style>
                                                     </StackPanel.Style>
-                                                    <TextBlock Text="Активная персона" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
-                                                    <ComboBox ItemsSource="{Binding Personas}" SelectedValue="{Binding SelectedCharacterPersonaId, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Id" DisplayMemberPath="Name" Margin="0,5,0,0" MinHeight="42" ToolTip="Выберите сохранённую персону пользователя" />
-                                                    <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource AccentSoftBrush}" BorderThickness="1" CornerRadius="7" Padding="10" Margin="0,9,0,0">
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.ActivePersona}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                    <ComboBox ItemsSource="{Binding Personas}" SelectedValue="{Binding SelectedCharacterPersonaId, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Id" DisplayMemberPath="Name" Margin="0,5,0,0" MinHeight="42" ToolTip="{DynamicResource S.Character.Editor.ChoosePersona}" />
+                                                    <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="0,9,0,0">
                                                         <TextBlock Text="{Binding SelectedCharacterPersonaDescription}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" />
                                                     </Border>
                                                 </StackPanel>
                                             </StackPanel>
+                                        </StackPanel>
                                         </Border>
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13" Margin="0,14,0,0">
+                                        <Border Style="{StaticResource SheetSectionElevated}" Padding="18">
+                                        <StackPanel>
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ResponseDirection}" FontSize="17" FontWeight="SemiBold" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ResponseDirectionHelp}" Style="{StaticResource InlineHelp}" Margin="0,4,0,14" />
+                                        <Border Style="{StaticResource SystemStatusCard}" Padding="14">
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Системный пресет" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.SystemPreset}" FontWeight="SemiBold" />
                                                     <ui:HelpHint Hint="Пресет задаёт общий режим ответа: обычный ролеплей, приключение, короткий диалог или постоянный русский язык. Он дополняет карточку, а не заменяет её." />
                                                 </StackPanel>
-                                                <TextBlock Text="Выберите, как модель должна вести сцену. Карточка определяет характер, а пресет — стиль и динамику ответа." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,8" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.SystemPresetHelp}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,8" />
                                                 <ComboBox ItemsSource="{Binding PromptPresetOptions}" SelectedValue="{Binding SelectedCharacterPromptPresetId, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Id" MinHeight="42">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
@@ -271,42 +293,44 @@
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
-                                                <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource AccentSoftBrush}" BorderThickness="1" CornerRadius="7" Padding="10" Margin="0,9,0,0">
+                                                <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="0,9,0,0">
                                                     <TextBlock Text="{Binding SelectedPromptPresetDescription}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" />
                                                 </Border>
                                             </StackPanel>
                                         </Border>
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Системный промпт" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.SystemPrompt}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Инструкции для модели: правила поведения, запреты, формат ответа. Самый сильный рычаг управления персонажем." />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.SystemPrompt, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" />
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Язык ответов персонажа" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.ReplyLanguage}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Например: Русский, English, 日本語. Или «Любой язык» — тогда модель следует языку текущего диалога." />
                                         </StackPanel>
-                                        <TextBox Text="{Binding SelectedCharacter.ReplyLanguage, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Padding="12,10" ToolTip="Русский / English / Любой язык / любой свой вариант" />
-                                        <TextBlock Text="По умолчанию «Русский». Напишите «Любой язык», если персонаж может отвечать на языке собеседника." Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" />
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13" Margin="0,12,0,0">
+                                        <TextBox Text="{Binding SelectedCharacter.ReplyLanguage, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0" Padding="12,10" ToolTip="{DynamicResource S.Character.Editor.ReplyLanguageOptions}" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ReplyLanguageHint}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0" />
+                                        <Border Style="{StaticResource SystemStatusCard}" Padding="14" Margin="0,16,0,0">
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <CheckBox Content="Использовать готовый ролевой формат ответов" IsChecked="{Binding SelectedCharacter.UseRoleplayResponseFormatting}" FontWeight="SemiBold" />
+                                                    <CheckBox Content="{DynamicResource S.Character.Editor.RoleplayFormat}" IsChecked="{Binding SelectedCharacter.UseRoleplayResponseFormatting}" FontWeight="SemiBold" />
                                                     <ui:HelpHint Hint="Добавляет к системному контексту готовое правило формата, не изменяя ваш текст системного промпта." />
                                                 </StackPanel>
-                                                <TextBlock Text="Действия и описание будут идти отдельным курсивным абзацем в *звёздочках*, а реплика персонажа — с новой строки через пустую строку. Модель не будет писать действия или слова за пользователя." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="11" Margin="25,6,0,8" />
-                                                <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="7" Padding="10" Margin="25,0,0,0">
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.RoleplayFormatHelp}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="11" Margin="25,6,0,8" />
+                                                <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="25,0,0,0">
                                                     <StackPanel>
-                                                        <TextBlock Text="*Она подошла и чуть улыбнулась.*" FontStyle="Italic" Foreground="{StaticResource AccentHoverBrush}" />
-                                                        <TextBlock Text="Ты кто?" Margin="0,10,0,0" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.RoleplayExampleAction}" FontStyle="Italic" Foreground="{StaticResource AccentHoverBrush}" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.RoleplayExampleLine}" Margin="0,10,0,0" />
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
                                         </Border>
                                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                            <TextBlock Text="Примеры диалога" VerticalAlignment="Center" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.ExampleDialogue}" VerticalAlignment="Center" />
                                             <ui:HelpHint Hint="Образцы реплик в формате диалога. Показывают модели желаемый тон и длину ответов." />
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedCharacter.ExampleDialogue, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="88" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" />
+                                        </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                     <StackPanel>
                                         <StackPanel.Style>
@@ -319,11 +343,13 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </StackPanel.Style>
-                                        <TextBlock Text="Настройки памяти персонажа" FontSize="19" FontWeight="SemiBold" Margin="0,14,0,0" />
-                                        <TextBlock Text="Эти настройки действуют для всех чатов персонажа. Интервалы указаны в репликах: учитываются и сообщения пользователя, и ответы персонажа." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,10" />
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="13">
+                                        <Border Style="{StaticResource SheetSection}" Padding="18">
                                             <StackPanel>
-                                                <CheckBox Content="Включить Cognitive Architecture для этого персонажа" IsChecked="{Binding SelectedCharacterCognitiveArchitectureEnabled}" FontWeight="SemiBold" ToolTip="Главный переключатель памяти и summary выбранного персонажа." />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.MemoryTitle}" FontSize="17" FontWeight="SemiBold" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.MemoryHelp}" Style="{StaticResource InlineHelp}" Margin="0,4,0,16" />
+                                        <Border Style="{StaticResource SystemStatusCard}" Padding="14">
+                                            <StackPanel>
+                                                <CheckBox Content="{DynamicResource S.Character.Editor.CognitiveArchitecture}" IsChecked="{Binding SelectedCharacterCognitiveArchitectureEnabled}" FontWeight="SemiBold" ToolTip="{DynamicResource S.Character.Editor.CognitiveHelp}" />
                                                 <TextBlock Text="{Binding SelectedCharacterCognitiveStatus}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="25,6,0,10" />
                                                 <Grid Margin="25,0,0,0">
                                                     <Grid.ColumnDefinitions>
@@ -331,8 +357,8 @@
                                                         <ColumnDefinition Width="230" />
                                                         <ColumnDefinition Width="72" />
                                                     </Grid.ColumnDefinitions>
-                                                    <CheckBox Content="Soul Memory Module" IsChecked="{Binding SelectedCharacterSoulMemoryEnabled}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="Структурированная память фактов, отношений, тем и дневника выбранных чатов персонажа." />
-                                                    <ComboBox Grid.Column="1" ItemsSource="{Binding SoulMemoryPresets}" SelectedValuePath="Id" SelectedValue="{Binding SelectedCharacterSoulMemoryPreset}" ToolTip="Пресет обработки Soul Memory">
+                                                    <CheckBox Content="{DynamicResource S.Character.Editor.SoulMemory}" IsChecked="{Binding SelectedCharacterSoulMemoryEnabled}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="{DynamicResource S.Character.Editor.SoulMemoryHelp}" />
+                                                    <ComboBox Grid.Column="1" ItemsSource="{Binding SoulMemoryPresets}" SelectedValuePath="Id" SelectedValue="{Binding SelectedCharacterSoulMemoryPreset}" ToolTip="{DynamicResource S.Character.Editor.SoulMemoryPresetTooltip}">
                                                         <ComboBox.ItemTemplate>
                                                             <DataTemplate>
                                                                 <StackPanel Margin="2">
@@ -342,15 +368,15 @@
                                                             </DataTemplate>
                                                         </ComboBox.ItemTemplate>
                                                     </ComboBox>
-                                                    <TextBox Grid.Column="2" Text="{Binding SelectedCharacterSoulMemoryIntervalMessages, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="Интервал Soul Memory во всех репликах диалога: ваших и персонажа" />
+                                                    <TextBox Grid.Column="2" Text="{Binding SelectedCharacterSoulMemoryIntervalMessages, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="{DynamicResource S.Character.Editor.SoulMemoryIntervalHelp}" />
                                                 </Grid>
-                                                <Border Background="Transparent" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="25,9,0,0">
+                                                <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="25,9,0,0">
                                                     <StackPanel>
-                                                        <TextBlock Text="Пресеты Soul Memory" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
-                                                        <TextBlock Text="Full — Router + Archivist + Diary: обновляет индекс памяти, тематические файлы и дневник персонажа." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,6,0,0" />
-                                                        <TextBlock Text="Index + Diary — Lite Router + Diary: обновляет индекс и дневник, но не создаёт тематические файлы." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,4,0,0" />
-                                                        <TextBlock Text="Index only — Lite Router: обновляет только структурированный индекс памяти; без дневника и тематических файлов." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,4,0,0" />
-                                                        <TextBlock Text="Diary only — только Diary Agent: добавляет личную запись-дневник от первого лица; индекс и тематические файлы не обновляются." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,4,0,0" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.SoulMemoryPresets}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.SoulMemoryFull}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,6,0,0" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.SoulMemoryIndexDiary}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,4,0,0" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.SoulMemoryIndexOnly}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,4,0,0" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.SoulMemoryDiaryOnly}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,4,0,0" />
                                                     </StackPanel>
                                                 </Border>
                                                 <Grid Margin="25,9,0,0">
@@ -359,72 +385,72 @@
                                                         <ColumnDefinition Width="230" />
                                                         <ColumnDefinition Width="72" />
                                                     </Grid.ColumnDefinitions>
-                                                    <CheckBox Content="Auto-Summarization Module" IsChecked="{Binding SelectedCharacterAutoSummaryEnabled}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="Автоматически сжимает историю каждого чата персонажа в summary." />
+                                                    <CheckBox Content="{DynamicResource S.Character.Editor.AutoSummary}" IsChecked="{Binding SelectedCharacterAutoSummaryEnabled}" FontWeight="SemiBold" VerticalAlignment="Center" ToolTip="{DynamicResource S.Character.Editor.AutoSummaryHelp}" />
                                                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                        <TextBlock Text="Интервал Summary (реплики)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.SummaryInterval}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" VerticalAlignment="Center" />
                                                         <ui:HelpHint Hint="Количество новых реплик диалога между автоматическими обновлениями Summary. Считаются и ваши сообщения, и ответы персонажа." />
                                                     </StackPanel>
-                                                    <TextBox Grid.Column="2" Text="{Binding SelectedCharacterAutoSummaryIntervalMessages, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="Интервал Auto-Summary во всех репликах диалога" />
+                                                    <TextBox Grid.Column="2" Text="{Binding SelectedCharacterAutoSummaryIntervalMessages, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="{DynamicResource S.Character.Editor.SummaryIntervalHelp}" />
                                                 </Grid>
-                                                <TextBlock Text="Интервалы считаются по всем новым репликам диалога: вашим сообщениям и ответам персонажа. Задержка фонового обновления задаётся в секундах (60–300)." Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="25,8,0,0" />
-                                                <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="25,12,0,0">
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.MemoryIntervalNote}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="25,8,0,0" />
+                                                <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="25,12,0,0">
                                                     <StackPanel>
-                                                        <TextBlock Text="Фоновое обновление" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
-                                                        <TextBlock Text="Summary и Soul Memory обрабатывают сохранённую очередь только после паузы. Новое сообщение отменяет ожидающее или идущее обслуживание, поэтому модель остаётся свободной для следующей реплики." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,5,0,8" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.BackgroundUpdate}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Character.Editor.BackgroundUpdateHelp}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="10" Margin="0,5,0,8" />
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="150" />
                                                                 <ColumnDefinition Width="78" />
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="Режим" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                            <TextBlock Text="{DynamicResource S.Character.Editor.Mode}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
                                                             <ComboBox Grid.Column="1" SelectedValue="{Binding CognitiveBackgroundMode, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
-                                                                <ComboBoxItem Tag="idle" Content="После паузы" />
+                                                                <ComboBoxItem Tag="idle" Content="{DynamicResource S.Character.Editor.AfterPause}" />
                                                             </ComboBox>
-                                                            <TextBox Grid.Column="2" Text="{Binding CognitiveBackgroundIdleSeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="Задержка от 60 до 300 секунд. Рекомендуется 60–120 секунд." />
+                                                            <TextBox Grid.Column="2" Text="{Binding CognitiveBackgroundIdleSeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="{DynamicResource S.Character.Editor.BackgroundDelayHelp}" />
                                                         </Grid>
                                                         <TextBlock Text="{Binding CognitiveBackgroundStatus}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,7,0,0" />
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
                                         </Border>
-                                        <TextBlock Text="Контекст выбранного чата" Style="{StaticResource SectionLabel}" Margin="0,20,0,8" />
-                                        <TextBlock Text="Выберите чат, чтобы вручную обновить его память и задать начальный контекст только для этого диалога." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ChatContext}" Style="{StaticResource SectionLabel}" Margin="0,20,0,8" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ChatContextHelp}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8" />
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <ComboBox ItemsSource="{Binding Chats}" SelectedItem="{Binding SelectedChat}" DisplayMemberPath="Name" ToolTip="Выберите чат этого персонажа" />
-                                            <Button Grid.Column="1" Content="Обновить память" Command="{Binding UpdateMemoryCommand}" Background="{StaticResource AccentSoftBrush}" />
-                                            <Button Grid.Column="2" Content="Обновить summary" Command="{Binding UpdateSummaryCommand}" Background="{StaticResource BorderStrongBrush}" />
+                                            <ComboBox ItemsSource="{Binding Chats}" SelectedItem="{Binding SelectedChat}" DisplayMemberPath="Name" ToolTip="{DynamicResource S.Character.Editor.SelectChat}" />
+                                            <Button Grid.Column="1" Content="{DynamicResource S.Character.Editor.UpdateMemory}" Command="{Binding UpdateMemoryCommand}" Background="{StaticResource AccentSoftBrush}" />
+                                            <Button Grid.Column="2" Content="{DynamicResource S.Character.Editor.UpdateSummary}" Command="{Binding UpdateSummaryCommand}" Background="{StaticResource BorderStrongBrush}" />
                                         </Grid>
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,12,0,0">
+                                        <Border Style="{StaticResource SystemStatusCard}" Padding="14" Margin="0,12,0,0">
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Начальный контекст этого чата" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.StartingContext}" FontWeight="SemiBold" />
                                                     <ui:HelpHint Hint="Значения принадлежат только этому чату. Поздние сообщения, Summary и Soul Memory имеют приоритет, поэтому «незнакомец» станет историей после знакомства." />
                                                 </StackPanel>
-                                                <TextBlock Text="Эти поля описывают начало конкретного сюжета. Они не изменяют другие чаты этого персонажа." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,9" />
-                                                <TextBlock Text="Факты о пользователе в начале" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.StartingContextHelp}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,9" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.InitialFacts}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
                                                 <TextBox Text="{Binding SelectedPersonalConversation.InitialUserProfile, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" />
-                                                <TextBlock Text="Начальные отношения и ситуация" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,9,0,0" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.InitialRelationship}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,9,0,0" />
                                                 <TextBox Text="{Binding SelectedPersonalConversation.InitialRelationshipContext, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" />
-                                                <Button Content="Сохранить контекст этого чата" Command="{Binding SaveChatStartingContextCommand}" Style="{StaticResource SuccessButton}" HorizontalAlignment="Left" Margin="0,10,0,0" />
+                                                <Button Content="{DynamicResource S.Character.Editor.SaveChatContext}" Command="{Binding SaveChatStartingContextCommand}" Style="{StaticResource SuccessButton}" HorizontalAlignment="Left" Margin="0,10,0,0" />
                                             </StackPanel>
                                         </Border>
                                         <TextBlock Text="{Binding CognitiveArchitectureStatus}" Foreground="{StaticResource AccentHoverBrush}" FontSize="10" TextWrapping="Wrap" Margin="2,8,2,0" />
-                                        <TextBlock Text="Summary выбранного чата" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,14,0,3" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.ChatSummary}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,14,0,3" />
                                         <TextBox Text="{Binding SelectedPersonalConversation.SummaryText, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="90" VerticalScrollBarVisibility="Auto" />
-                                        <TextBlock Text="Память о персонаже в этом чате" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,11,0,3" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.CharacterMemory}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,11,0,3" />
                                         <TextBox Text="{Binding SelectedPersonalConversation.Memory.CharacterMemory, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="105" VerticalScrollBarVisibility="Auto" />
-                                        <TextBlock Text="Профиль пользователя и отношения" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,11,0,3" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.UserProfileAndRelations}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,11,0,3" />
                                         <TextBox Text="{Binding SelectedPersonalConversation.Memory.UserProfile, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="90" VerticalScrollBarVisibility="Auto" />
-                                        <TextBlock Text="Тематические записи и дневник" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,11,0,3" />
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,4,0,6">
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.TopicsAndDiary}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,11,0,3" />
+                                        <Border Padding="14" Margin="0,4,0,6">
                                             <Border.Style>
-                                                <Style TargetType="Border">
+                                                <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                                     <Setter Property="Visibility" Value="Collapsed" />
                                                     <Style.Triggers>
                                                         <MultiDataTrigger>
@@ -438,14 +464,14 @@
                                                 </Style>
                                             </Border.Style>
                                             <StackPanel>
-                                                <TextBlock Text="Память пока пуста" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                                                <TextBlock Text="После общения и обновления памяти здесь появятся тематические записи и дневник." Foreground="{StaticResource TextMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.MemoryEmptyTitle}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.MemoryEmptyHelp}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
                                             </StackPanel>
                                         </Border>
                                         <ItemsControl ItemsSource="{Binding SelectedPersonalConversation.Memory.Topics}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,3">
+                                                    <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="0,3">
                                                         <StackPanel>
                                                             <TextBlock Text="{Binding Key}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                             <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0" />
@@ -461,6 +487,8 @@
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                     <StackPanel>
                                         <StackPanel.Style>
@@ -473,26 +501,28 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </StackPanel.Style>
-                                        <TextBlock Text="Лорбуки персонажа" FontSize="19" FontWeight="SemiBold" Margin="0,14,0,0" />
-                                        <TextBlock Text="Выберите лорбук, затем включите привязку ниже. Включённый лорбук используется во всех чатах выбранного персонажа; записи применяются по их текущим правилам." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,10" />
+                                        <Border Style="{StaticResource SheetSection}" Padding="18">
+                                            <StackPanel>
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.WorldTitle}" FontSize="17" FontWeight="SemiBold" />
+                                        <TextBlock Text="{DynamicResource S.Character.Editor.WorldHelp}" Style="{StaticResource InlineHelp}" Margin="0,4,0,16" />
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <ComboBox ItemsSource="{Binding Lorebooks}" SelectedItem="{Binding SelectedLorebook}" ToolTip="Выберите лорбук или создайте новый">
+                                            <ComboBox ItemsSource="{Binding Lorebooks}" SelectedItem="{Binding SelectedLorebook}" ToolTip="{DynamicResource S.Character.Editor.ChooseLorebook}">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
-                                            <Button Grid.Column="1" Content="＋ Лорбук" Command="{Binding AddLorebookCommand}" Style="{StaticResource AccentButton}" Padding="12,8" />
+                                            <Button Grid.Column="1" Content="{DynamicResource S.Character.Editor.AddLorebook}" Command="{Binding AddLorebookCommand}" Style="{StaticResource AccentButton}" Padding="12,8" />
                                         </Grid>
                                         <!-- Пусто: нет выбранного лорбука -->
-                                        <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,12,0,0">
+                                        <Border Padding="18" Margin="0,12,0,0">
                                             <Border.Style>
-                                                <Style TargetType="Border">
+                                                <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                                     <Setter Property="Visibility" Value="Collapsed" />
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding SelectedLorebook}" Value="{x:Null}">
@@ -502,9 +532,9 @@
                                                 </Style>
                                             </Border.Style>
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="Лор" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
-                                                <TextBlock Text="Лорбук не выбран" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Center" Margin="0,8,0,0" />
-                                                <TextBlock Text="Создайте лорбук кнопкой «＋ Лорбук» или выберите существующий из списка выше." Foreground="{StaticResource TextMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0" MaxWidth="420" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.Lorebook}" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.NoLorebook}" FontWeight="SemiBold" FontSize="15" HorizontalAlignment="Center" Margin="0,8,0,0" />
+                                                <TextBlock Text="{DynamicResource S.Character.Editor.NoLorebookHelp}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0" MaxWidth="420" />
                                             </StackPanel>
                                         </Border>
                                         <!-- Редактор выбранного лорбука -->
@@ -519,14 +549,14 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </StackPanel.Style>
-                                            <CheckBox Content="Использовать этот лорбук для выбранного персонажа" IsChecked="{Binding IsSelectedLorebookBound}" Margin="0,12,0,0" />
-                                            <TextBox Text="{Binding SelectedLorebook.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,9,0,0" ToolTip="Название лорбука" />
-                                            <TextBox Text="{Binding SelectedLorebook.Description, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" Height="55" VerticalScrollBarVisibility="Auto" Margin="0,7,0,0" ToolTip="Описание лорбука" />
-                                            <TextBlock Text="Записи лорбука" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,14,0,6" />
+                                            <CheckBox Content="{DynamicResource S.Character.Editor.UseLorebook}" IsChecked="{Binding IsSelectedLorebookBound}" Margin="0,12,0,0" />
+                                            <TextBox Text="{Binding SelectedLorebook.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,9,0,0" ToolTip="{DynamicResource S.Character.Editor.LorebookName}" />
+                                            <TextBox Text="{Binding SelectedLorebook.Description, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" Height="55" VerticalScrollBarVisibility="Auto" Margin="0,7,0,0" ToolTip="{DynamicResource S.Character.Editor.LorebookDescription}" />
+                                            <TextBlock Text="{DynamicResource S.Character.Editor.LorebookEntries}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,14,0,6" />
                                             <!-- Пустые записи -->
-                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,0,6">
+                                            <Border Padding="14" Margin="0,0,0,6">
                                                 <Border.Style>
-                                                    <Style TargetType="Border">
+                                                    <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                                         <Setter Property="Visibility" Value="Collapsed" />
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding SelectedLorebook.Entries.Count}" Value="0">
@@ -536,17 +566,17 @@
                                                     </Style>
                                                 </Border.Style>
                                                 <StackPanel>
-                                                    <TextBlock Text="Пока нет записей" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                                                    <TextBlock Text="Добавьте первую запись — ключи и текст подставятся в prompt при совпадении." Foreground="{StaticResource TextMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.NoEntries}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{DynamicResource S.Character.Editor.NoEntriesHelp}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" />
                                                 </StackPanel>
                                             </Border>
                                             <ItemsControl ItemsSource="{Binding SelectedLorebook.Entries}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,3">
+                                                        <Border Style="{StaticResource GalleryCard}" Padding="10" Margin="0,3">
                                                             <StackPanel>
-                                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" ToolTip="Название записи лора" />
-                                                                <TextBox Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" Height="66" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" ToolTip="Текст записи лора" />
+                                                                <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" ToolTip="{DynamicResource S.Character.Editor.EntryName}" />
+                                                                <TextBox Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" Height="66" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" ToolTip="{DynamicResource S.Character.Editor.EntryContent}" />
                                                                 <Grid Margin="0,8,0,0">
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto" />
@@ -554,29 +584,31 @@
                                                                         <ColumnDefinition Width="190" />
                                                                         <ColumnDefinition Width="*" />
                                                                     </Grid.ColumnDefinitions>
-                                                                    <CheckBox Content="Включена" IsChecked="{Binding IsEnabled}" VerticalAlignment="Center" />
-                                                                    <ComboBox Grid.Column="2" SelectedValue="{Binding TriggerMode, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag" ToolTip="Режим срабатывания записи">
-                                                                        <ComboBoxItem Content="Всегда" Tag="always" />
-                                                                        <ComboBoxItem Content="По ключевым словам" Tag="keyword" />
+                                                                    <CheckBox Content="{DynamicResource S.Character.Editor.Enabled}" IsChecked="{Binding IsEnabled}" VerticalAlignment="Center" />
+                                                                    <ComboBox Grid.Column="2" SelectedValue="{Binding TriggerMode, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag" ToolTip="{DynamicResource S.Character.Editor.EntryTriggerMode}">
+                                                                        <ComboBoxItem Content="{DynamicResource S.Character.Editor.Always}" Tag="always" />
+                                                                        <ComboBoxItem Content="{DynamicResource S.Character.Editor.ByKeywords}" Tag="keyword" />
                                                                     </ComboBox>
-                                                                    <TextBox Grid.Column="3" Text="{Binding KeywordsText, UpdateSourceTrigger=PropertyChanged}" Margin="9,0,0,0" ToolTip="Ключевые слова через запятую. Используются только в режиме «По ключевым словам»." />
+                                                                    <TextBox Grid.Column="3" Text="{Binding KeywordsText, UpdateSourceTrigger=PropertyChanged}" Margin="9,0,0,0" ToolTip="{DynamicResource S.Character.Editor.EntryKeywords}" />
                                                                 </Grid>
                                                             </StackPanel>
                                                         </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                                                <Button Content="＋ Добавить запись" Command="{Binding AddLoreEntryCommand}" Style="{StaticResource AccentButton}" />
-                                                <Button Content="Сохранить лорбук" Command="{Binding SaveLorebookCommand}" Style="{StaticResource SuccessButton}" />
+                                             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                                 <Button Content="{DynamicResource S.Character.Editor.AddLoreEntry}" Command="{Binding AddLoreEntryCommand}" Style="{StaticResource AccentButton}" />
+                                                 <Button Content="{DynamicResource S.Character.Editor.SaveLorebook}" Command="{Binding SaveLorebookCommand}" Style="{StaticResource SuccessButton}" />
+                                             </StackPanel>
+                                             </StackPanel>
                                             </StackPanel>
+                                         </Border>
 </StackPanel>
-                            </StackPanel>
-                        </StackPanel>
+                             </StackPanel>
                     </ScrollViewer>
-                        <Border Grid.Row="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" IsHitTestVisible="False">
+                        <Border Grid.Row="0" Padding="24" IsHitTestVisible="False">
                             <Border.Style>
-                                <Style TargetType="Border" BasedOn="{StaticResource Surface}">
+                                <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                     <Setter Property="Padding" Value="24" />
                                     <Setter Property="Visibility" Value="Collapsed" />
                                     <Style.Triggers>
@@ -587,9 +619,9 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440">
-                                <TextBlock Text="Карточка не выбрана" FontSize="20" FontWeight="SemiBold" TextAlignment="Center" />
-                                <TextBlock Text="Выберите персонажа в библиотеке, чтобы настроить его карточку, память и лорбуки." Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,16" />
-                                <Button Content="Открыть библиотеку" Command="{Binding NavigateCommand}" CommandParameter="Home" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" />
+                                <TextBlock Text="{DynamicResource S.Character.Editor.NoCharacterTitle}" FontSize="20" FontWeight="SemiBold" TextAlignment="Center" />
+                                <TextBlock Text="{DynamicResource S.Character.Editor.NoCharacterHelp}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,16" />
+                                <Button Content="{DynamicResource S.Character.Editor.OpenLibrary}" Command="{Binding NavigateCommand}" CommandParameter="Home" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" />
 </StackPanel>
                         </Border>
                         <DockPanel Grid.Row="1" Margin="0,12,0,0">
@@ -602,8 +634,8 @@
                                     </Style.Triggers>
                                 </Style>
                             </DockPanel.Style>
-                            <Button DockPanel.Dock="Right" Content="Сохранить персонажа" Command="{Binding SaveCharacterCommand}" Style="{StaticResource SuccessButton}" Padding="20,11" />
-                            <TextBlock Text="Изменения пишутся в SoulExeData" Foreground="{StaticResource TextDimBrush}" FontSize="11" VerticalAlignment="Center" />
+                            <Button DockPanel.Dock="Right" Content="{DynamicResource S.Character.Editor.SaveCharacter}" Command="{Binding SaveCharacterCommand}" Style="{StaticResource SuccessButton}" Padding="20,11" />
+                            <TextBlock Text="{DynamicResource S.Character.Editor.SaveHint}" Foreground="{StaticResource TextDimBrush}" FontSize="11" VerticalAlignment="Center" />
                         </DockPanel>
                     </Grid>
                     </Grid>

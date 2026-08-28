@@ -21,6 +21,7 @@ public partial class ChatWorkspaceView : UserControl
     private static readonly Duration SheetOutDuration = new(TimeSpan.FromMilliseconds(150));
 
     private MainViewModel? _viewModel;
+    private readonly HashSet<ChatMessageViewModel> _subscribedChatMessages = [];
     private readonly HashSet<SceneMessageViewModel> _subscribedSceneMessages = [];
     private bool _chatScrollQueued;
     private bool _sceneScrollQueued;
@@ -201,6 +202,8 @@ public partial class ChatWorkspaceView : UserControl
         viewModel.Messages.CollectionChanged += ChatMessages_OnCollectionChanged;
         viewModel.SceneMessages.CollectionChanged += SceneMessages_OnCollectionChanged;
         viewModel.PropertyChanged += ViewModel_OnPropertyChanged;
+        foreach (var message in viewModel.Messages)
+            if (_subscribedChatMessages.Add(message)) message.PropertyChanged += ChatMessage_OnPropertyChanged;
         foreach (var message in viewModel.SceneMessages)
             if (_subscribedSceneMessages.Add(message)) message.PropertyChanged += SceneMessage_OnPropertyChanged;
     }
@@ -211,6 +214,8 @@ public partial class ChatWorkspaceView : UserControl
         viewModel.Messages.CollectionChanged -= ChatMessages_OnCollectionChanged;
         viewModel.SceneMessages.CollectionChanged -= SceneMessages_OnCollectionChanged;
         viewModel.PropertyChanged -= ViewModel_OnPropertyChanged;
+        foreach (var message in _subscribedChatMessages) message.PropertyChanged -= ChatMessage_OnPropertyChanged;
+        _subscribedChatMessages.Clear();
         foreach (var message in _subscribedSceneMessages) message.PropertyChanged -= SceneMessage_OnPropertyChanged;
         _subscribedSceneMessages.Clear();
         _isSubscribed = false;
@@ -227,7 +232,30 @@ public partial class ChatWorkspaceView : UserControl
         Unsubscribe(_viewModel);
     }
 
-    private void ChatMessages_OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => ScheduleChatScroll();
+    private void ChatMessages_OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            foreach (var item in _subscribedChatMessages) item.PropertyChanged -= ChatMessage_OnPropertyChanged;
+            _subscribedChatMessages.Clear();
+            ConversationThread?.ResetPersonalAutoFollow();
+            ScheduleChatScroll();
+            return;
+        }
+        if (e.NewItems is not null)
+            foreach (var item in e.NewItems.OfType<ChatMessageViewModel>())
+                if (_subscribedChatMessages.Add(item)) item.PropertyChanged += ChatMessage_OnPropertyChanged;
+        if (e.OldItems is not null)
+            foreach (var item in e.OldItems.OfType<ChatMessageViewModel>())
+                if (_subscribedChatMessages.Remove(item)) item.PropertyChanged -= ChatMessage_OnPropertyChanged;
+        ScheduleChatScroll();
+    }
+
+    private void ChatMessage_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ChatMessageViewModel.Content) or nameof(ChatMessageViewModel.VisibleContent) or nameof(ChatMessageViewModel.ThoughtContent))
+            ScheduleChatScroll();
+    }
 
     private void SceneMessages_OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -235,6 +263,7 @@ public partial class ChatWorkspaceView : UserControl
         {
             foreach (var item in _subscribedSceneMessages) item.PropertyChanged -= SceneMessage_OnPropertyChanged;
             _subscribedSceneMessages.Clear();
+            ConversationThread?.ResetSceneAutoFollow();
             ScheduleSceneScroll();
             return;
         }

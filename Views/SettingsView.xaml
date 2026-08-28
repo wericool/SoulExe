@@ -1,4 +1,4 @@
-<UserControl x:Class="SoulExe.Views.SettingsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:SoulExe" xmlns:views="clr-namespace:SoulExe.Views">
+﻿<UserControl x:Class="SoulExe.Views.SettingsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:SoulExe" xmlns:views="clr-namespace:SoulExe.Views">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -6,37 +6,7 @@
         </Grid.RowDefinitions>
         <Border Background="{StaticResource ElevatedBrush}" HorizontalAlignment="Left" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="5" Margin="0,0,0,14">
                                     <WrapPanel KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="{DynamicResource S.Settings.Tabs}">
-                                        <Button Content="{DynamicResource S.Tab.Runtime}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="llm" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Runtime}" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="5" TabIndex="0">
-                                            <Button.Style>
-                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsLlmOptionsTab}" Value="True">
-                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
-                                                            <Setter Property="Foreground" Value="White" />
-                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
-                                                            <Setter Property="FontWeight" Value="SemiBold" />
-                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Button.Style>
-                                        </Button>
-                                        <Button Content="{DynamicResource S.Tab.Models}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="models" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Models}" AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="5" TabIndex="1">
-                                            <Button.Style>
-                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsModelsOptionsTab}" Value="True">
-                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
-                                                            <Setter Property="Foreground" Value="White" />
-                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
-                                                            <Setter Property="FontWeight" Value="SemiBold" />
-                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Button.Style>
-                                        </Button>
-                                        <Button Content="{DynamicResource S.Tab.Setup}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="setup" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Setup}" AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="5" TabIndex="2">
+                                        <Button Content="{DynamicResource S.Tab.Setup}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="setup" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Setup}" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="5" TabIndex="0">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
                                                     <Style.Triggers>
@@ -45,7 +15,37 @@
                                                             <Setter Property="Foreground" Value="White" />
                                                             <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
                                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Settings.Selected}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="{DynamicResource S.Tab.Runtime}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="llm" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Runtime}" AutomationProperties.PositionInSet="2" AutomationProperties.SizeOfSet="5" TabIndex="1">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsLlmOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Settings.Selected}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="{DynamicResource S.Tab.Models}" Command="{Binding SelectOptionsTabCommand}" CommandParameter="models" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="{DynamicResource S.Tab.Models}" AutomationProperties.PositionInSet="3" AutomationProperties.SizeOfSet="5" TabIndex="2">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource PseudoTabButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsModelsOptionsTab}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource AccentGradientBrush}" />
+                                                            <Setter Property="Foreground" Value="White" />
+                                                            <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
+                                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Settings.Selected}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -60,7 +60,7 @@
                                                             <Setter Property="Foreground" Value="White" />
                                                             <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
                                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Settings.Selected}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -75,7 +75,7 @@
                                                             <Setter Property="Foreground" Value="White" />
                                                             <Setter Property="Effect" Value="{StaticResource AccentGlowEffect}" />
                                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                                            <Setter Property="AutomationProperties.ItemStatus" Value="Выбрана" />
+                                                            <Setter Property="AutomationProperties.ItemStatus" Value="{DynamicResource S.Settings.Selected}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -101,15 +101,15 @@
                                     </Grid.RowDefinitions>
                                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                         <StackPanel>
-                                            <TextBlock Text="Runtime" FontSize="22" FontWeight="SemiBold" />
-                                            <TextBlock Text="Генерация, вычислительный движок и совместимость prompt. Сначала настройте основные параметры, затем открывайте расширенные." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,18" />
+                                            <TextBlock Text="{DynamicResource S.Settings.PageHeader}" FontSize="22" FontWeight="SemiBold" />
+                                            <TextBlock Text="{DynamicResource S.Settings.PageSubheader}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,18" />
                                             <!-- Cognitive Architecture is configured inside each character card. -->
                                             <!-- Основная генерация. -->
-                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                                            <Border Style="{StaticResource SheetSectionElevated}" Padding="18" Margin="0,0,0,14">
                                                 <StackPanel>
-                                                    <TextBlock Text="Основные параметры генерации" FontSize="17" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.Section1.Title}" FontSize="17" FontWeight="SemiBold" />
                                                     <DockPanel Margin="0,18,0,8">
-                                                        <TextBlock Text="Ответ" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.Response}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                         <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <Grid>
@@ -119,8 +119,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Макс. токенов" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Макс. длина ответа. Ограничивает максимальное количество слов, которое может написать персонаж за один раз. Слишком длинные ответы забивают контекст. Оптимально: 300–500 токенов." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.MaxTokens}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.MaxTokens.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="128" Maximum="65536" Ticks="128,256,512,768,1024,1536,2048,3072,4096,8192,16384,32768,65536" IsSnapToTickEnabled="True" TickPlacement="BottomRight" AutoToolTipPlacement="BottomRight" Value="{Binding LlamaOptions.MaxTokens}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.MaxTokens}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -132,14 +132,14 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal" IsEnabled="{Binding LlamaOptions.ReasoningMode}">
-                                                            <TextBlock Text="Бюджет рассуждений" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Лимит скрытых токенов рассуждений для локальной модели через llama-server. Работает только у GGUF-моделей с поддержкой reasoning. −1: не передавать лимит и оставить поведение модели по умолчанию. 0: не выделять токены на рассуждения. Положительное число: максимум токенов рассуждений на один ответ; больше значение может улучшить сложный ответ, но замедляет генерацию." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ReasoningBudget}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.ReasoningBudget.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="-1" Maximum="8192" SmallChange="64" Value="{Binding LlamaOptions.ReasoningBudget}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.ReasoningBudget}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
                                                     </Grid>
                                                     <DockPanel Margin="0,18,0,8">
-                                                        <TextBlock Text="Креативность" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.Temperature}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                         <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <Grid>
@@ -150,7 +150,7 @@
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Temperature" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Температура (Креативность). Контролирует базовый уровень хаоса в ответах. Низкая (0.1–0.5): логично и предсказуемо. Высокая (0.8–1.5): очень креативно, эмоционально и непредсказуемо. Рекомендуется: 0.8–1.0. При высоких значениях обязательно используйте Min-P для защиты от бреда." />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.Temperature.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="2" SmallChange="0.05" Value="{Binding LlamaOptions.Temperature}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.Temperature}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -163,13 +163,13 @@
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Top-P" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Top-P. Старый метод сэмплинга, ограничивающий выбор слов суммарным процентом вероятности. Если вы используете Min-P, обязательно отключите Top-P, установив его на 1.0." />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.TopP.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.01" Value="{Binding LlamaOptions.TopP}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.TopP}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
                                                     </Grid>
                                                     <DockPanel Margin="0,18,0,8">
-                                                        <TextBlock Text="Повторы" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.Repetition}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                         <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <Grid>
@@ -179,8 +179,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Штраф за частоту" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Штраф за частоту (Frequency Penalty). Штрафует слова в зависимости от того, сколько раз они уже встречались в тексте. Заставляет ИИ использовать богатый словарный запас и искать синонимы, а не повторять одни и те же прилагательные. Слишком высокие значения ломают грамматику. Оптимально: 0.0 - 0.5." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.FrequencyPenalty}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.FrequencyPenalty.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="2" SmallChange="0.05" Value="{Binding LlamaOptions.FrequencyPenalty}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.FrequencyPenalty}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -192,8 +192,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Штраф за присутствие" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Штраф за присутствие (Presence Penalty). Накладывает штраф на слово, если оно встретилось хотя бы один раз. В отличие от штрафа за частоту, это заставляет ИИ менять тему разговора и вводить новые концепции, не давая диалогу застрять в одной точке. При высоких значениях ИИ будет хаотично прыгать по темам. Оптимально: 0.0 - 0.4." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.PresencePenalty}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.PresencePenalty.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="2" SmallChange="0.05" Value="{Binding LlamaOptions.PresencePenalty}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.PresencePenalty}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -201,11 +201,11 @@
                                                 </StackPanel>
                                             </Border>
                                             <!-- Оборудование. -->
-                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                                            <Border Style="{StaticResource SheetSectionElevated}" Padding="18" Margin="0,0,0,14">
                                                 <StackPanel>
-                                                    <TextBlock Text="Движок и производительность" FontSize="17" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.Section2.Title}" FontSize="17" FontWeight="SemiBold" />
                                                     <DockPanel Margin="0,18,0,8">
-                                                        <TextBlock Text="Движок" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.Engine}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                         <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <Grid>
@@ -214,10 +214,10 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Команда запуска сервера" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Фактическая команда, с которой SoulExe запускает локальный llama-server. Это диагностическое поле, а не сетевой облачный сервис." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ServerLaunchCommand}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.ServerLaunchCommand.HelpHint}" />
                                                         </StackPanel>
-                                                        <TextBox Grid.Column="1" Text="{Binding ModelLaunchCommand, Mode=OneWay}" IsReadOnly="True" ToolTip="Фактическая команда запуска llama.cpp" />
+                                                        <TextBox Grid.Column="1" Text="{Binding ModelLaunchCommand, Mode=OneWay}" IsReadOnly="True" ToolTip="{DynamicResource S.Settings.ServerLaunchCommand.ToolTip}" />
                                                     </Grid>
                                                     <Grid Margin="0,10,0,0">
                                                         <Grid.ColumnDefinitions>
@@ -226,11 +226,11 @@
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Вычислительный движок" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Выбирает сборку llama.cpp: CPU для любого ПК; CUDA для NVIDIA; Vulkan для совместимых GPU; ROCm для AMD; SYCL для Intel." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ComputeBackend}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.ComputeBackend.HelpHint}" />
                                                         </StackPanel>
                                                         <ComboBox Grid.Column="1" ItemsSource="{Binding LlamaBackends}" SelectedItem="{Binding SelectedLlamaBackend}" DisplayMemberPath="DisplayName" />
-                                                        <Button Grid.Column="2" Content="Установить" Command="{Binding InstallEngineCommand}" Background="{StaticResource BorderStrongBrush}" />
+                                                        <Button Grid.Column="2" Content="{DynamicResource S.Settings.Install}" Command="{Binding InstallEngineCommand}" Background="{StaticResource BorderStrongBrush}" />
                                                     </Grid>
                                                     <Grid Margin="0,10,0,0">
                                                         <Grid.ColumnDefinitions>
@@ -238,8 +238,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Тип KV-кэша" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Квантизируйте Context Cache, чтобы сэкономить значительный объем видеопамяти при работе с длинными контекстами." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.KVCacheType}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.KVCacheType.HelpHint}" />
                                                         </StackPanel>
                                                         <ComboBox Grid.Column="1" SelectedValue="{Binding LlamaOptions.KvCacheType}" SelectedValuePath="Content">
                                                             <ComboBoxItem Content="f16" />
@@ -251,15 +251,15 @@
                                                     <WrapPanel Margin="170,10,0,0">
                                                         <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
                                                             <CheckBox Content="MLock" IsChecked="{Binding LlamaOptions.UseMlock}" />
-                                                            <ui:HelpHint Hint="MLock (Блокировка памяти). Эта функция предотвращает выгрузку языковой модели из оперативной памяти (RAM) в файл подкачки на диске. Когда опция включена, модель остается полностью загруженной в памяти, что гарантирует максимально быстрый отклик без микрофризов при генерации каждого нового сообщения. Рекомендуется включать только при наличии достаточного объема ОЗУ, так как эта память будет постоянно заблокирована системой. На ПК с малым объемом памяти лучше оставить отключенной." />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.MLock.HelpHint}" />
                                                         </StackPanel>
                                                         <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
-                                                            <CheckBox Content="Использовать отображение модели в память (MMAP)" IsChecked="{Binding LlamaOptions.UseMmap}" />
-                                                            <ui:HelpHint Hint="Включено: llama.cpp использует отображение файла модели в память (mmap) и считывает страницы с диска по требованию. Выключено: передаётся режим No MMAP, модель загружается в ОЗУ заранее; это требует больше RAM и может уменьшить задержки при генерации." />
+                                                            <CheckBox Content="{DynamicResource S.Settings.MMAP}" IsChecked="{Binding LlamaOptions.UseMmap}" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.MMAP.HelpHint}" />
                                                         </StackPanel>
                                                         <StackPanel Orientation="Horizontal">
                                                             <CheckBox Content="Flash Attention" IsChecked="{Binding LlamaOptions.FlashAttention}" />
-                                                            <ui:HelpHint Hint="Flash Attention. Новейшая технология, ускоряющая генерацию и снижающая потребление VRAM при обработке длинных чатов. Оптимизирует вычисления внутри нейросети на больших размерах контекста (4K, 8K и выше). Настоятельно рекомендуется всегда держать включенным." />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.FlashAttention.HelpHint}" />
                                                         </StackPanel>
                                                     </WrapPanel>
                                                     <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="11" Margin="0,12,0,0">
@@ -269,16 +269,16 @@
                                                                 <ColumnDefinition Width="225" />
                                                             </Grid.ColumnDefinitions>
                                                             <StackPanel Orientation="Horizontal">
-                                                                <CheckBox Content="Режим рассуждений" IsChecked="{Binding LlamaOptions.ReasoningMode}" FontWeight="SemiBold" />
-                                                                <ui:HelpHint Hint="Режим размышлений (Thinking Mode). Создан для мыслящих моделей вроде DeepSeek-R1 или QwQ, которые генерируют внутренние рассуждения перед ответом. При включении интерфейс прячет теги &lt;think&gt; в красивый блок и запрещает голосовому движку (TTS) читать мысли вслух. Оставьте выключенным для обычных моделей (Llama-3, Mistral, обычный Qwen)." />
+                                                                <CheckBox Content="{DynamicResource S.Settings.ReasoningMode}" IsChecked="{Binding LlamaOptions.ReasoningMode}" FontWeight="SemiBold" />
+                                                                <ui:HelpHint Hint="{DynamicResource S.Settings.ReasoningMode.HelpHint}" />
                                                             </StackPanel>
                                                             <StackPanel Grid.Column="1" IsEnabled="{Binding LlamaOptions.ReasoningMode}">
-                                                                <TextBlock Text="При включении настройте бюджет рассуждений выше." Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" />
+                                                                <TextBlock Text="{DynamicResource S.Settings.ReasoningMode.Hint}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" />
                                                             </StackPanel>
                                                         </Grid>
                                                     </Border>
                                                     <DockPanel Margin="0,20,0,8">
-                                                        <TextBlock Text="Производительность" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.Performance}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                         <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <Grid>
@@ -288,8 +288,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Слои в GPU" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Загрузка слоев в GPU. Позволяет контролировать, какая часть модели обрабатывается видеокартой (VRAM), а какая — процессором (RAM). Чем больше слоев в видеокарте, тем быстрее генерация, но тем выше требования к памяти. Особенно полезно для больших моделей (от 13B). Если у вас мощная видеокарта, выкручивайте на максимум." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.GPULayers}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.GPULayers.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding LlamaOptions.GpuLayers}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.GpuLayers}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -301,8 +301,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="MoE-слои на CPU" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="0 = Отключено. Количество слоев «Mixture of Experts» (MoE), размещаемых в оперативной памяти (CPU RAM). Крайне важно для работы с моделями архитектуры MoE." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.MoELayersOnCPU}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.MoELayersOnCPU.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding LlamaOptions.CpuMoeLayers}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.CpuMoeLayers}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -314,8 +314,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Размер контекста" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Контекстное окно. Это максимальное количество токенов, которое модель может обработать за раз (её рабочая память). Включает историю чата, авторские заметки и записи из lorebook. Большее контекстное окно позволяет персонажу помнить больше, но значительно увеличивает потребление VRAM. Уменьшите это значение на слабых ПК. Для долгосрочной памяти лучше держите включённым модуль «Soul Memory», а не выкручивайте контекст на максимум." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ContextSize}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.ContextSize.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="2048" Maximum="131072" Ticks="2048,4096,8192,16384,32768,65536,131072" IsSnapToTickEnabled="True" TickPlacement="BottomRight" AutoToolTipPlacement="BottomRight" Value="{Binding LlamaOptions.ContextSize}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.ContextSize}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -327,8 +327,8 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Размер пакета prompt" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Количество токенов, обрабатываемых одновременно при оценке промпта. Значение 512 является безопасным. Чем выше значение, тем быстрее загрузка и тем больше требуется VRAM." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.PromptBatchSize}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.PromptBatchSize.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="8192" LargeChange="128" Value="{Binding LlamaOptions.BatchSize}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.BatchSize}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
@@ -340,25 +340,25 @@
                                                             <ColumnDefinition Width="112" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Потоки CPU" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="0 = Автоматически. Укажите количество физических ядер процессора для обеспечения оптимальной скорости инференса на процессоре." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.CPUThreads}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.CPUThreads.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="64" Value="{Binding LlamaOptions.CpuThreads}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.CpuThreads}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
                                                     </Grid>
                                                     <StackPanel Orientation="Horizontal" Margin="0,15,0,4">
-                                                        <TextBlock Text="Пользовательские аргументы llama.cpp" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
-                                                        <ui:HelpHint Hint="Пользовательские аргументы. Позволяет передавать дополнительные аргументы командной строки напрямую локальному LLM-серверу (llama.cpp). Это предназначено для опытных пользователей, которые хотят точно настроить специфические параметры движка (например, масштабирование RoPE или параметры кэширования), не представленные в графическом интерфейсе. Используйте с осторожностью. Неверные флаги могут привести к сбою сервера или переопределить настройки интерфейса. Пример: --rope-freq-base 10000." />
+                                                        <TextBlock Text="{DynamicResource S.Settings.CustomLlamaCppArgs}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
+                                                        <ui:HelpHint Hint="{DynamicResource S.Settings.CustomLlamaCppArgs.HelpHint}" />
                                                     </StackPanel>
                                                     <TextBox Text="{Binding LlamaOptions.ExtraArguments}" />
                                                 </StackPanel>
                                             </Border>
                                             <!-- Prompt и расширенный sampling. -->
-                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,14">
+                                            <Border Style="{StaticResource SheetSectionElevated}" Padding="18" Margin="0,0,0,14">
                                                 <StackPanel>
-                                                    <TextBlock Text="Промпт" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.Section3.Title}" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" />
                                                     <DockPanel Margin="0,18,0,8">
-                                                        <TextBlock Text="Шаблон и стоп-строки" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.TemplateAndStopStrings}" Foreground="{StaticResource AccentHoverBrush}" Style="{StaticResource SectionLabel}" />
                                                         <Border Background="{StaticResource BorderStrongBrush}" Height="1" VerticalAlignment="Center" />
                                                     </DockPanel>
                                                     <Grid>
@@ -367,8 +367,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Шаблон чата" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Шаблон чата (Chat Template). Определяет, в каком формате ваш текст отправляется нейросети. Разные ИИ обучены на разных форматах. Если шаблон не совпадает с моделью, бот начнет галлюцинировать или выводить спецсимволы (например, &lt;|im_end|&gt;). Auto берет шаблон прямо из GGUF файла. Если модель ведет себя странно, выберите вручную ChatML или Llama-3." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ChatTemplate}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.ChatTemplate.HelpHint}" />
                                                         </StackPanel>
                                                         <ComboBox Grid.Column="1" SelectedValue="{Binding LlamaOptions.ChatTemplate}" SelectedValuePath="Content">
                                                             <ComboBoxItem Content="auto" />
@@ -386,19 +386,22 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="Стоп-строки" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Стоп-строки (Stop Strings). Список слов или тегов, при появлении которых ИИ немедленно прекращает генерацию. Это важнейший инструмент, чтобы запретить ИИ говорить или действовать за вас (например, генерировать User: и отвечать на свои же вопросы). Перечисляйте через запятую. Пример: User:, &lt;/s&gt;, &lt;|eot_id|&gt;." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.StopStrings}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.StopStrings.HelpHint}" />
                                                         </StackPanel>
-                                                        <TextBox Grid.Column="1" Text="{Binding LlamaOptions.StopStrings}" ToolTip="Разделяйте значения символом | или новой строкой" />
+                                                        <TextBox Grid.Column="1" Text="{Binding LlamaOptions.StopStrings}" ToolTip="{DynamicResource S.Settings.StopStrings.ToolTip}" />
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
-                                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18">
+                                            <Border Style="{StaticResource SheetSectionElevated}" Padding="18">
                                                 <Expander IsExpanded="False">
                                                     <Expander.Header>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <CheckBox Content="Расширенный sampling LLM" IsChecked="{Binding LlamaOptions.EnableAdvancedSampling}" FontSize="17" FontWeight="SemiBold" />
-                                                            <ui:HelpHint Hint="Если эта опция отключена, используются стандартные настройки генерации с первой панели. Расширенные настройки игнорируются." />
+                                                        <StackPanel>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <CheckBox Content="{DynamicResource S.Settings.Section4.Title}" IsChecked="{Binding LlamaOptions.EnableAdvancedSampling}" FontSize="17" FontWeight="SemiBold" />
+                                                                <ui:HelpHint Hint="{DynamicResource S.Settings.Section4.HelpHint}" />
+                                                            </StackPanel>
+                                                            <TextBlock Text="Необязательные настройки для опытной настройки генерации. По умолчанию их можно не менять." Style="{StaticResource InlineHelp}" Margin="0,5,0,0" MaxWidth="620" />
                                                         </StackPanel>
                                                     </Expander.Header>
                                                     <Grid IsEnabled="{Binding LlamaOptions.EnableAdvancedSampling}" Margin="0,17,0,0">
@@ -420,55 +423,55 @@
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Min-P" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Min-P (Умное отсечение). Новый золотой стандарт RolePlay. Динамически отсекает мусорные слова на основе вероятности самого лучшего слова. Если ИИ уверен в ответе, Min-P безжалостно режет бред. Если ИИ нужно проявить фантазию, барьер снижается, впуская красивые синонимы. Замена Top-P. Установите Top-P на 1.0, а Min-P на 0.05 - 0.10 для идеальной логики при высокой Температуре." />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.MinP.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.01" Value="{Binding LlamaOptions.MinP}" />
                                                         <TextBox Grid.Column="2" Text="{Binding LlamaOptions.MinP}" TextAlignment="Center" Padding="6,3" MinWidth="100" />
                                                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Мин. динамич. темп." VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Динамическая Температура. Вместо фиксированного значения, температура плавает между Мин. и Макс. границами в зависимости от уверенности ИИ. Описывая факты, температура падает для логики. Описывая эмоции, температура взлетает для креатива." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.MinDynTemp}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.DynTemp.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="1" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding LlamaOptions.DynamicTemperatureMin}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding LlamaOptions.DynamicTemperatureMin}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Макс. динамич. темп." VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Динамическая Температура. Вместо фиксированного значения, температура плавает между Мин. и Макс. границами в зависимости от уверенности ИИ. Описывая факты, температура падает для логики. Описывая эмоции, температура взлетает для креатива." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.MaxDynTemp}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.DynTemp.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="2" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding LlamaOptions.DynamicTemperatureMax}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding LlamaOptions.DynamicTemperatureMax}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Вероятность XTC" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="XTC (Удаление банальностей). Революция для RP. Принудительно удаляет самые очевидные и клишированные слова из вариантов выбора ИИ. Устали от фраз «мурашки пробежали по спине» или «хищная ухмылка»? XTC заставит модель искать уникальные, литературные альтернативы. Вероятность: шанс срабатывания алгоритма (оптимально 0.3 - 0.5)." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.XTCProbability}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.XTCProbability.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LlamaOptions.XtcProbability}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding LlamaOptions.XtcProbability}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Порог XTC" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Порог XTC (Threshold). Определяет, насколько популярным (вероятным) должно быть слово, чтобы алгоритм XTC имел право его удалить. Оптимально: 0.1 (удаляются только слова с вероятностью выше 10%)." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.XTCThreshold}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.XTCThreshold.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding LlamaOptions.XtcThreshold}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding LlamaOptions.XtcThreshold}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Множитель DRY" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="DRY (Множитель). В отличие от старых алгоритмов, DRY (Don’t Repeat Yourself) распознает и штрафует повторения целых предложений и структур. Если Вайфу постоянно начинает сообщения фразой «Я вздыхаю и смотрю на тебя», DRY сломает этот паттерн и заставит ее действовать иначе. Множитель: сила штрафа (оптимально 0.8)." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.DRYMultiplier}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.DRYMultiplier.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="2" Value="{Binding LlamaOptions.DryMultiplier}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="5" Grid.Column="2" Text="{Binding LlamaOptions.DryMultiplier}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="База DRY" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="DRY База. Базовый коэффициент масштабирования алгоритма. Определяет, насколько агрессивно растет штраф от длины повторяющейся фразы. Оптимально: 1.75." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.DRYBase}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.DRYBase.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="6" Grid.Column="1" Minimum="0" Maximum="3" Value="{Binding LlamaOptions.DryBase}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="6" Grid.Column="2" Text="{Binding LlamaOptions.DryBase}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Допуск длины DRY" VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Допуск длины DRY. Количество токенов (слов/слогов), которым разрешено повторяться до того, как сработает штраф DRY. Оптимально: 2 (чтобы не штрафовать короткие связки типа «Я есть» или «И тут»)." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.DRYLengthAllowance}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.DRYLengthAllowance.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="7" Grid.Column="1" Minimum="0" Maximum="32" Value="{Binding LlamaOptions.DryAllowedLength}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="7" Grid.Column="2" Text="{Binding LlamaOptions.DryAllowedLength}" TextAlignment="Center" Margin="0,9,0,0" />
                                                         <StackPanel Grid.Row="8" Orientation="Horizontal" Margin="0,9,0,0">
-                                                            <TextBlock Text="Экспонента дин. темп." VerticalAlignment="Center" />
-                                                            <ui:HelpHint Hint="Экспонента динамической температуры (`dynatemp_exponent`). Отдельно задаёт кривую изменения температуры между минимальным и максимальным значениями. 1.0 — линейное изменение; больше 1.0 сильнее удерживает температуру у нижней границы; меньше 1.0 быстрее смещает её к верхней границе." />
+                                                            <TextBlock Text="{DynamicResource S.Settings.DynTempExponent}" VerticalAlignment="Center" />
+                                                            <ui:HelpHint Hint="{DynamicResource S.Settings.DynTempExponent.HelpHint}" />
                                                         </StackPanel>
                                                         <Slider Grid.Row="8" Grid.Column="1" Minimum="0.1" Maximum="5" SmallChange="0.1" Value="{Binding LlamaOptions.DynamicTemperatureExponent}" Margin="0,9,0,0" />
                                                         <TextBox Grid.Row="8" Grid.Column="2" Text="{Binding LlamaOptions.DynamicTemperatureExponent}" TextAlignment="Center" Margin="0,9,0,0" />
@@ -477,10 +480,10 @@
                                             </Border>
                                         </StackPanel>
                                     </ScrollViewer>
-                                    <Border Grid.Row="1" Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,12,0,0">
+                                    <Border Grid.Row="1" Style="{StaticResource SystemStatusCard}" Padding="12" Margin="0,12,0,0">
                                         <DockPanel>
-                                            <TextBlock Text="Изменения вступят в силу после сохранения; для уже запущенной модели перезапустите сервер." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center" />
-                                            <Button DockPanel.Dock="Right" Content="Сохранить настройки" Command="{Binding SaveModelSettingsCommand}" Background="{StaticResource SuccessBrush}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{DynamicResource S.Settings.Footer.Hint}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center" />
+                                            <Button DockPanel.Dock="Right" Content="{DynamicResource S.Settings.Save}" Command="{Binding SaveModelSettingsCommand}" Background="{StaticResource SuccessBrush}" FontWeight="SemiBold" />
                                         </DockPanel>
                                     </Border>
                                 </Grid>
@@ -500,31 +503,32 @@
                                         <ColumnDefinition Width="24" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <ScrollViewer x:Name="AppearanceEditor" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
-                                        <StackPanel>
-                                            <Border Style="{StaticResource SettingsSectionCard}">
+                                     <ScrollViewer x:Name="AppearanceEditor" Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+                                         <StackPanel>
+                                             <Button Content="{DynamicResource S.Settings.Reset}" Command="{Binding ResetChatAppearanceCommand}" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Margin="0,0,0,16" />
+                                             <Border Style="{StaticResource SettingsSectionCard}">
                                                 <StackPanel>
                                                     <TextBlock Text="{DynamicResource S.Settings.Language}" FontSize="18" FontWeight="SemiBold" />
                                                     <TextBlock Text="{DynamicResource S.Settings.Language.Hint}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,12" />
                                                     <ComboBox SelectedValue="{Binding AppLanguage}" SelectedValuePath="Tag" MinHeight="42" Width="260" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource S.Settings.Language}">
-                                                        <ComboBoxItem Content="Русский" Tag="ru" />
-                                                        <ComboBoxItem Content="English" Tag="en" />
+                                                        <ComboBoxItem Content="{DynamicResource S.Settings.Language.Russian}" Tag="ru" />
+                                                        <ComboBoxItem Content="{DynamicResource S.Settings.Language.English}" Tag="en" />
                                                     </ComboBox>
                                                 </StackPanel>
                                             </Border>
                                             <Border Style="{StaticResource SettingsSectionCard}">
                                                 <StackPanel>
-                                                    <TextBlock Text="Цвета разметки" FontSize="18" FontWeight="SemiBold" />
-                                                    <TextBlock Text="Выберите акцентные оттенки для разных типов текста. Изменения применяются к чату и предпросмотру сразу." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
-                                                    <Grid Margin="0,12,0,0">
+                                                    <TextBlock Text="{DynamicResource S.Settings.MarkupColors}" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.MarkupColors.Description}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
+                                                     <Grid Margin="0,12,0,0">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="156" />
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Основной текст" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Базовый текст сообщений" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.BodyText}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.BodyText.Description}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.TextColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -547,7 +551,7 @@
                                                             <Button Style="{StaticResource SwatchButton}" Background="#FFE4E6" ToolTip="#FFE4E6" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#FFE4E6" />
                                                             <Button Style="{StaticResource SwatchButton}" Background="#E5E7EB" ToolTip="#E5E7EB" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="TextColor|#E5E7EB" />
                                                         </WrapPanel>
-                                                    </Grid>
+                                                     </Grid>
                                                     <Grid Margin="0,12,0,0">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="156" />
@@ -555,8 +559,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Действия и акценты" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Текст между звёздочками" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ActionsAndEmphasis}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ActionsAndEmphasis.Description}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.ActionColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -587,8 +591,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Прямая речь" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Выделение реплик в кавычках" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.Dialogue}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.Dialogue.Description}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.QuoteColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -619,8 +623,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Встроенный код" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Короткие технические фрагменты" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.InlineCode}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.InlineCode.Description}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.CodeColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -648,8 +652,8 @@
                                             </Border>
                                             <Border Style="{StaticResource SettingsSectionCard}">
                                                 <StackPanel>
-                                                    <TextBlock Text="Фоны и пузыри" FontSize="18" FontWeight="SemiBold" />
-                                                    <TextBlock Text="Настройте области диалога и сообщения обеих сторон. Выбранный вариант отмечен галочкой." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.BackgroundsAndBubbles}" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.BackgroundsAndBubbles.Description}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,4" />
                                                     <Grid Margin="0,12,0,0">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="156" />
@@ -657,8 +661,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Фон персонажа" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Левые пузыри персонажей" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.CharacterBackground}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.LeftCharacterBubbles}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.AssistantBubbleColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -689,8 +693,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Фон пользователя" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Правые пузыри пользователя" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.UserBackground}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.RightUserBubbles}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.UserBubbleColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -721,8 +725,8 @@
                                                             <ColumnDefinition Width="*" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="Фон области чата" FontWeight="SemiBold" />
-                                                            <TextBlock Text="Рабочая область ленты" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ChatAreaBackground}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.ChatWorkspace}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" Margin="0,3,0,0" />
                                                         </StackPanel>
                                                         <Border Grid.Column="1" Width="30" Height="30" CornerRadius="9" Background="{Binding ChatAppearance.ChatBackgroundColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" VerticalAlignment="Center">
                                                             <TextBlock Text="✓" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -746,17 +750,18 @@
                                                             <Button Style="{StaticResource SwatchButton}" Background="#164E63" ToolTip="Тёмный циан" Command="{Binding SetChatAppearanceColorCommand}" CommandParameter="ChatBackgroundColor|#164E63" />
                                                         </WrapPanel>
                                                     </Grid>
+                                                    <CheckBox Content="{DynamicResource S.Settings.UseAvatarBackground}" IsChecked="{Binding ChatAppearance.UseCharacterAvatarBackground}" Margin="0,14,0,0" />
                                                 </StackPanel>
                                             </Border>
                                             <Border Style="{StaticResource SettingsSectionCard}">
                                                 <StackPanel>
-                                                    <TextBlock Text="Шрифт и размеры" FontSize="18" FontWeight="SemiBold" />
-                                                    <TextBlock Text="Комбинация форматирования и масштаба помогает сохранить удобочитаемость длинных диалогов." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,14" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.FontAndSizes}" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.FontAndSizes.Description}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,14" />
                                                     <WrapPanel>
-                                                        <CheckBox Content="Курсив для действий" IsChecked="{Binding ChatAppearance.FormatActions}" Margin="0,0,24,12" />
-                                                        <CheckBox Content="Подсветка прямой речи" IsChecked="{Binding ChatAppearance.FormatQuotes}" Margin="0,0,24,12" />
-                                                        <CheckBox Content="Жирный текст" IsChecked="{Binding ChatAppearance.FormatBold}" Margin="0,0,24,12" />
-                                                        <CheckBox Content="Встроенный код" IsChecked="{Binding ChatAppearance.FormatCode}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="{DynamicResource S.Settings.ItalicForActions}" IsChecked="{Binding ChatAppearance.FormatActions}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="{DynamicResource S.Settings.DialogueHighlighting}" IsChecked="{Binding ChatAppearance.FormatQuotes}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="{DynamicResource S.Settings.BoldText}" IsChecked="{Binding ChatAppearance.FormatBold}" Margin="0,0,24,12" />
+                                                        <CheckBox Content="{DynamicResource S.Settings.InlineCodeCheckbox}" IsChecked="{Binding ChatAppearance.FormatCode}" Margin="0,0,24,12" />
                                                     </WrapPanel>
                                                     <Grid Margin="0,8,0,0">
                                                         <Grid.ColumnDefinitions>
@@ -765,7 +770,7 @@
                                                             <ColumnDefinition Width="86" />
                                                             <ColumnDefinition Width="24" />
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="Размер текста" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.FontSize}" VerticalAlignment="Center" />
                                                         <Slider Grid.Column="1" Minimum="11" Maximum="24" IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding ChatAppearance.FontSize}" />
                                                         <TextBox Grid.Column="2" Text="{Binding ChatAppearance.FontSize}" TextAlignment="Center" Margin="12,0,0,0" />
                                                         <TextBlock Grid.Column="3" Text="px" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -777,7 +782,7 @@
                                                             <ColumnDefinition Width="86" />
                                                             <ColumnDefinition Width="24" />
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="Макс. ширина пузыря" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.MaxBubbleWidth}" VerticalAlignment="Center" />
                                                         <Slider Grid.Column="1" Minimum="360" Maximum="960" TickFrequency="40" Value="{Binding ChatAppearance.BubbleMaxWidth}" />
                                                         <TextBox Grid.Column="2" Text="{Binding ChatAppearance.BubbleMaxWidth}" TextAlignment="Center" Margin="12,0,0,0" />
                                                         <TextBlock Grid.Column="3" Text="px" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -789,27 +794,12 @@
                                                             <ColumnDefinition Width="86" />
                                                             <ColumnDefinition Width="24" />
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="Скругление пузыря" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{DynamicResource S.Settings.BubbleCornerRadius}" VerticalAlignment="Center" />
                                                         <Slider Grid.Column="1" Minimum="0" Maximum="28" IsSnapToTickEnabled="True" TickFrequency="1" Value="{Binding ChatAppearance.BubbleCornerRadius}" />
                                                         <TextBox Grid.Column="2" Text="{Binding ChatAppearance.BubbleCornerRadius}" TextAlignment="Center" Margin="12,0,0,0" />
                                                         <TextBlock Grid.Column="3" Text="px" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="8,0,0,0" />
                                                     </Grid>
                                                 </StackPanel>
-                                            </Border>
-                                            <Border Background="{StaticResource AccentSoftBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="14" Padding="16" Margin="0,0,0,16">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="42" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <Border Width="32" Height="32" CornerRadius="10" Background="{StaticResource AccentGradientBrush}">
-                                                        <TextBlock Text="✦" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1">
-                                                        <TextBlock Text="Оформление применяется ко всем чатам и обновляется мгновенно." FontWeight="SemiBold" />
-                                                        <TextBlock Text="Можно в любой момент сбросить значения или сохранить свою комбинацию." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0" />
-                                                    </StackPanel>
-                                                </Grid>
                                             </Border>
                                         </StackPanel>
                                     </ScrollViewer>
@@ -822,11 +812,11 @@
                                             </Grid.RowDefinitions>
                                             <DockPanel LastChildFill="False">
                                                 <Border DockPanel.Dock="Right" Background="{StaticResource SuccessBrush}" CornerRadius="10" Padding="9,4" VerticalAlignment="Center">
-                                                    <TextBlock Text="В реальном времени" Foreground="{StaticResource SuccessTextBrush}" FontSize="10" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.Live}" Foreground="{StaticResource SuccessTextBrush}" FontSize="10" FontWeight="SemiBold" />
                                                 </Border>
                                                 <StackPanel>
-                                                    <TextBlock Text="Предпросмотр чата" FontSize="18" FontWeight="SemiBold" />
-                                                    <TextBlock Text="Пузыри, текст, ширина и фон обновляются сразу." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,5,0,0" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.ChatPreview}" FontSize="18" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{DynamicResource S.Settings.ChatPreview.Description}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,5,0,0" />
                                                 </StackPanel>
                                             </DockPanel>
                                             <Border Grid.Row="1" Background="{Binding ChatAppearance.ChatBackgroundColor}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="14" Margin="0,16,0,16" MinHeight="470" ClipToBounds="True">
@@ -838,14 +828,14 @@
                                                     </Grid.RowDefinitions>
                                                     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="14,11">
                                                         <DockPanel LastChildFill="False">
-                                                            <TextBlock DockPanel.Dock="Right" Text="сейчас" Foreground="{StaticResource TextMutedBrush}" FontSize="10" VerticalAlignment="Center" />
+                                                            <TextBlock DockPanel.Dock="Right" Text="{DynamicResource S.Settings.Preview.TimeNow}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" VerticalAlignment="Center" />
                                                             <StackPanel Orientation="Horizontal">
                                                                 <Border Width="34" Height="34" CornerRadius="17" Background="{StaticResource AccentGradientBrush}">
-                                                                    <TextBlock Text="П" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                    <TextBlock Text="{DynamicResource S.Settings.Preview.AvatarInitial}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                 </Border>
                                                                 <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-                                                                    <TextBlock Text="Персонаж" FontWeight="SemiBold" FontSize="12" />
-                                                                    <TextBlock Text="последнее сообщение только что" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                                                                    <TextBlock Text="{DynamicResource S.Settings.Preview.CharacterName}" FontWeight="SemiBold" FontSize="12" />
+                                                                    <TextBlock Text="{DynamicResource S.Settings.Preview.LastMessageTime}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
                                                                 </StackPanel>
                                                             </StackPanel>
                                                         </DockPanel>
@@ -856,27 +846,27 @@
                                                                 <StackPanel>
                                                                     <DockPanel LastChildFill="False" Margin="0,0,0,6">
                                                                         <Border DockPanel.Dock="Left" Width="24" Height="24" CornerRadius="12" Background="{StaticResource AccentSoftBrush}" Margin="0,0,7,0">
-                                                                            <TextBlock Text="П" Foreground="{StaticResource AccentHoverBrush}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                            <TextBlock Text="{DynamicResource S.Settings.Preview.AvatarInitial}" Foreground="{StaticResource AccentHoverBrush}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                                         </Border>
-                                                                        <TextBlock Text="Персонаж" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                                        <TextBlock DockPanel.Dock="Right" Text="12:44" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                                                        <TextBlock Text="{DynamicResource S.Settings.Preview.CharacterName}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                                        <TextBlock DockPanel.Dock="Right" Text="{DynamicResource S.Settings.Preview.Time1244}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="12,0,0,0" VerticalAlignment="Center" />
                                                                     </DockPanel>
                                                                     <ui:SelectableFormattedChatBox ContentText="{Binding ChatAppearancePreviewText}" Appearance="{Binding ChatAppearance}" Foreground="{Binding ChatAppearance.TextColor}" />
                                                                 </StackPanel>
                                                             </Border>
                                                             <Border Background="{Binding ChatAppearance.AssistantBubbleColor}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{Binding ChatAppearance.BubbleCornerRadius}" Padding="12,9" MaxWidth="{Binding ChatAppearance.BubbleMaxWidth}" HorizontalAlignment="Left" Margin="0,10,48,0">
                                                                 <DockPanel LastChildFill="False">
-                                                                    <TextBlock DockPanel.Dock="Right" Text="12:45" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="10,0,0,0" VerticalAlignment="Bottom" />
-                                                                    <TextBlock Text="*Она на мгновение задумалась и улыбнулась.*" FontStyle="Italic" FontSize="{Binding ChatAppearance.FontSize}" Foreground="{Binding ChatAppearance.ActionColor}" TextWrapping="Wrap" />
+                                                                    <TextBlock DockPanel.Dock="Right" Text="{DynamicResource S.Settings.Preview.Time1245}" Foreground="{StaticResource TextMutedBrush}" FontSize="9" Margin="10,0,0,0" VerticalAlignment="Bottom" />
+                                                                    <TextBlock Text="{DynamicResource S.Settings.Preview.ActionText}" FontStyle="Italic" FontSize="{Binding ChatAppearance.FontSize}" Foreground="{Binding ChatAppearance.ActionColor}" TextWrapping="Wrap" />
                                                                 </DockPanel>
                                                             </Border>
                                                             <Border Background="{Binding ChatAppearance.UserBubbleColor}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="{Binding ChatAppearance.BubbleCornerRadius}" Padding="12,10" MaxWidth="{Binding ChatAppearance.BubbleMaxWidth}" HorizontalAlignment="Right" Margin="48,12,0,0">
                                                                 <StackPanel>
                                                                     <DockPanel LastChildFill="False" Margin="0,0,0,6">
-                                                                        <TextBlock Text="Вы" FontWeight="SemiBold" FontSize="11" Foreground="White" />
-                                                                        <TextBlock DockPanel.Dock="Right" Text="12:46" Foreground="{StaticResource ChatOutboundMetaBrush}" FontSize="9" Margin="12,0,0,0" />
+                                                                        <TextBlock Text="{DynamicResource S.Settings.Preview.UserName}" FontWeight="SemiBold" FontSize="11" Foreground="White" />
+                                                                        <TextBlock DockPanel.Dock="Right" Text="{DynamicResource S.Settings.Preview.Time1246}" Foreground="{StaticResource ChatOutboundMetaBrush}" FontSize="9" Margin="12,0,0,0" />
                                                                     </DockPanel>
-                                                                    <TextBlock Text="Понятно. Я хочу продолжить разговор и узнать больше." FontSize="{Binding ChatAppearance.FontSize}" Foreground="White" TextWrapping="Wrap" />
+                                                                    <TextBlock Text="{DynamicResource S.Settings.Preview.UserMessage}" FontSize="{Binding ChatAppearance.FontSize}" Foreground="White" TextWrapping="Wrap" />
                                                                 </StackPanel>
                                                             </Border>
                                                         </StackPanel>
@@ -887,7 +877,7 @@
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="32" />
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="Сообщение..." Foreground="{StaticResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" />
+                                                            <TextBlock Text="{DynamicResource S.Settings.Preview.Placeholder}" Foreground="{StaticResource TextMutedBrush}" FontSize="12" VerticalAlignment="Center" />
                                                             <Border Grid.Column="1" Width="28" Height="28" CornerRadius="9" Background="{StaticResource AccentGradientBrush}" HorizontalAlignment="Right">
                                                                 <TextBlock Text="➤" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                                             </Border>
@@ -895,10 +885,6 @@
                                                     </Border>
                                                 </Grid>
                                             </Border>
-                                            <DockPanel Grid.Row="2" LastChildFill="False">
-                                                <Button DockPanel.Dock="Right" Content="Сохранить оформление" Command="{Binding SaveChatAppearanceCommand}" Style="{StaticResource AccentButton}" />
-                                                <Button Content="↻  Сбросить" Command="{Binding ResetChatAppearanceCommand}" Style="{StaticResource GhostButton}" />
-                                            </DockPanel>
                                         </Grid>
                                     </Border>
                                 </Grid>

@@ -1,6 +1,7 @@
 ﻿<UserControl x:Class="SoulExe.Views.StageShellView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:SoulExe"
              xmlns:views="clr-namespace:SoulExe.Views"
              xmlns:vm="clr-namespace:SoulExe.ViewModels"
               PreviewKeyDown="StageShellView_OnPreviewKeyDown"
@@ -9,6 +10,7 @@
              Unloaded="StageShellView_OnUnloaded">
     <UserControl.Resources>
         <!-- Local-only styles. Never register implicit templates for layout controls here. -->
+        <ui:AvatarBackgroundFallbackOpacityConverter x:Key="AvatarBackgroundFallbackOpacityConverter" />
         <Style x:Key="StageGlassPanel" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource GlassPanelBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
@@ -19,22 +21,25 @@
             <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="42" />
         </Style>
-        <Style x:Key="StageModelChipButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource GlassPanelBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
+        <Style x:Key="StageModelChipButton" TargetType="Button" BasedOn="{StaticResource CompactButton}">
+            <Setter Property="Height" Value="42" />
+            <Setter Property="MinHeight" Value="42" />
+            <Setter Property="Background" Value="{StaticResource IconButtonSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="13,0" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style x:Key="BackstageCard" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Width" Value="252" />
-            <Setter Property="Height" Value="118" />
-            <Setter Property="Margin" Value="8" />
+            <Setter Property="Width" Value="236" />
+            <Setter Property="Height" Value="78" />
+            <Setter Property="Margin" Value="5" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Card" Background="{StaticResource GlassPanelBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="20" Padding="20">
+                        <Border x:Name="Card" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="12">
                             <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -53,34 +58,30 @@
         </Style>
         <Style x:Key="BackstageIcon" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
-            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontSize" Value="20" />
             <Setter Property="Foreground" Value="{StaticResource AccentHoverBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style x:Key="BackstageLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="Margin" Value="14,0,0,0" />
+            <Setter Property="Margin" Value="10,0,0,0" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style x:Key="BackstageSectionLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="11.5" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
-            <Setter Property="Margin" Value="2,30,0,12" />
+            <Setter Property="Margin" Value="2,24,0,8" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
         </Style>
-        <!-- Compact window chrome buttons: they own only the top-right corner,
-             so pages keep their full width and just start below this band. -->
-        <Style x:Key="StageWindowButton" TargetType="Button" BasedOn="{StaticResource WindowChromeButton}">
-            <Setter Property="Width" Value="40" />
-            <Setter Property="Height" Value="30" />
-            <Setter Property="FontSize" Value="10" />
+        <!-- System buttons match the circular controls on the left side of the stage. -->
+        <Style x:Key="StageWindowButton" TargetType="Button" BasedOn="{StaticResource StageTopIconButton}">
+            <Setter Property="FontSize" Value="12" />
         </Style>
-        <Style x:Key="StageWindowCloseButton" TargetType="Button" BasedOn="{StaticResource WindowCloseButton}">
-            <Setter Property="Width" Value="40" />
-            <Setter Property="Height" Value="30" />
-            <Setter Property="FontSize" Value="10" />
+        <Style x:Key="StageWindowCloseButton" TargetType="Button" BasedOn="{StaticResource StageTopIconButton}">
+            <Setter Property="FontSize" Value="14" />
         </Style>
         <!-- Conversation card in the "Continue" rail: glass surface over the scrimmed stage. -->
         <Style x:Key="BackstageConversationCard" TargetType="Button">
@@ -136,11 +137,25 @@
     <Grid>
         <!-- Layer 0: ambient character art, blurred and scrimmed so any message stays readable. -->
         <Grid ClipToBounds="True">
+            <Border x:Name="FallbackStageBackground" Background="{Binding ChatAppearance.ChatBackgroundColor}">
+                <Border.Opacity>
+                    <MultiBinding Converter="{StaticResource AvatarBackgroundFallbackOpacityConverter}">
+                        <Binding Path="ChatAppearance.UseCharacterAvatarBackground" />
+                        <Binding Path="IsSceneChatActive" />
+                        <Binding Path="SelectedCharacter.AvatarPath" />
+                        <Binding Path="SelectedSceneCharacterA.AvatarPath" />
+                    </MultiBinding>
+                </Border.Opacity>
+            </Border>
             <Image x:Name="AmbientImage" Stretch="UniformToFill" Opacity="0.5" RenderTransformOrigin="0.5,0.5">
                 <Image.Style>
                     <Style TargetType="Image">
                         <Setter Property="Source" Value="{Binding SelectedCharacter.AvatarPath}" />
+                        <Setter Property="Visibility" Value="Visible" />
                         <Style.Triggers>
+                            <DataTrigger Binding="{Binding ChatAppearance.UseCharacterAvatarBackground}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding IsSceneChatActive}" Value="True">
                                 <Setter Property="Source" Value="{Binding SelectedSceneCharacterA.AvatarPath}" />
                             </DataTrigger>
@@ -162,17 +177,13 @@
 
         <!-- Layer 2: full-page sheets for non-stage routes: a framed panel floating
              over a fading scrim. Motion mirrors the chat drawers (slide+fade). -->
-        <Grid x:Name="PageScrim" Visibility="Collapsed" Background="{StaticResource OverlayBrush}" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
-            <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14" Style="{StaticResource StageModelChipButton}" Padding="16,9" AutomationProperties.Name="{DynamicResource S.Stage.BackToStage}" ToolTip="{DynamicResource S.Stage.BackToStage}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{StaticResource AccentHoverBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="{DynamicResource S.Stage.BackToStage}" FontSize="12" Margin="8,0,0,0" />
-                </StackPanel>
-            </Button>
-        </Grid>
-        <Grid x:Name="PageSheet" Visibility="Collapsed" Margin="32,52,32,58">
+        <Grid x:Name="PageScrim" Visibility="Collapsed" Background="{StaticResource OverlayBrush}" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown" />
+        <Grid x:Name="PageSheet" Visibility="Collapsed" Margin="32,82,32,42">
             <Border x:Name="PageSheetFrame" Background="{StaticResource WindowBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" CornerRadius="20" Effect="{StaticResource CardShadowEffect}">
-                <ContentControl x:Name="PageHost" Margin="20,14,20,16" />
+                <Grid>
+                    <ContentControl x:Name="PageHost" Margin="20,14,68,16" />
+                    <Button Command="{Binding NavigateCommand}" CommandParameter="Chat" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,14,0" Style="{StaticResource CircleIconButton}" Content="×" FontSize="18" AutomationProperties.Name="{DynamicResource S.Window.Close}" ToolTip="{DynamicResource S.Window.Close}" />
+                </Grid>
             </Border>
         </Grid>
 
@@ -181,13 +192,13 @@
         <Grid x:Name="TopBar" VerticalAlignment="Top" Margin="20,14,140,0" Background="Transparent" MouseLeftButtonDown="TopBar_OnMouseLeftButtonDown">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Button Click="BackstageButton_OnClick" Style="{StaticResource StageTopIconButton}" Content="&#xE700;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="{DynamicResource S.Stage.Menu}" ToolTip="{DynamicResource S.Stage.Menu}" />
 
             <!-- Presence pill: personal and scene variants. -->
-            <Border Grid.Column="1" Style="{StaticResource StageGlassPanel}" Padding="12,7" HorizontalAlignment="Center" VerticalAlignment="Center" MinHeight="56" MaxWidth="520" Cursor="Hand" MouseLeftButtonDown="Presence_OnMouseLeftButtonDown" AutomationProperties.Name="{Binding SelectedCharacter.Name, FallbackValue=''}">
+            <Border Grid.Column="2" Style="{StaticResource StageGlassPanel}" Padding="12,7" HorizontalAlignment="Center" VerticalAlignment="Center" MinHeight="56" MaxWidth="520" Cursor="Hand" MouseLeftButtonDown="Presence_OnMouseLeftButtonDown" AutomationProperties.Name="{Binding SelectedCharacter.Name, FallbackValue=''}" Visibility="Collapsed">
                 <Grid>
                     <!-- Personal presence -->
                     <StackPanel Orientation="Horizontal">
@@ -239,7 +250,7 @@
                         </StackPanel>
                     </StackPanel>
                     <!-- Scene presence -->
-                    <StackPanel Orientation="Horizontal" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -257,7 +268,19 @@
                             <TextBlock Text="{Binding SelectedSceneCharacterB.Initials}" Width="26" Height="26" HorizontalAlignment="Right" VerticalAlignment="Bottom" TextAlignment="Center" Padding="0,6,0,0" FontSize="9" FontWeight="Bold" Foreground="White" />
                         </Grid>
                         <StackPanel Margin="10,0,4,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding SceneParticipantNames}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" MaxWidth="340" />
+                            <TextBlock Text="{Binding SceneHeaderTitle}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" MaxWidth="340" />
+                            <TextBlock Text="{Binding SceneParticipantNames}" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="340">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSceneTyping}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <TextBlock Text="{DynamicResource S.Stage.Presence.Typing}" FontStyle="Italic" FontSize="10.5" Foreground="{StaticResource AccentHoverBrush}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
@@ -276,21 +299,9 @@
             </Border>
 
             <!-- Right cluster: settings gear + model chip with its flyout menu. -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
                 <Button Command="{Binding NavigateCommand}" CommandParameter="Options" Style="{StaticResource StageTopIconButton}" Content="&#xE713;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="{DynamicResource S.Nav.Options}" ToolTip="{DynamicResource S.Nav.Options}" />
-                <Button x:Name="ModelChip" Click="ModelChip_OnClick" Margin="10,0,0,0" Style="{StaticResource StageModelChipButton}" Padding="14,8" AutomationProperties.Name="{DynamicResource S.Stage.Model}" ToolTip="{Binding ModelState}">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="Chip" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="28" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="Chip" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
+                <Button x:Name="ModelChip" Click="ModelChip_OnClick" Margin="10,0,0,0" Style="{StaticResource StageModelChipButton}" AutomationProperties.Name="{DynamicResource S.Stage.Model}" ToolTip="{Binding ModelState}">
                     <StackPanel Orientation="Horizontal">
                         <Border Width="8" Height="8" CornerRadius="4" VerticalAlignment="Center" Margin="0,0,8,0">
                             <Border.Style>
@@ -307,7 +318,7 @@
                         <TextBlock Text="{Binding ModelState}" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="190" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
-                <Popup x:Name="ModelChipPopup" PlacementTarget="{Binding ElementName=ModelChip}" Placement="Top" VerticalOffset="12" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                <Popup x:Name="ModelChipPopup" PlacementTarget="{Binding ElementName=ModelChip}" Placement="Top" VerticalOffset="12" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Fade">
                     <Border Style="{StaticResource StageGlassPanel}" Width="320" Padding="16" Background="#EE141826">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
@@ -327,6 +338,17 @@
                             </StackPanel>
                             <TextBlock Text="{Binding ModelState}" FontSize="13" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding ModelDownloadStatus}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock Text="ВЫБОР УСТАНОВЛЕННОЙ МОДЕЛИ" Style="{StaticResource SectionLabel}" Margin="0,14,0,5" />
+                            <ComboBox ItemsSource="{Binding InstalledModels}" SelectedItem="{Binding SelectedInstalledModel}" ToolTip="Выберите модель для запуска">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding DisplaySize}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                             <Button Content="{Binding ModelStartStopText}" Command="{Binding ToggleModelStartStopCommand}" Style="{StaticResource AccentButton}" Margin="0,14,0,0" HorizontalAlignment="Stretch" />
                             <Button Content="{Binding ModelDownloadPauseResumeText}" Command="{Binding ToggleModelDownloadCommand}" Margin="0,8,0,0" HorizontalAlignment="Stretch">
                                 <Button.Style>
@@ -363,84 +385,18 @@
         </Grid>
 
         <!-- Layer 4: Backstage overlay-hub. Sections: Continue rail, Characters gallery, system cards. -->
-        <Grid x:Name="BackstageOverlay" Visibility="Collapsed" Background="#F2060710" KeyboardNavigation.TabNavigation="Cycle" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
+        <Grid x:Name="BackstageOverlay" Visibility="Collapsed" Background="{StaticResource WindowBrush}" KeyboardNavigation.TabNavigation="Cycle" MouseLeftButtonDown="ChromeArea_OnMouseLeftButtonDown">
+            <Button x:Name="BackstageCloseButton" Click="BackstageNav_OnClick" Content="×" FontSize="18" Style="{StaticResource CircleIconButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,70,24,0" Panel.ZIndex="1" AutomationProperties.Name="{DynamicResource S.Window.Close}" ToolTip="{DynamicResource S.Window.Close}" />
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel MaxWidth="1020" Margin="40,54,40,44" HorizontalAlignment="Center">
+                <StackPanel MaxWidth="980" Margin="32,54,32,40" HorizontalAlignment="Center">
                     <TextBlock Text="SoulExe" FontSize="32" FontWeight="SemiBold" HorizontalAlignment="Center" />
                     <TextBlock Text="{DynamicResource S.Backstage.Subtitle}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,4" />
 
-                    <!-- Продолжить: recent conversations as glass cards over the stage scrim. -->
-                    <TextBlock Text="{DynamicResource S.Backstage.Continue}" Style="{StaticResource BackstageSectionLabel}" />
-                    <TextBlock Text="{DynamicResource S.Backstage.Continue.Empty}" FontSize="12.5" Foreground="{StaticResource TextMutedBrush}" Margin="2,2,0,6">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ConversationItems.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <ItemsControl ItemsSource="{Binding ConversationItems}" AutomationProperties.Name="{DynamicResource S.Backstage.Continue}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:ConversationListItemViewModel}">
-                                <Button Style="{StaticResource BackstageConversationCard}" Click="BackstageConversation_OnClick" AutomationProperties.Name="{Binding Title}" ToolTip="{Binding Preview}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <Grid Width="46" Height="46" VerticalAlignment="Top">
-                                            <Ellipse Fill="{StaticResource AccentSoftBrush}" />
-                                            <TextBlock Text="{Binding AvatarAInitials}" FontWeight="SemiBold" FontSize="12" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <Ellipse IsHitTestVisible="False">
-                                                <Ellipse.Fill>
-                                                    <ImageBrush ImageSource="{Binding AvatarAPath}" Stretch="UniformToFill" />
-                                                </Ellipse.Fill>
-                                            </Ellipse>
-                                            <Border Width="24" Height="24" CornerRadius="12" BorderBrush="#F2060710" BorderThickness="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding HasSecondAvatar}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <Grid>
-                                                    <Ellipse Fill="{StaticResource AccentSoftBrush}" />
-                                                    <TextBlock Text="{Binding AvatarBInitials}" FontSize="7.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                    <Ellipse Stroke="#F2060710" StrokeThickness="2">
-                                                        <Ellipse.Fill>
-                                                            <ImageBrush ImageSource="{Binding AvatarBPath}" Stretch="UniformToFill" />
-                                                        </Ellipse.Fill>
-                                                    </Ellipse>
-                                                </Grid>
-                                            </Border>
-                                        </Grid>
-                                        <StackPanel Grid.Column="1" Margin="12,0,2,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13.5" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Preview}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11.5" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
-                                            <TextBlock Text="{Binding TypeLabel}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- Персонажи: horizontal gallery, add-card last (VM contract). -->
+                    <!-- Персонажи: horizontal gallery with a visible add-card at the end. -->
                     <TextBlock Text="{DynamicResource S.Backstage.Characters}" Style="{StaticResource BackstageSectionLabel}" />
-                    <ItemsControl ItemsSource="{Binding HomeCards}" AutomationProperties.Name="{DynamicResource S.Backstage.Characters}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Padding="0,0,0,8" AutomationProperties.Name="{DynamicResource S.Backstage.Characters}">
+                    <StackPanel Orientation="Horizontal">
+                    <ItemsControl ItemsSource="{Binding HomeCards}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />
@@ -487,7 +443,7 @@
                                             </StackPanel.Style>
                                             <Grid Width="66" Height="66" HorizontalAlignment="Center">
                                                 <Ellipse Fill="{StaticResource GlassPanelBrush}" Stroke="{StaticResource AccentHoverBrush}" StrokeThickness="1.5" StrokeDashArray="3 2" />
-                                                <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <TextBlock Text="+" FontSize="30" FontWeight="Light" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                             </Grid>
                                             <TextBlock Text="{DynamicResource S.Backstage.NewCharacter}" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Margin="0,9,0,0" MaxWidth="102" />
                                         </StackPanel>
@@ -496,42 +452,66 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <Button Style="{StaticResource BackstageCharacterChip}" Click="CreateCharacterFromBackstage_OnClick" ToolTip="Создать персонажа" AutomationProperties.Name="Создать персонажа">
+                        <StackPanel>
+                            <Grid Width="66" Height="66" HorizontalAlignment="Center">
+                                <Ellipse Fill="{StaticResource AccentSoftBrush}" Stroke="{StaticResource AccentHoverBrush}" StrokeThickness="1.5" StrokeDashArray="3 2" />
+                                <TextBlock Text="+" FontSize="32" FontWeight="SemiBold" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <TextBlock Text="Создать персонажа" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center" Margin="0,9,0,0" MaxWidth="112" />
+                        </StackPanel>
+                    </Button>
+                    </StackPanel>
+                    </ScrollViewer>
 
-                    <!-- Destinations: world (lore/personas), catalog, system. -->
-                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,34,0,0" AutomationProperties.Name="{DynamicResource S.Backstage.Title}">
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="lore" AutomationProperties.Name="{DynamicResource S.Backstage.Lore}" TabIndex="0">
-                            <StackPanel>
-                                <TextBlock Text="&#xE82D;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Backstage.Lore}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
-                                <TextBlock Text="{DynamicResource S.Backstage.Lore.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
-                            </StackPanel>
+                    <TextBlock Text="БИБЛИОТЕКА" Style="{StaticResource BackstageSectionLabel}" />
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" AutomationProperties.Name="Библиотека">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="characters" AutomationProperties.Name="Персонажи" TabIndex="0">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8B7;" Style="{StaticResource BackstageIcon}" /><StackPanel><TextBlock Text="Персонажи" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Карточки и редактор" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="10,3,0,0" /></StackPanel></StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="personas" AutomationProperties.Name="{DynamicResource S.Backstage.Personas}" TabIndex="1">
-                            <StackPanel>
-                                <TextBlock Text="&#xE77B;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Backstage.Personas}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
-                                <TextBlock Text="{DynamicResource S.Backstage.Personas.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
-                            </StackPanel>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="personas" AutomationProperties.Name="Персоны" TabIndex="1">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE77B;" Style="{StaticResource BackstageIcon}" /><StackPanel><TextBlock Text="Персоны" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Профили для диалогов" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="10,3,0,0" /></StackPanel></StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Gateway}" TabIndex="2">
-                            <StackPanel>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Home" Click="BackstageWorld_OnClick" Tag="lore" AutomationProperties.Name="Лоры" TabIndex="2">
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE82D;" Style="{StaticResource BackstageIcon}" /><StackPanel><TextBlock Text="Лоры" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Мир и правила истории" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="10,3,0,0" /></StackPanel></StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Gateway" Click="BackstageNav_OnClick" AutomationProperties.Name="Хаб" TabIndex="3">
+                            <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE774;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Nav.Gateway}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
-                                <TextBlock Text="{DynamicResource S.Nav.Gateway.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                                <StackPanel><TextBlock Text="Хаб" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Внешние материалы и каталоги" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="10,3,0,0" /></StackPanel>
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Models" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Tab.Models}" TabIndex="3">
-                            <StackPanel>
+                    </WrapPanel>
+                    <TextBlock Text="НАСТРОЙКИ" Style="{StaticResource BackstageSectionLabel}" />
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" AutomationProperties.Name="Настройки">
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageOptions_OnClick" Tag="setup" AutomationProperties.Name="Быстрый старт" TabIndex="0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8FB;" Style="{StaticResource BackstageIcon}" />
+                                <StackPanel><TextBlock Text="Быстрый старт" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Первичная настройка" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="10,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageOptions_OnClick" Tag="llm" AutomationProperties.Name="Runtime" TabIndex="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE950;" Style="{StaticResource BackstageIcon}" />
+                                <StackPanel><TextBlock Text="Runtime" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Параметры генерации" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="10,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageOptions_OnClick" Tag="models" AutomationProperties.Name="Модели" TabIndex="2">
+                            <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7F8;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Tab.Models}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
-                                <TextBlock Text="{DynamicResource S.Nav.Models.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                                <StackPanel><TextBlock Text="Модели" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Установленные модели" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="10,3,0,0" /></StackPanel>
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageNav_OnClick" AutomationProperties.Name="{DynamicResource S.Nav.Options}" TabIndex="4">
-                            <StackPanel>
-                                <TextBlock Text="&#xE713;" Style="{StaticResource BackstageIcon}" />
-                                <TextBlock Text="{DynamicResource S.Nav.Options}" Style="{StaticResource BackstageLabel}" Margin="0,12,0,0" />
-                                <TextBlock Text="{DynamicResource S.Nav.Options.Hint}" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageOptions_OnClick" Tag="appearance" AutomationProperties.Name="Оформление" TabIndex="3">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE790;" Style="{StaticResource BackstageIcon}" />
+                                <StackPanel><TextBlock Text="Оформление" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Тема и фон чатов" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="10,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource BackstageCard}" Command="{Binding NavigateCommand}" CommandParameter="Options" Click="BackstageOptions_OnClick" Tag="mobile" AutomationProperties.Name="Мобильный" TabIndex="4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8EA;" Style="{StaticResource BackstageIcon}" />
+                                <StackPanel><TextBlock Text="Мобильный" Style="{StaticResource BackstageLabel}" /><TextBlock Text="Подключение мобильного приложения" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" Margin="10,3,0,0" /></StackPanel>
                             </StackPanel>
                         </Button>
                     </WrapPanel>
@@ -540,7 +520,7 @@
         </Grid>
 
         <!-- Layer 5: initial setup overlay — glass sheet over the stage scrim. -->
-        <Grid x:Name="SetupOverlay" Grid.RowSpan="2" Panel.ZIndex="100" Visibility="Collapsed" Background="#F2060810" KeyboardNavigation.TabNavigation="Cycle">
+        <Grid x:Name="SetupOverlay" Grid.RowSpan="2" Panel.ZIndex="100" Background="#F2060810" KeyboardNavigation.TabNavigation="Cycle">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Setter Property="Visibility" Value="Collapsed" />
@@ -567,7 +547,7 @@
 
         <!-- Layer 6: window chrome buttons. CaptionHeight is 1, so these are plain
              client-area buttons floating above every route. -->
-        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,8,12,0" Panel.ZIndex="210">
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,14,20,0" Panel.ZIndex="210">
             <Button Click="MinimizeWindowButton_OnClick" Style="{StaticResource StageWindowButton}" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" AutomationProperties.Name="{DynamicResource S.Window.Minimize}" ToolTip="{DynamicResource S.Window.Minimize}" />
             <Button Click="ToggleMaximizeWindowButton_OnClick" AutomationProperties.Name="{DynamicResource S.Window.Maximize}" FontFamily="Segoe MDL2 Assets">
                 <Button.Style>

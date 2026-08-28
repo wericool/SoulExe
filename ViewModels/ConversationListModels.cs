@@ -172,7 +172,13 @@ public sealed class ConversationListItemViewModel
         AvatarBInitials = Initials(secondName);
     }
 
-    private static string NormalizePreview(string? text) => string.Join(" ", (text ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    private const int PreviewMaximumLength = 56;
+
+    private static string NormalizePreview(string? text)
+    {
+        var preview = string.Join(" ", (text ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        return preview.Length <= PreviewMaximumLength ? preview : preview[..(PreviewMaximumLength - 1)] + "…";
+    }
 
     public Guid Id { get; }
     public ConversationKind Kind { get; }

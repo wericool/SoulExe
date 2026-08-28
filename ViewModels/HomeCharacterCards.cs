@@ -20,8 +20,6 @@ public static class HomeCharacterCards
                 .ThenBy(character => character.Name, StringComparer.CurrentCultureIgnoreCase)
         };
 
-        var cards = ordered.Select(character => new HomeCharacterCardViewModel(character)).ToList();
-        cards.Add(HomeCharacterCardViewModel.AddCard());
-        return cards;
+        return ordered.Select(character => new HomeCharacterCardViewModel(character)).ToList();
     }
 }

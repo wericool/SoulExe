@@ -29,7 +29,17 @@ public sealed partial class MainViewModel
     public ObservableCollection<LlamaBackendOption> LlamaBackends { get; }
     public ObservableCollection<SoulMemoryPresetMode> SoulMemoryPresets { get; }
     public LlamaRuntimeOptions LlamaOptions { get; } = new();
-    public ChatAppearanceSettings ChatAppearance { get => _chatAppearance; private set => Set(ref _chatAppearance, value); }
+    public ChatAppearanceSettings ChatAppearance
+    {
+        get => _chatAppearance;
+        private set
+        {
+            if (ReferenceEquals(_chatAppearance, value)) return;
+            _chatAppearance.PropertyChanged -= ChatAppearance_OnPropertyChanged;
+            if (!Set(ref _chatAppearance, value)) return;
+            _chatAppearance.PropertyChanged += ChatAppearance_OnPropertyChanged;
+        }
+    }
     public bool IsLlmOptionsTab => string.Equals(_optionsTab, "llm", StringComparison.OrdinalIgnoreCase);
     public bool IsAppearanceOptionsTab => string.Equals(_optionsTab, "appearance", StringComparison.OrdinalIgnoreCase);
     public bool IsMobileOptionsTab => string.Equals(_optionsTab, "mobile", StringComparison.OrdinalIgnoreCase);
@@ -128,6 +138,7 @@ public sealed partial class MainViewModel
         {
             if (!Set(ref _selectedPersona, value)) return;
             SavePersonaCommand.RaiseCanExecuteChanged();
+            GeneratePersonaDescriptionCommand.RaiseCanExecuteChanged();
             ChoosePersonaAvatarCommand.RaiseCanExecuteChanged();
         }
     }
@@ -228,6 +239,7 @@ public sealed partial class MainViewModel
     public bool IsSceneConversationVisible => SelectedGroupConversation is not null && !IsSceneComposerOpen;
     public bool IsSceneFinished => SelectedGroupConversation?.Status == SceneStatus.Finished;
     public string SceneStartPauseText => ScenePresentationText.StartPause(SelectedGroupConversation?.Conversation);
+    public string SceneStartPauseIcon => SelectedGroupConversation?.Status == SceneStatus.Running ? "Ⅱ" : "▶";
     public string SceneRunStatus { get => _sceneRunStatus; private set => Set(ref _sceneRunStatus, value); }
     public int SceneCountdownSeconds
     {
@@ -243,6 +255,7 @@ public sealed partial class MainViewModel
     public string SceneCountdownText => ScenePresentationText.Countdown(SceneCountdownSeconds);
     public string SceneLastMessageLabel => ScenePresentationText.LastMessage(SelectedGroupConversation?.Conversation);
     public string SceneNextSpeakerName => ScenePresentationText.NextSpeakerName(SelectedGroupConversation?.Conversation, Characters);
+    public string SceneHeaderTitle => string.IsNullOrWhiteSpace(SelectedGroupConversation?.Name) ? "Групповой разговор" : SelectedGroupConversation.Name;
     public bool IsSceneSelected => SelectedGroupConversation is not null;
     public SoulCharacter? SelectedSceneCharacterA => SelectedGroupConversation?.CharacterIds.ElementAtOrDefault(0) is Guid id && id != Guid.Empty ? Characters.FirstOrDefault(character => character.Id == id) : null;
     public SoulCharacter? SelectedSceneCharacterB => SelectedGroupConversation?.CharacterIds.ElementAtOrDefault(1) is Guid id && id != Guid.Empty ? Characters.FirstOrDefault(character => character.Id == id) : null;

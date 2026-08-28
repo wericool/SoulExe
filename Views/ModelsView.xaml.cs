@@ -30,6 +30,8 @@ public partial class ModelsView : UserControl
         var root = Content as Grid;
         if (root is null || root.Children.Count < 5) return;
 
+        NormalizeRefreshButtons(root);
+
         var compact = ActualWidth < CompactWidth;
         var runtimeGrid = FindDescendant<Grid>(root.Children[1]);
         var runtimeActions = runtimeGrid?.Children.Count > 1 ? runtimeGrid.Children[1] as StackPanel : null;
@@ -57,6 +59,19 @@ public partial class ModelsView : UserControl
 
         if (root.Children[3] is Grid recommendationsGrid && recommendationsGrid.Children.Count == 2)
             SetRecommendationsLayout(recommendationsGrid, compact);
+    }
+
+    private static void NormalizeRefreshButtons(DependencyObject root)
+    {
+        if (root is Button { Content: string text } button && text.Contains("Обновить", StringComparison.OrdinalIgnoreCase))
+        {
+            button.Width = 96;
+            button.MinWidth = 0;
+            button.HorizontalAlignment = HorizontalAlignment.Right;
+        }
+
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+            NormalizeRefreshButtons(VisualTreeHelper.GetChild(root, index));
     }
 
     private static void SetCatalogLayout(Grid grid, bool compact)

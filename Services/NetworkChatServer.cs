@@ -23,6 +23,7 @@ public sealed partial class NetworkChatServer : IAsyncDisposable
     private readonly Func<Guid, string, CancellationToken, Task> _sceneAction;
     private readonly Func<(string Username, string PasswordHash)> _credentials;
     private readonly Func<string, CancellationToken, Task<SoulCharacter>> _generateCharacter;
+    private readonly Func<string, CancellationToken, Task<SoulPersona>> _generatePersona;
     private readonly Func<Guid, string, CancellationToken, Task<SoulCharacter>> _expandCharacterField;
     private readonly Func<Task> _notifyDataChanged;
     private readonly NetworkSessionStore _sessions = new();
@@ -33,6 +34,7 @@ public sealed partial class NetworkChatServer : IAsyncDisposable
         Func<Guid, string, CancellationToken, Task> sceneAction,
         Func<(string Username, string PasswordHash)> credentials,
         Func<string, CancellationToken, Task<SoulCharacter>> generateCharacter,
+        Func<string, CancellationToken, Task<SoulPersona>> generatePersona,
         Func<Guid, string, CancellationToken, Task<SoulCharacter>> expandCharacterField,
         Func<Task> notifyDataChanged)
     {
@@ -41,6 +43,7 @@ public sealed partial class NetworkChatServer : IAsyncDisposable
         _sceneAction = sceneAction;
         _credentials = credentials;
         _generateCharacter = generateCharacter;
+        _generatePersona = generatePersona;
         _expandCharacterField = expandCharacterField;
         _notifyDataChanged = notifyDataChanged;
     }
@@ -197,9 +200,12 @@ public sealed partial class NetworkChatServer : IAsyncDisposable
 
 public sealed record MobileLoginRequest(string? Username, string? Password);
 public sealed record MobileCharacterGenerateRequest(string? Idea);
+public sealed record MobilePersonaGenerateRequest(string? Idea);
+public sealed record MobilePersonaCreateRequest(string? Name, string? Description = null, string? PromptText = null);
+public sealed record MobilePersonaUpdateRequest(string? Name, string? Description, string? PromptText);
 public sealed record MobileCharacterExpandRequest(string? Field);
 public sealed record MobileCharacterCreateRequest(string? Name, string? Title, string? Description, string? Personality, string? Scenario, string? SystemPrompt);
-public sealed record MobileCharacterUpdate(string? Name, string? Title, string? Description, string? Personality, string? Scenario, string? SystemPrompt, bool? CognitiveArchitectureEnabled = null, bool? SoulMemoryEnabled = null, string? SoulMemoryPreset = null, int? SoulMemoryIntervalMessages = null, bool? AutoSummaryEnabled = null, int? AutoSummaryIntervalMessages = null);
+public sealed record MobileCharacterUpdate(string? Name, string? Title, string? Description, string? Personality, string? Scenario, string? SystemPrompt, bool? CognitiveArchitectureEnabled = null, bool? SoulMemoryEnabled = null, string? SoulMemoryPreset = null, int? SoulMemoryIntervalMessages = null, bool? AutoSummaryEnabled = null, int? AutoSummaryIntervalMessages = null, string? SelectedPersonaId = null);
 public sealed record MobileConversationActionRequest(string? Action, string? Text = null, string? AuthorKind = null, string? AuthorPersonaId = null);
 public sealed record MobileConversationCreateRequest(
     string[]? CharacterIds,

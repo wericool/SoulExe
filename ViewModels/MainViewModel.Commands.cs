@@ -93,6 +93,7 @@ public sealed partial class MainViewModel
     public AsyncRelayCommand SaveLorebookCommand { get; }
     public AsyncRelayCommand AddLoreEntryCommand { get; }
     public AsyncRelayCommand AddPersonaCommand { get; }
+    public AsyncRelayCommand GeneratePersonaDescriptionCommand { get; }
     public RelayCommand OpenPersonaEditorCommand { get; }
     public RelayCommand ClosePersonaEditorCommand { get; }
     public AsyncRelayCommand SavePersonaCommand { get; }

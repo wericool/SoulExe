@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using System.Windows;
 using SoulExe.Models;
 using SoulExe.Services;
@@ -20,6 +22,54 @@ public sealed partial class MainViewModel
         if (dispatcher is null || dispatcher.CheckAccess()) await RunAsync();
         else await dispatcher.InvokeAsync(RunAsync).Task.Unwrap();
         return result ?? throw new InvalidOperationException("Не удалось сгенерировать карточку персонажа.");
+    }
+
+    private async Task<SoulPersona> GeneratePersonaFromNetworkAsync(string idea, CancellationToken token)
+    {
+        SoulPersona? result = null;
+        async Task RunAsync()
+        {
+            var russianInput = idea.Any(character => (character >= 'А' && character <= 'я') || character is 'Ё' or 'ё');
+            var languageLock = russianInput ? "Write every value in natural Russian." : "Write every value in the same language as the user's idea.";
+            var messages = new[]
+            {
+                new LlamaMessage("system", $"You generate a user persona for roleplay chats. Return strict JSON only. {languageLock}"),
+                new LlamaMessage("user", $"""
+Create a concise reusable user persona from this idea. {languageLock}
+Return strict JSON only, with string fields: name, description, promptText.
+description must be a warm, concrete self-description of 180 to 300 characters. promptText must be 180 to 300 characters and tell the chat character how to address and treat this person; do not include meta commentary or <think> tags.
+
+User's idea:
+{idea}
+""")
+            };
+            Status = "Локальная модель создаёт персону…";
+            var settings = await BuildLlamaSettingsAsync();
+            var raw = await Task.Run(async () =>
+            {
+                var response = new StringBuilder();
+                await foreach (var chunk in GenerateWithPromptPolicyAsync(settings, messages, token, "persona_generator").ConfigureAwait(false)) response.Append(chunk);
+                return response.ToString();
+            }, token);
+            var text = raw.Replace("<think>", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("</think>", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("```json", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("```", string.Empty, StringComparison.Ordinal).Trim();
+            var start = text.IndexOf('{'); var end = text.LastIndexOf('}');
+            if (start < 0 || end <= start) throw new InvalidOperationException("Модель вернула персону в непонятном формате. Попробуйте уточнить описание.");
+            using var document = JsonDocument.Parse(text[start..(end + 1)]);
+            static string Value(JsonElement source, string name) => source.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String ? property.GetString()?.Trim() ?? "" : "";
+            var root = document.RootElement;
+            var name = Value(root, "name");
+            if (string.IsNullOrWhiteSpace(name)) throw new InvalidOperationException("Модель не указала имя персоны. Попробуйте ещё раз.");
+            result = await _personas.CreateAsync(name, token);
+            result.Description = CharacterCardGenerationService.LimitField(Value(root, "description"), 500);
+            result.PromptText = CharacterCardGenerationService.LimitField(Value(root, "promptText"), 500);
+            await _personas.UpdateAsync(result, token);
+            await ReloadPersonasAsync(result.Id);
+            Status = $"Персона «{result.Name}» создана локальной моделью.";
+        }
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess()) await RunAsync();
+        else await dispatcher.InvokeAsync(RunAsync).Task.Unwrap();
+        return result ?? throw new InvalidOperationException("Не удалось сгенерировать персону.");
     }
     private async Task<SoulCharacter> ExpandCharacterFieldFromNetworkAsync(Guid characterId, string field, CancellationToken token)
     {
@@ -137,7 +187,9 @@ public sealed partial class MainViewModel
             avatarPath = persona.AvatarPath;
         }
         else if (authorKind != "user") throw new InvalidOperationException("Неизвестный автор сообщения.");
-        await _conversations.AppendAuthoredUserMessageAsync(ConversationAddress.Direct(conversation.Id), request.Message, storedAuthorKind, personaId, authorName, avatarPath, token);
+        var isContinuation = string.Equals(request.Message.Trim(), "*continue*", StringComparison.OrdinalIgnoreCase);
+        if (!isContinuation)
+            await _conversations.AppendAuthoredUserMessageAsync(ConversationAddress.Direct(conversation.Id), request.Message, storedAuthorKind, personaId, authorName, avatarPath, token);
         await RefreshDesktopAfterNetworkMutationAsync();
         var settings = await BuildLlamaSettingsAsync();
         var generationId = Guid.NewGuid().ToString("N")[..12];
@@ -145,7 +197,7 @@ public sealed partial class MainViewModel
             character.Id,
             conversation.Id,
             request.Message,
-            isContinuation: false,
+            isContinuation: isContinuation,
             settings.ContextSize,
             settings.MaxTokens,
             (messages, cancellation) => GenerateWithPromptPolicyAsync(settings, messages, cancellation, "network_" + generationId),

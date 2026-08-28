@@ -12,9 +12,12 @@ public static class SceneUiNotifications
         nameof(MainViewModel.SelectedSceneCharacterB),
         nameof(MainViewModel.SceneParticipants),
         nameof(MainViewModel.SceneParticipantNames),
+        nameof(MainViewModel.SceneHeaderTitle),
         nameof(MainViewModel.SceneNextSpeakerName),
         nameof(MainViewModel.SceneLastMessageLabel),
         nameof(MainViewModel.SceneStartPauseText),
+        nameof(MainViewModel.SceneStartPauseIcon),
+        nameof(MainViewModel.IsSceneCountdownVisible),
         nameof(MainViewModel.IsSceneFinished)
     ];
 
@@ -27,8 +30,11 @@ public static class SceneUiNotifications
         nameof(MainViewModel.SelectedSceneCharacterB),
         nameof(MainViewModel.SceneParticipants),
         nameof(MainViewModel.SceneParticipantNames),
+        nameof(MainViewModel.SceneHeaderTitle),
         nameof(MainViewModel.SceneNextSpeakerName),
         nameof(MainViewModel.SceneStartPauseText),
+        nameof(MainViewModel.SceneStartPauseIcon),
+        nameof(MainViewModel.IsSceneCountdownVisible),
         nameof(MainViewModel.IsSceneFinished)
     ];
 }

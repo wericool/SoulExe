@@ -8,12 +8,13 @@
         <Setter Property="ClipToBounds" Value="True"/>
     </Style>
     <Style x:Key="ConversationComposerBar" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource GlassPanelBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource InputBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="26"/>
-        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="Padding" Value="12,10"/>
         <Setter Property="Margin" Value="28,0,28,18"/>
+        <Setter Property="MinHeight" Value="88"/>
     </Style>
     <Style x:Key="ConversationComposerInput" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource InputBrush}"/>
@@ -44,6 +45,22 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+        <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"/>
+        <Setter Property="VirtualizingPanel.CacheLength" Value="1"/>
+        <Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Page"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="ScrollViewer.PanningMode" Value="VerticalOnly"/>
+    </Style>
+    <Style x:Key="ConversationMessageListItem" TargetType="ListBoxItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <ContentPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

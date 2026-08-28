@@ -68,7 +68,6 @@ public sealed partial class MainViewModel
             GenerateCharacterFromIdeaCommand.RaiseCanExecuteChanged();
         }
     }
-
     public string Status { get => _status; private set => Set(ref _status, value); }
     public bool IsInitialSetupVisible { get => _isInitialSetupVisible; private set => Set(ref _isInitialSetupVisible, value); }
     public int InitialSetupStep

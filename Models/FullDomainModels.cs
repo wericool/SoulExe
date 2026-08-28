@@ -30,7 +30,8 @@ public sealed class ChatAppearanceSettings : INotifyPropertyChanged
     private string _codeColor = "#C084FC";
     private string _assistantBubbleColor = "#1F2633";
     private string _userBubbleColor = "#2F58F5";
-    private string _chatBackgroundColor = "";
+    private string _chatBackgroundColor = "#0D1017";
+    private bool _useCharacterAvatarBackground = true;
     private int _fontSize = 15;
     private double _bubbleMaxWidth = 720;
     private double _bubbleCornerRadius = 16;
@@ -46,6 +47,7 @@ public sealed class ChatAppearanceSettings : INotifyPropertyChanged
     public string AssistantBubbleColor { get => _assistantBubbleColor; set => Set(ref _assistantBubbleColor, value); }
     public string UserBubbleColor { get => _userBubbleColor; set => Set(ref _userBubbleColor, value); }
     public string ChatBackgroundColor { get => _chatBackgroundColor; set => Set(ref _chatBackgroundColor, value); }
+    public bool UseCharacterAvatarBackground { get => _useCharacterAvatarBackground; set => Set(ref _useCharacterAvatarBackground, value); }
     public int FontSize { get => _fontSize; set => Set(ref _fontSize, Math.Clamp(value, 11, 24)); }
     public double BubbleMaxWidth { get => _bubbleMaxWidth; set => Set(ref _bubbleMaxWidth, Math.Clamp(value, 360, 960)); }
     public double BubbleCornerRadius { get => _bubbleCornerRadius; set => Set(ref _bubbleCornerRadius, Math.Clamp(value, 0, 28)); }
@@ -57,7 +59,7 @@ public sealed class ChatAppearanceSettings : INotifyPropertyChanged
     public ChatAppearanceSettings Clone() => new()
     {
         TextColor = TextColor, ActionColor = ActionColor, QuoteColor = QuoteColor, CodeColor = CodeColor,
-        AssistantBubbleColor = AssistantBubbleColor, UserBubbleColor = UserBubbleColor, ChatBackgroundColor = ChatBackgroundColor,
+        AssistantBubbleColor = AssistantBubbleColor, UserBubbleColor = UserBubbleColor, ChatBackgroundColor = ChatBackgroundColor, UseCharacterAvatarBackground = UseCharacterAvatarBackground,
         FontSize = FontSize, BubbleMaxWidth = BubbleMaxWidth, BubbleCornerRadius = BubbleCornerRadius,
         FormatActions = FormatActions, FormatQuotes = FormatQuotes, FormatBold = FormatBold, FormatCode = FormatCode
     };

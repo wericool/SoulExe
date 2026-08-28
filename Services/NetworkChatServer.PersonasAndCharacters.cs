@@ -39,6 +39,7 @@ public sealed partial class NetworkChatServer
         soulMemoryPreset = character.SoulMemoryPreset,
         soulMemoryIntervalMessages = character.SoulMemoryIntervalMessages,
         autoSummaryEnabled = character.AutoSummaryEnabled,
+        selectedPersonaId = character.SelectedPersonaId,
         autoSummaryIntervalMessages = character.AutoSummaryIntervalMessages,
         avatarUrl = AvatarUrl(character)
     };
@@ -46,7 +47,11 @@ public sealed partial class NetworkChatServer
     private void MapPersonaAndCharacterRoutes(WebApplication app)
     {
         app.MapGet("/api/personas", GetPersonasAsync);
+        app.MapPost("/api/personas", CreatePersonaAsync);
+        app.MapPost("/api/personas/generate", GeneratePersonaAsync);
+        app.MapPut("/api/personas/{personaId:guid}", UpdatePersonaAsync);
         app.MapGet("/api/personas/{personaId:guid}/avatar", PersonaAvatarAsync);
+        app.MapPost("/api/personas/{personaId:guid}/avatar", UploadPersonaAvatarAsync);
         app.MapGet("/api/characters", () => _characters().Select(CharacterDto));
         app.MapPost("/api/characters", CreateCharacterAsync);
         app.MapPost("/api/characters/generate", GenerateCharacterAsync);
@@ -59,14 +64,40 @@ public sealed partial class NetworkChatServer
     private async Task<IResult> GetPersonasAsync(CancellationToken token)
     {
         var personas = await AppServices.Personas.GetPersonasAsync(token);
-        return Results.Ok(personas.Select(persona => new
-        {
-            id = persona.Id,
-            name = persona.Name,
-            description = persona.Description,
-            promptText = persona.PromptText,
-            avatarUrl = AvatarUrl(persona)
-        }));
+        return Results.Ok(personas.Select(PersonaDto));
+    }
+
+    private object PersonaDto(SoulPersona persona) => new { id = persona.Id, name = persona.Name, description = persona.Description, promptText = persona.PromptText, avatarUrl = AvatarUrl(persona) };
+
+    private async Task<IResult> CreatePersonaAsync(MobilePersonaCreateRequest request, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name)) return Results.BadRequest(new { error = "Укажите имя персоны." });
+        var persona = await AppServices.Personas.CreateAsync(request.Name.Trim(), token);
+        persona.Description = request.Description?.Trim() ?? "";
+        persona.PromptText = request.PromptText?.Trim() ?? "";
+        await AppServices.Personas.UpdateAsync(persona, token);
+        await NotifyDataChangedAsync();
+        return Results.Ok(PersonaDto(persona));
+    }
+
+    private async Task<IResult> GeneratePersonaAsync(MobilePersonaGenerateRequest request, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(request.Idea)) return Results.BadRequest(new { error = "Кратко опишите персону для генерации." });
+        var persona = await _generatePersona(request.Idea.Trim(), token);
+        await NotifyDataChangedAsync();
+        return Results.Ok(PersonaDto(persona));
+    }
+
+    private async Task<IResult> UpdatePersonaAsync(Guid personaId, MobilePersonaUpdateRequest request, CancellationToken token)
+    {
+        var persona = (await AppServices.Personas.GetPersonasAsync(token)).FirstOrDefault(value => value.Id == personaId);
+        if (persona is null) return Results.NotFound(new { error = "Персона не найдена." });
+        if (!string.IsNullOrWhiteSpace(request.Name)) persona.Name = request.Name.Trim();
+        persona.Description = request.Description?.Trim() ?? "";
+        persona.PromptText = request.PromptText?.Trim() ?? "";
+        await AppServices.Personas.UpdateAsync(persona, token);
+        await NotifyDataChangedAsync();
+        return Results.Ok(PersonaDto(persona));
     }
     private async Task<IResult> CreateCharacterAsync(MobileCharacterCreateRequest request, CancellationToken token)
     {
@@ -115,6 +146,34 @@ public sealed partial class NetworkChatServer
         return Results.File(persona.AvatarPath, AvatarContentType(persona.AvatarPath));
     }
 
+    private async Task<IResult> UploadPersonaAvatarAsync(Guid personaId, HttpRequest request, CancellationToken token)
+    {
+        if (!request.HasFormContentType) return Results.BadRequest(new { error = "Передайте изображение в форме." });
+        var persona = (await AppServices.Personas.GetPersonasAsync(token)).FirstOrDefault(value => value.Id == personaId);
+        if (persona is null) return Results.NotFound(new { error = "Персона не найдена." });
+        var form = await request.ReadFormAsync(token);
+        var file = form.Files.GetFile("avatar");
+        if (file is null || file.Length <= 0) return Results.BadRequest(new { error = "Выберите изображение аватара." });
+        if (file.Length > 5 * 1024 * 1024) return Results.BadRequest(new { error = "Аватар должен быть не больше 5 МБ." });
+
+        await using var source = file.OpenReadStream();
+        using var buffer = new MemoryStream();
+        await source.CopyToAsync(buffer, token);
+        var bytes = buffer.ToArray();
+        var extension = DetectImageExtension(bytes);
+        if (extension is null) return Results.BadRequest(new { error = "Поддерживаются изображения PNG, JPEG и WebP." });
+
+        var directory = AppServices.Paths.AvatarDirectory;
+        Directory.CreateDirectory(directory);
+        foreach (var oldFile in Directory.EnumerateFiles(directory, $"persona_{persona.Id}.*")) File.Delete(oldFile);
+        var target = Path.Combine(directory, $"persona_{persona.Id}{extension}");
+        await File.WriteAllBytesAsync(target, bytes, token);
+        persona.AvatarPath = target;
+        await AppServices.Personas.UpdateAsync(persona, token);
+        await NotifyDataChangedAsync();
+        return Results.Ok(PersonaDto(persona));
+    }
+
     private async Task<IResult> UploadCharacterAvatarAsync(Guid characterId, HttpRequest request, CancellationToken token)
     {
         if (!request.HasFormContentType) return Results.BadRequest(new { error = "Передайте изображение в форме." });
@@ -153,6 +212,7 @@ public sealed partial class NetworkChatServer
         character.Personality = request.Personality?.Trim() ?? "";
         character.Scenario = request.Scenario?.Trim() ?? "";
         character.SystemPrompt = request.SystemPrompt?.Trim() ?? "";
+        character.SelectedPersonaId = Guid.TryParse(request.SelectedPersonaId, out var personaId) ? personaId : null;
         if (request.CognitiveArchitectureEnabled is not null) character.CognitiveArchitectureEnabled = request.CognitiveArchitectureEnabled.Value;
         if (request.SoulMemoryEnabled is not null) character.SoulMemoryEnabled = request.SoulMemoryEnabled.Value;
         if (!string.IsNullOrWhiteSpace(request.SoulMemoryPreset)) character.SoulMemoryPreset = request.SoulMemoryPreset;

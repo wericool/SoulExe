@@ -53,6 +53,9 @@ public sealed partial class MainViewModel
         if (editor is null || editor.CharacterIds.Count < 2 || IsSceneGenerating || IsBusy) return;
         var conversationId = editor.Id;
         var firstCharacterId = editor.CharacterIds[0];
+        // A one-off turn from the paused state must stay one-off. The runner
+        // advances the next speaker, but its persisted default status is Running.
+        var continueAutomatically = string.Equals(editor.Status, SceneStatus.Running, StringComparison.OrdinalIgnoreCase);
         try
         {
             CancelSceneTimer();
@@ -131,6 +134,8 @@ public sealed partial class MainViewModel
             });
 
             _ = result.SavedMessage ?? throw new InvalidOperationException("Общий runner не вернул сохранённую реплику группового разговора.");
+            if (!continueAutomatically)
+                await _conversations.SetSceneStatusAsync(ConversationAddress.Scene(conversationId), ConversationSceneStatusAction.Pause);
             var refreshed = await _conversations.GetGroupAsync(conversationId)
                 ?? throw new InvalidOperationException("Групповой разговор не найден после сохранения реплики.");
 
@@ -142,6 +147,7 @@ public sealed partial class MainViewModel
                     SelectedGroupConversation = new GroupConversationEditorViewModel(refreshed);
                     OnPropertyChanged(nameof(SceneNextSpeakerName));
                     OnPropertyChanged(nameof(SceneStartPauseText));
+                    OnPropertyChanged(nameof(SceneStartPauseIcon));
                     OnPropertyChanged(nameof(IsSceneFinished));
                     OnPropertyChanged(nameof(SceneLastMessageLabel));
                     RefreshSceneMessageSearchResults();
@@ -152,8 +158,11 @@ public sealed partial class MainViewModel
 
             ScheduleSceneSummary(firstCharacterId, conversationId);
             SceneRunStatus = $"{result.SpeakerName} ответил. Общий Summary при необходимости обновится в фоне после короткой паузы.";
-            if (SelectedGroupConversation?.Status == SceneStatus.Running && SelectedGroupConversation.TurnMode == "alternate" && SelectedGroupConversation.DelaySeconds >= 5) ScheduleSceneTimer();
-            await ScheduleAutomaticSceneTurnAsync(conversationId);
+            if (continueAutomatically)
+            {
+                if (SelectedGroupConversation?.Status == SceneStatus.Running && SelectedGroupConversation.DelaySeconds >= 5) ScheduleSceneTimer();
+                await ScheduleAutomaticSceneTurnAsync(conversationId);
+            }
         }
         catch (Exception ex)
         {
@@ -200,7 +209,7 @@ public sealed partial class MainViewModel
     }
     private void ScheduleSceneTimer()
     {
-        if (SelectedGroupConversation is null || SelectedGroupConversation.DelaySeconds < 5) return;
+        if (SelectedGroupConversation is null || SelectedGroupConversation.Status != SceneStatus.Running || SelectedGroupConversation.DelaySeconds < 5) return;
         CancelSceneTimer();
         var sceneId = SelectedGroupConversation.Id;
         var delay = SelectedGroupConversation.DelaySeconds;
@@ -261,6 +270,7 @@ public sealed partial class MainViewModel
             if (SelectedGroupConversation.Conversation.TurnState is { } turn) turn.Status = SceneStatus.Paused;
             OnPropertyChanged(nameof(SelectedGroupConversation));
             OnPropertyChanged(nameof(SceneStartPauseText));
+            OnPropertyChanged(nameof(SceneStartPauseIcon));
             RaiseSceneCommands();
         });
     }

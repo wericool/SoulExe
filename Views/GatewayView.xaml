@@ -4,7 +4,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border Style="{StaticResource Surface}" Padding="16" Margin="0,0,0,14">
+        <Border Style="{StaticResource SheetSection}" Padding="16" Margin="0,0,0,14">
             <StackPanel>
                 <DockPanel LastChildFill="False" Margin="0,0,0,14">
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
@@ -45,17 +45,17 @@
         </Border>
         <Grid x:Name="GatewayContentGrid" Grid.Row="1">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="330" /></Grid.ColumnDefinitions>
-            <Border x:Name="GatewayCatalogPanel" Grid.Column="0" Style="{StaticResource Surface}" Background="{StaticResource WindowBrush}" Padding="14" Margin="0,0,12,0">
+            <Border x:Name="GatewayCatalogPanel" Grid.Column="0" Style="{StaticResource SheetSectionElevated}" Background="{StaticResource WindowBrush}" Padding="14" Margin="0,0,12,0">
                 <Grid>
                     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <StackPanel><TextBlock Text="{Binding GatewayCategoryTitle}" FontSize="22" FontWeight="SemiBold" /><TextBlock Text="{Binding GatewayCategorySubtitle}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" /></StackPanel>
                     <Border Grid.Row="1" Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Margin="0,14,0,0" Padding="18">
-                        <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsBusy}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
+                        <Border.Style><Style TargetType="Border" BasedOn="{StaticResource SystemStatusCard}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsBusy}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="Загрузка материалов" FontWeight="SemiBold" HorizontalAlignment="Center" /><TextBlock Text="Получаем каталог выбранной категории..." Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,5,0,0" /></StackPanel>
                     </Border>
-                    <Border Grid.Row="1" Background="{StaticResource ElevatedBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="10" Margin="0,14,0,0" Padding="18"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding HasGatewayError}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="Ошибка загрузки каталога" FontWeight="SemiBold" HorizontalAlignment="Center"/><TextBlock Text="{Binding GatewayError}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,10"/><Button Content="Повторить" Command="{Binding SearchGatewayCommand}" Style="{StaticResource GhostButton}" HorizontalAlignment="Center"/></StackPanel></Border>
+                    <Border Grid.Row="1" Background="{StaticResource ElevatedBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="10" Margin="0,14,0,0" Padding="18"><Border.Style><Style TargetType="Border" BasedOn="{StaticResource SystemStatusCard}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding HasGatewayError}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="Ошибка загрузки каталога" FontWeight="SemiBold" HorizontalAlignment="Center"/><TextBlock Text="{Binding GatewayError}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,10"/><Button Content="Повторить" Command="{Binding SearchGatewayCommand}" Style="{StaticResource GhostButton}" HorizontalAlignment="Center"/></StackPanel></Border>
                     <Border Grid.Row="1" Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Margin="0,14,0,0" Padding="18">
-                        <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsBusy}" Value="False" /><Condition Binding="{Binding HasGatewayError}" Value="False" /><Condition Binding="{Binding GatewayItems.Count}" Value="0" /></MultiDataTrigger.Conditions><Setter Property="Visibility" Value="Visible" /></MultiDataTrigger></Style.Triggers></Style></Border.Style>
+                        <Border.Style><Style TargetType="Border" BasedOn="{StaticResource EmptyState}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding IsBusy}" Value="False" /><Condition Binding="{Binding HasGatewayError}" Value="False" /><Condition Binding="{Binding GatewayItems.Count}" Value="0" /></MultiDataTrigger.Conditions><Setter Property="Visibility" Value="Visible" /></MultiDataTrigger></Style.Triggers></Style></Border.Style>
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="360"><TextBlock Text="Материалы не найдены" FontWeight="SemiBold" HorizontalAlignment="Center" /><TextBlock Text="Измените запрос или выберите другую категорию, затем повторите поиск." Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,0" /></StackPanel>
                     </Border>
                     <ListBox Grid.Row="1" ItemsSource="{Binding GatewayItems}" SelectedItem="{Binding SelectedGatewayAsset}" Margin="0,14,0,0" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -78,7 +78,7 @@
                     <DockPanel Grid.Row="2" Margin="2,10,2,0"><TextBlock Text="{Binding GatewayItems.Count, StringFormat=Материалов: {0}}" Foreground="{StaticResource TextMutedBrush}" FontSize="11" VerticalAlignment="Center" /><Button DockPanel.Dock="Right" Content="Загрузить ещё" Command="{Binding LoadMoreGatewayCommand}" Background="{StaticResource CardHoverBrush}"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding GatewayHasMore}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Button.Style></Button></DockPanel>
                 </Grid>
             </Border>
-            <Border x:Name="GatewayDetailsPanel" Grid.Column="1" Style="{StaticResource Surface}" Padding="18">
+            <Border x:Name="GatewayDetailsPanel" Grid.Column="1" Style="{StaticResource SheetSection}" Padding="18">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
                         <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Visible" /><Style.Triggers><DataTrigger Binding="{Binding SelectedGatewayAsset}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></StackPanel.Style>
@@ -93,7 +93,7 @@
                 </ScrollViewer>
             </Border>
             <Border x:Name="GatewayEmptyDetailsPanel" Grid.Column="1">
-                <Border.Style><Style TargetType="Border" BasedOn="{StaticResource Surface}"><Setter Property="Padding" Value="18" /><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding SelectedGatewayAsset}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
+                <Border.Style><Style TargetType="Border" BasedOn="{StaticResource EmptyState}"><Setter Property="Padding" Value="18" /><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding SelectedGatewayAsset}" Value="{x:Null}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="250"><TextBlock Text="Материал не выбран" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock Text="Выберите карточку в каталоге, чтобы просмотреть описание и импортировать материал." Foreground="{StaticResource TextMutedBrush}" FontSize="11" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0" /></StackPanel>
             </Border>
         </Grid>

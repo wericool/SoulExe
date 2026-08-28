@@ -81,7 +81,7 @@ public sealed partial class MainViewModel
                 editor.TimeContext, editor.Mood, editor.Goal, editor.RelationshipContext, editor.TurnMode, editor.DelaySeconds,
                 editor.EnforceConversationContract, editor.AdvanceAndAvoidRepetition);
             await ReloadScenesAsync(sceneId);
-            if (SelectedGroupConversation?.Status == SceneStatus.Running && SelectedGroupConversation.TurnMode == "alternate" && SelectedGroupConversation.DelaySeconds >= 5)
+            if (SelectedGroupConversation?.Status == SceneStatus.Running && SelectedGroupConversation.DelaySeconds >= 5)
                 ScheduleSceneTimer();
             else
                 CancelSceneTimer();
@@ -125,7 +125,7 @@ public sealed partial class MainViewModel
         await _conversations.SetSceneStatusAsync(ConversationAddress.Scene(editor.Id), ConversationSceneStatusAction.Start);
         await LoadSelectedSceneAsync(editor.Id);
         SceneRunStatus = $"Групповой разговор запущен. Следующий ход: {SceneNextSpeakerName}.";
-        if (SelectedGroupConversation?.DelaySeconds >= 5 && SelectedGroupConversation.TurnMode == "alternate") ScheduleSceneTimer();
+        if (SelectedGroupConversation?.DelaySeconds >= 5) ScheduleSceneTimer();
         await ScheduleAutomaticSceneTurnAsync(editor.Id);
     }
     private async Task PauseSceneAsync()

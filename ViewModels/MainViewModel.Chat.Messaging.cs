@@ -294,8 +294,10 @@ public sealed partial class MainViewModel
     private void SetChatAppearanceColor(string? value)
     {
         if (!ChatAppearanceEditor.TryApplyColorToken(ChatAppearance, value)) return;
-        _ = SaveChatAppearanceAsync();
     }
+
+    private void ChatAppearance_OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        => _ = SaveChatAppearanceAsync();
     private async Task SaveChatAppearanceAsync()
     {
         try

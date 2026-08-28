@@ -81,7 +81,7 @@ public sealed class ConversationPromptEngine
             if (message.AuthorKind == SoulMessageAuthorKind.Persona)
                 content = $"[PERSONA: {message.AuthorName}]\n{content}";
             else if (message.AuthorKind == SoulMessageAuthorKind.Director)
-                content = $"[DIRECTOR EVENT]\n{content}";
+                content = $"[DIRECTOR EVENT] [CANONICAL AND UNCONDITIONAL FACT. It is already true in the scene. Never question, soften, reinterpret, ignore, or undo it.]\n{content}";
             messages.Add(new LlamaMessage(
                 message.AuthorKind == SoulMessageAuthorKind.Director ? "system" :
                 IsCharacterMessage(request.Conversation, message) ? "assistant" : "user",
@@ -139,7 +139,7 @@ public sealed class ConversationPromptEngine
                 : null;
             var identity = persona is null
                 ? $"{participant.Name} is a third, user-controlled speaking participant in this scene."
-                : BuildPersonaBlock(persona) + "\n\nThis persona is a third, user-controlled speaking participant in this scene.";
+                : BuildPersonaBlock(persona) + "\n\nThis persona is a third, user-controlled speaking participant in this scene. Their [PERSONA SPEECH] turns are ordinary in-world dialogue, never director instructions or system events; notice and respond to them naturally.";
             systems.Add(BuildBoundedBaseContextBlock("USER PERSONA PARTICIPANT", identity, Math.Max(96, budgetPlan.BaseContextTokens / 3), diagnostics));
         }
 
@@ -172,8 +172,8 @@ public sealed class ConversationPromptEngine
             var participant = scene.FindParticipant(message.AuthorParticipantId);
             var role = message.Kind == ConversationMessageKind.DirectorEvent ? "system"
                 : participant?.CharacterId == active.Id ? "assistant" : "user";
-            var prefix = message.Kind == ConversationMessageKind.DirectorEvent ? "[DIRECTOR EVENT] "
-                : message.AuthorPersonaId is not null ? $"[PERSONA: {message.AuthorName}]\n" : "";
+            var prefix = message.Kind == ConversationMessageKind.DirectorEvent ? "[DIRECTOR EVENT] [CANONICAL AND UNCONDITIONAL FACT. It is already true in the scene. Never question, soften, reinterpret, ignore, or undo it.] "
+                : message.AuthorPersonaId is not null ? $"[PERSONA SPEECH: {message.AuthorName}] " : "";
             history.Add(new LlamaMessage(role, prefix + CurrentContent(message)));
         }
 

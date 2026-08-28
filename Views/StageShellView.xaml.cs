@@ -215,7 +215,7 @@ public partial class StageShellView : UserControl
         Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
         {
             if (IsLoaded && BackstageOverlay.Visibility == Visibility.Visible)
-                BackstageOverlay.MoveFocus(new TraversalRequest(FocusNavigationDirection.First));
+                BackstageCloseButton.Focus();
         }));
     }
 
@@ -307,6 +307,32 @@ public partial class StageShellView : UserControl
         CloseBackstage();
     }
 
+    private void BackstageOptions_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string tab } && !string.IsNullOrEmpty(tab)
+            && _viewModel?.SelectOptionsTabCommand.CanExecute(tab) == true)
+        {
+            _viewModel.SelectOptionsTabCommand.Execute(tab);
+        }
+        CloseBackstage();
+    }
+
+    private void CreateCharacterFromBackstage_OnClick(object sender, RoutedEventArgs e) => OpenCharacterCreationFromBackstage();
+
+    private void OpenCharacterCreationFromBackstage()
+    {
+        if (_viewModel is null) return;
+        if (_viewModel.SelectLibraryTabCommand.CanExecute("characters")) _viewModel.SelectLibraryTabCommand.Execute("characters");
+        if (_viewModel.NavigateCommand.CanExecute("Home")) _viewModel.NavigateCommand.Execute("Home");
+        CloseBackstage();
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+        {
+            if (_viewModel?.OpenCharacterCreationDialogCommand.CanExecute(null) == true)
+                _viewModel.OpenCharacterCreationDialogCommand.Execute(null);
+        }));
+    }
+
     private void BackstageConversation_OnClick(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || _viewModel is null) return;
@@ -320,14 +346,13 @@ public partial class StageShellView : UserControl
     {
         if (sender is not Button button || _viewModel is null) return;
         if (button.DataContext is not HomeCharacterCardViewModel card) return;
-        CloseBackstage();
         if (card.IsAddCharacter)
         {
-            // Creation dialog lives in the Library; route there.
-            if (_viewModel.NavigateCommand.CanExecute("Home")) _viewModel.NavigateCommand.Execute("Home");
+            OpenCharacterCreationFromBackstage();
             return;
         }
-        if (_viewModel.OpenCharacterEditorCommand.CanExecute(card.Character)) _viewModel.OpenCharacterEditorCommand.Execute(card.Character);
+        CloseBackstage();
+        if (_viewModel.OpenCharacterChatCommand.CanExecute(card.Character)) _viewModel.OpenCharacterChatCommand.Execute(card.Character);
     }
 
     private void Presence_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

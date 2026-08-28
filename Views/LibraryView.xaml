@@ -18,7 +18,8 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <DockPanel Grid.Row="0" Margin="0,0,0,16" LastChildFill="False">
+                    <Border Grid.Row="0" Style="{StaticResource SheetSection}" Padding="12" Margin="0,0,0,16">
+                    <DockPanel LastChildFill="False">
                         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" KeyboardNavigation.DirectionalNavigation="Cycle" AutomationProperties.Name="Вкладки библиотеки">
                             <Button Content="Персонажи" Command="{Binding SelectLibraryTabCommand}" CommandParameter="characters" Padding="16,9" Margin="0,0,4,0" AutomationProperties.Name="Персонажи" AutomationProperties.PositionInSet="1" AutomationProperties.SizeOfSet="3" TabIndex="0">
                                 <Button.Style>
@@ -107,6 +108,7 @@
                             </Button>
                         </StackPanel>
                     </DockPanel>
+                    </Border>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <ScrollViewer.Style>
                             <Style TargetType="ScrollViewer">
@@ -125,12 +127,12 @@
                                     <TextBlock Text="Импорт, создание и быстрый запуск диалога с вашими персонажами." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,0" />
                                 </StackPanel>
                             </DockPanel>
-                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18">
+                            <Border Padding="18">
                                 <Border.Style>
-                                    <Style TargetType="Border">
+                                    <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HomeCards.Count}" Value="1">
+                                            <DataTrigger Binding="{Binding HomeCards.Count}" Value="0">
                                                 <Setter Property="Visibility" Value="Visible" />
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -148,7 +150,7 @@
                                     <Style TargetType="ItemsControl">
                                         <Setter Property="Visibility" Value="Visible" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HomeCards.Count}" Value="1">
+                                            <DataTrigger Binding="{Binding HomeCards.Count}" Value="0">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -163,17 +165,7 @@
                                 <DataTemplate>
                                     <Grid Width="236" Height="280" Margin="0,0,16,16">
                                         <!-- Прямоугольная карточка персонажа. -->
-                                        <Border x:Name="CharacterCard" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Visibility" Value="Visible" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsAddCharacter}" Value="True">
-                                                            <Setter Property="Visibility" Value="Collapsed" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
+                                        <Border x:Name="CharacterCard" Style="{StaticResource GalleryCard}" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="0" ClipToBounds="True">
                                             <Grid>
                                                 <Border Background="{StaticResource ElevatedBrush}">
                                                     <TextBlock Text="{Binding Character.Initials}" FontSize="46" FontWeight="SemiBold" Foreground="{StaticResource TextDimBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -213,45 +205,6 @@
                                                 </Border>
                                             </Grid>
                                         </Border>
-                                        <!-- Последняя карточка добавления в тех же размерах и прямоугольном стиле. -->
-                                        <Button Command="{Binding DataContext.OpenCharacterCreationDialogCommand, RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="Создать нового персонажа" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                                            <Button.Style>
-                                                <Style TargetType="Button">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                    <Setter Property="Background" Value="{StaticResource CardGradientBrush}" />
-                                                    <Setter Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
-                                                    <Setter Property="BorderThickness" Value="1.5" />
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="Button">
-                                                                <Border x:Name="AddCharacterCard" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
-                                                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                                                                </Border>
-                                                                <ControlTemplate.Triggers>
-                                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter TargetName="AddCharacterCard" Property="Background" Value="{StaticResource CardHoverBrush}" />
-                                                                        <Setter TargetName="AddCharacterCard" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                                                        <Setter TargetName="AddCharacterCard" Property="Effect" Value="{StaticResource AccentGlowEffect}" />
-                                                                    </Trigger>
-                                                                </ControlTemplate.Triggers>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsAddCharacter}" Value="True">
-                                                            <Setter Property="Visibility" Value="Visible" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Button.Style>
-                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <Border Width="54" Height="54" CornerRadius="27" Background="{StaticResource AccentSoftBrush}">
-                                                    <TextBlock Text="＋" FontSize="29" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                </Border>
-                                                <TextBlock Text="Новый персонаж" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" FontSize="14" Margin="0,13,0,0" HorizontalAlignment="Center" />
-                                                <TextBlock Text="Создать карточку" Foreground="{StaticResource TextMutedBrush}" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center" />
-                                            </StackPanel>
-                                        </Button>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -276,9 +229,9 @@
                                     <TextBlock Text="Миры, правила, места и события, доступные для привязки к персонажам." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,0" />
                                 </StackPanel>
                             </DockPanel>
-                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18">
+                            <Border Padding="18">
                                 <Border.Style>
-                                    <Style TargetType="Border">
+                                    <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Lorebooks.Count}" Value="0">
@@ -302,7 +255,7 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Width="300" Height="182" Margin="0,0,16,16" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
+                                        <Border Width="300" Height="182" Margin="0,0,16,16" Style="{StaticResource GalleryCard}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto" />
@@ -348,9 +301,9 @@
                                     <TextBlock Text="Сохраните разные образы пользователя и назначайте их отдельным персонажам. Персона добавляется в системный контекст до истории чата." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap" />
                                 </StackPanel>
                             </DockPanel>
-                            <Border Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18">
+                            <Border Padding="18">
                                 <Border.Style>
-                                    <Style TargetType="Border">
+                                    <Style TargetType="Border" BasedOn="{StaticResource EmptyState}">
                                         <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Personas.Count}" Value="0">
@@ -375,7 +328,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Width="236" Height="280" Margin="0,0,16,16">
-                                            <Border x:Name="PersonaCard" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
+                                            <Border x:Name="PersonaCard" Style="{StaticResource GalleryCard}" Background="{StaticResource CardGradientBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="0" ClipToBounds="True">
                                                 <Grid>
                                                     <Border Background="{StaticResource ElevatedBrush}">
                                                         <TextBlock Text="{Binding Initials}" FontSize="46" FontWeight="SemiBold" Foreground="{StaticResource TextDimBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -576,19 +529,19 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <Border x:Name="CharacterDeleteDialog" Width="470" Background="{StaticResource PanelBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="16" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
+                        <Border x:Name="CharacterDeleteDialog" Style="{StaticResource SheetSectionElevated}" Width="470" Background="{StaticResource PanelBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="16" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
                             <StackPanel>
                                 <Border Width="46" Height="46" CornerRadius="14" Background="#3D1723" HorizontalAlignment="Left">
                                     <TextBlock Text="!" Foreground="{StaticResource DangerHoverBrush}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Text="Удалить персонажа?" FontSize="21" FontWeight="SemiBold" Margin="0,16,0,0" />
                                 <TextBlock Text="{Binding CharacterPendingDeletion.Name, StringFormat=Персонаж «{0}» и все связанные с ним чаты будут удалены.}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12.5" Margin="0,7,0,0" />
-                                <Border Background="#27151C" BorderBrush="#5A2736" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0">
+                                <Border Style="{StaticResource SystemStatusCard}" Background="#27151C" BorderBrush="#5A2736" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0">
                                     <TextBlock Text="Это действие нельзя отменить. Локальные данные этого персонажа будут удалены из SoulExeData." Foreground="#F7BEC9" FontSize="11.5" TextWrapping="Wrap" />
                                 </Border>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
                                     <Button x:Name="CharacterDeleteInitialFocus" Content="Отмена" Command="{Binding CancelCharacterDeleteCommand}" Style="{StaticResource GhostButton}" />
-                                    <Button Content="Удалить навсегда" Command="{Binding ConfirmCharacterDeleteCommand}" Style="{StaticResource DangerButton}" Padding="16,9" Margin="8,0,0,0" />
+                                    <Button Content="Удалить навсегда" Command="{Binding ConfirmCharacterDeleteCommand}" Style="{StaticResource DestructiveAction}" Padding="16,9" Margin="8,0,0,0" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -752,10 +705,16 @@
                                         </StackPanel>
                                         <TextBox Text="{Binding SelectedPersona.Description, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" TextAlignment="Left" VerticalContentAlignment="Top" MinHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" ToolTip="Например: Эрика зовут Эрик, ему 17 лет, он учится в этом классе; он спокойный, любит рисование и давно знаком с Анной." />
                                         <TextBlock Text="Персона не меняет историю чата и память. Она задаёт исходный образ пользователя, который персонаж получает перед началом диалога." Foreground="{StaticResource TextMutedBrush}" FontSize="10.5" TextWrapping="Wrap" Margin="2,7,2,0" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                                            <TextBlock Text="Инструкция для диалога" VerticalAlignment="Center" />
+                                            <ui:HelpHint Hint="Дополнительные указания для модели именно для этой персоны. Они добавляются в контекст вместе с именем и описанием, когда персона привязана к карточке персонажа." />
+                                        </StackPanel>
+                                        <TextBox Text="{Binding SelectedPersona.PromptText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" TextAlignment="Left" VerticalContentAlignment="Top" MinHeight="120" MaxHeight="240" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" Padding="12,10" />
                                     </StackPanel>
                                 </ScrollViewer>
                                 <DockPanel Grid.Row="2">
                                     <Button DockPanel.Dock="Right" Content="Сохранить" Command="{Binding SavePersonaCommand}" Style="{StaticResource AccentButton}" Padding="18,10" />
+                                    <Button DockPanel.Dock="Right" Content="Сгенерировать" Command="{Binding GeneratePersonaDescriptionCommand}" Style="{StaticResource GhostButton}" Padding="14,9" Margin="0,0,8,0" ToolTip="Сгенерировать текст в поле «Описание»" />
                                     <Button DockPanel.Dock="Right" Content="Закрыть" Command="{Binding ClosePersonaEditorCommand}" Style="{StaticResource GhostButton}" Margin="0,0,8,0" />
                                     <TextBlock Text="Изменения применяются после сохранения." Foreground="{StaticResource TextMutedBrush}" FontSize="10.5" VerticalAlignment="Center" />
                                 </DockPanel>
@@ -773,23 +732,23 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <Border x:Name="PersonaDeleteDialog" Width="470" Background="{StaticResource PanelBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="16" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
+                        <Border x:Name="PersonaDeleteDialog" Style="{StaticResource SheetSectionElevated}" Width="470" Background="{StaticResource PanelBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="16" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle">
                             <StackPanel>
                                 <Border Width="46" Height="46" CornerRadius="14" Background="#3D1723" HorizontalAlignment="Left">
                                     <TextBlock Text="!" Foreground="{StaticResource DangerHoverBrush}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBlock Text="Удалить персону?" FontSize="21" FontWeight="SemiBold" Margin="0,16,0,0" />
                                 <TextBlock Text="{Binding PersonaPendingDeletion.Name, StringFormat=Персона «{0}» будет удалена из библиотеки.}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12.5" Margin="0,7,0,0" />
-                                <Border Background="#27151C" BorderBrush="#5A2736" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0">
+                                <Border Style="{StaticResource SystemStatusCard}" Background="#27151C" BorderBrush="#5A2736" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0">
                                     <TextBlock Text="Связанные персонажи не удаляются: у них будет только отключена эта персона, а история чатов останется сохранённой." Foreground="#F7BEC9" FontSize="11.5" TextWrapping="Wrap" />
                                 </Border>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
                                     <Button x:Name="PersonaDeleteInitialFocus" Content="Отмена" Command="{Binding CancelPersonaDeleteCommand}" Style="{StaticResource GhostButton}" />
-                                    <Button Content="Удалить навсегда" Command="{Binding DeletePersonaCommand}" Style="{StaticResource DangerButton}" Padding="16,9" Margin="8,0,0,0" />
+                                    <Button Content="Удалить навсегда" Command="{Binding DeletePersonaCommand}" Style="{StaticResource DestructiveAction}" Padding="16,9" Margin="8,0,0,0" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
                     </Border>
-                    <Border Grid.RowSpan="3" Panel.ZIndex="50" Background="#C9090B14" CornerRadius="16"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsPendingDeletionDialogOpen}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><Border Width="470" Background="{StaticResource PanelBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="16" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle"><StackPanel><TextBlock Text="{Binding PendingDeletion.Title}" FontSize="21" FontWeight="SemiBold"/><TextBlock Text="{Binding PendingDeletion.Description}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0"/><Border Background="#27151C" BorderBrush="#5A2736" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0"><TextBlock Text="{Binding PendingDeletion.Warning}" Foreground="#F7BEC9" TextWrapping="Wrap"/></Border><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0"><Button x:Name="PendingDeletionInitialFocus" Content="Отмена" Command="{Binding CancelPendingDeletionCommand}" Style="{StaticResource GhostButton}"/><Button Content="Удалить навсегда" Command="{Binding ConfirmPendingDeletionCommand}" Style="{StaticResource DangerButton}" Padding="16,9" Margin="8,0,0,0"/></StackPanel></StackPanel></Border></Border>
+                    <Border Grid.RowSpan="3" Panel.ZIndex="50" Background="#C9090B14" CornerRadius="16"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsPendingDeletionDialogOpen}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><Border Style="{StaticResource SheetSectionElevated}" Width="470" Background="{StaticResource PanelBrush}" BorderBrush="#E85A73" BorderThickness="1" CornerRadius="16" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center" FocusManager.IsFocusScope="True" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.ControlTabNavigation="Cycle"><StackPanel><TextBlock Text="{Binding PendingDeletion.Title}" FontSize="21" FontWeight="SemiBold"/><TextBlock Text="{Binding PendingDeletion.Description}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0"/><Border Style="{StaticResource SystemStatusCard}" Background="#27151C" BorderBrush="#5A2736" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,16,0,0"><TextBlock Text="{Binding PendingDeletion.Warning}" Foreground="#F7BEC9" TextWrapping="Wrap"/></Border><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0"><Button x:Name="PendingDeletionInitialFocus" Content="Отмена" Command="{Binding CancelPendingDeletionCommand}" Style="{StaticResource GhostButton}"/><Button Content="Удалить навсегда" Command="{Binding ConfirmPendingDeletionCommand}" Style="{StaticResource DestructiveAction}" Padding="16,9" Margin="8,0,0,0"/></StackPanel></StackPanel></Border></Border>
                     </Grid>
 </UserControl>

@@ -78,8 +78,8 @@ public partial class SetupView : UserControl
         var details = SetupModelLayout.Children[1];
         if (compact)
         {
-            SetupModelLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            SetupModelLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            SetupModelLayout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(300) });
+            SetupModelLayout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             SetCompactPosition(list, 0, new Thickness());
             SetCompactPosition(details, 1, new Thickness(0, 16, 0, 0));
         }

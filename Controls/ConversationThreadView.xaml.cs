@@ -28,6 +28,18 @@ public partial class ConversationThreadView : UserControl
             groupThread.ScrollToEnd();
     }
 
+    public void ResetPersonalAutoFollow()
+    {
+        if (FindActiveThread<PersonalConversationThreadView>() is { } personalThread)
+            personalThread.ResetAutoFollow();
+    }
+
+    public void ResetSceneAutoFollow()
+    {
+        if (FindActiveThread<GroupConversationThreadView>() is { } groupThread)
+            groupThread.ResetAutoFollow();
+    }
+
     public void ScrollToPersonalMessage(Guid messageId)
     {
         if (FindActiveThread<PersonalConversationThreadView>() is { } personalThread)

@@ -63,6 +63,7 @@ public sealed class ChatMessageViewModel : INotifyPropertyChanged
     public string DateSeparatorLabel { get => _dateSeparatorLabel; set { if (_dateSeparatorLabel == value) return; _dateSeparatorLabel = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateSeparatorLabel))); } }
     public string Time => _record.CreatedAt.ToLocalTime().ToString("HH:mm");
     public bool IsUser => _record.Role == SoulMessageRole.User;
+    public bool IsDirector => _record.AuthorKind == SoulMessageAuthorKind.Director;
     public int VariantCount => _record.Variants.Count;
     public int CurrentVariantNumber => Math.Max(1, _record.Variants.FindIndex(x => x.Id == _record.CurrentVariantId) + 1);
     public bool CanMovePrevious => !IsUser && CurrentVariantNumber > 1;
@@ -122,7 +123,7 @@ public sealed class ChatMessageViewModel : INotifyPropertyChanged
 
     public void Refresh()
     {
-        foreach (var name in new[] { nameof(MessageId), nameof(AuthorName), nameof(AuthorInitials), nameof(AvatarPath), nameof(Content), nameof(VisibleContent), nameof(ThoughtContent), nameof(HasThoughtContent), nameof(IsThoughtExpanded), nameof(IsEditing), nameof(IsSearchHighlighted), nameof(IsActionMenuOpen), nameof(EditingContent), nameof(Time), nameof(CanContinueFromHere), nameof(HasResponseVariants), nameof(ThoughtToggleText), nameof(VariantCount), nameof(CurrentVariantNumber), nameof(CanMovePrevious), nameof(CanMoveNext) })
+        foreach (var name in new[] { nameof(MessageId), nameof(AuthorName), nameof(AuthorInitials), nameof(AvatarPath), nameof(Content), nameof(VisibleContent), nameof(ThoughtContent), nameof(HasThoughtContent), nameof(IsThoughtExpanded), nameof(IsEditing), nameof(IsSearchHighlighted), nameof(IsActionMenuOpen), nameof(EditingContent), nameof(Time), nameof(IsDirector), nameof(CanContinueFromHere), nameof(HasResponseVariants), nameof(ThoughtToggleText), nameof(VariantCount), nameof(CurrentVariantNumber), nameof(CanMovePrevious), nameof(CanMoveNext) })
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         ToggleThoughtCommand.RaiseCanExecuteChanged();
     }

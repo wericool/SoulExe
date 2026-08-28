@@ -17,7 +17,7 @@
             <ColumnDefinition x:Name="DetailsColumn" Width="300" MinWidth="248" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Margin="12,78,0,12" Style="{StaticResource StageSideGlass}">
+        <Border Grid.Column="0" Margin="12,64,0,12" Style="{StaticResource StageSideGlass}">
             <ContentControl x:Name="WideListHost">
                 <controls:ConversationListView x:Name="ConversationList" />
             </ContentControl>
@@ -26,14 +26,14 @@
                       ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
                       ToolTip="Изменить ширину списка диалогов" />
 
-        <ContentControl Grid.Column="2" x:Name="ThreadHost" Focusable="False">
+        <ContentControl Grid.Column="2" x:Name="ThreadHost" Focusable="False" Margin="0,64,0,12">
             <controls:ConversationThreadView x:Name="ConversationThread" />
         </ContentControl>
 
         <GridSplitter x:Name="DetailsSplitter" Grid.Column="3" Width="6" HorizontalAlignment="Center" Background="Transparent"
                       ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
                       ToolTip="Изменить ширину панели информации" />
-        <Border Grid.Column="4" Margin="0,78,12,12" Style="{StaticResource StageSideGlass}">
+        <Border Grid.Column="4" Margin="0,64,12,12" Style="{StaticResource StageSideGlass}">
             <ContentControl x:Name="WideDetailsHost">
                 <controls:ConversationDetailsPanel x:Name="ConversationDetails" />
             </ContentControl>
@@ -63,7 +63,7 @@
                         <Grid Margin="0,14,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><StackPanel><StackPanel Orientation="Horizontal" Margin="0,0,0,5"><TextBlock Text="Место" Style="{StaticResource SectionLabel}" /><ui:HelpHint Hint="Например: фойе кинотеатра, кафе, улица или кабинет." /></StackPanel><TextBox Text="{Binding SceneLocationDraft, UpdateSourceTrigger=PropertyChanged}" /></StackPanel><StackPanel Grid.Column="2"><StackPanel Orientation="Horizontal" Margin="0,0,0,5"><TextBlock Text="Время" Style="{StaticResource SectionLabel}" /><ui:HelpHint Hint="Например: вечер, утро, осень, перед началом фильма." /></StackPanel><TextBox Text="{Binding SceneTimeDraft, UpdateSourceTrigger=PropertyChanged}" /></StackPanel></Grid>
                         <Grid Margin="0,12,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><StackPanel><StackPanel Orientation="Horizontal" Margin="0,0,0,5"><TextBlock Text="Настроение" Style="{StaticResource SectionLabel}" /><ui:HelpHint Hint="Задаёт общий эмоциональный тон сцены." /></StackPanel><TextBox Text="{Binding SceneMoodDraft, UpdateSourceTrigger=PropertyChanged}" /></StackPanel><StackPanel Grid.Column="2"><StackPanel Orientation="Horizontal" Margin="0,0,0,5"><TextBlock Text="Цель" Style="{StaticResource SectionLabel}" /><ui:HelpHint Hint="Желаемый естественный итог сцены; помогает развивать диалог, а не повторяться." /></StackPanel><TextBox Text="{Binding SceneGoalDraft, UpdateSourceTrigger=PropertyChanged}" /></StackPanel></Grid>
                         <StackPanel Orientation="Horizontal" Margin="0,14,0,5"><TextBlock Text="Общие отношения / контекст" Style="{StaticResource SectionLabel}" /><ui:HelpHint Hint="Например: друзья, коллеги, одноклассники, незнакомцы." /></StackPanel><TextBox Text="{Binding SceneRelationshipDraft, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44" />
-                        <Grid Margin="0,12,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="110" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Режим ходов" Style="{StaticResource SectionLabel}" Margin="0,0,0,5" /><ComboBox SelectedValue="{Binding SceneTurnModeDraft}" SelectedValuePath="Tag"><ComboBoxItem Content="По очереди" Tag="alternate" /><ComboBoxItem Content="Вручную" Tag="manual" /></ComboBox></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="Пауза, сек" Style="{StaticResource SectionLabel}" Margin="0,0,0,5" /><TextBox Text="{Binding SceneDelaySecondsDraft, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" /></StackPanel></Grid>
+                        <StackPanel Margin="0,12,0,0"><TextBlock Text="Пауза между репликами, сек" Style="{StaticResource SectionLabel}" Margin="0,0,0,5" /><TextBox Text="{Binding SceneDelaySecondsDraft, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" /></StackPanel>
                         <CheckBox Content="Соблюдать рамки сцены" IsChecked="{Binding SceneEnforceContractDraft}" Margin="0,14,0,0" /><CheckBox Content="Развивать сцену и избегать повторов" IsChecked="{Binding SceneAdvanceNarrativeDraft}" Margin="0,8,0,0" ToolTip="Добавляет при каждой реплике правило: не повторять недавний диалог, вносить новый смысловой шаг и естественно двигать текущую цель сцены." /><TextBlock Text="Каждая реплика будет добавлять новую мысль, реакцию, действие или вопрос вместо пересказа уже сказанного." Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="24,4,0,0" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0"><Button Content="Отмена" Command="{Binding CancelNewChatCharacterPickerCommand}" Style="{StaticResource GhostButton}" /><Button Content="{Binding NewConversationConfirmText}" Command="{Binding ConfirmNewChatForCharacterCommand}" Style="{StaticResource AccentButton}" Margin="8,0,0,0" /></StackPanel>

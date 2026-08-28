@@ -72,10 +72,20 @@ public partial class App : Application
         e.SetObserved();
     }
 
-    protected override async void OnExit(ExitEventArgs e)
+    protected override void OnExit(ExitEventArgs e)
     {
-        if (MainWindow?.DataContext is ViewModels.MainViewModel viewModel)
-            await viewModel.DisposeAsync();
+        try
+        {
+            // WPF does not wait for an async OnExit handler. Block here so the
+            // llama-server child process and local mobile server are actually
+            // stopped before Windows tears the application down.
+            if (MainWindow?.DataContext is ViewModels.MainViewModel viewModel)
+                viewModel.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            AppLog.Write("Shutdown cleanup failed.", exception);
+        }
 
         AppLog.Write("SoulExe exit.");
         base.OnExit(e);

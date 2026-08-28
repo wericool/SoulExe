@@ -168,14 +168,12 @@ public sealed partial class MainViewModel
         {
             IsBusy = true;
             var source = dialog.FileName;
-            Status = $"Копирую GGUF в SoulExeData: {Path.GetFileName(source)}…";
-            var destination = await LocalMediaStore.ImportGgufAsync(source, AppServices.Paths.ModelDirectory);
             ModelRepository = "";
-            ModelPath = destination;
-            await _modelsHub.RegisterExistingModelAsync(destination);
+            ModelPath = source;
+            await _modelsHub.RegisterExistingModelAsync(source);
             await RefreshInstalledModelsAsync();
             OnPropertyChanged(nameof(ModelSourceText));
-            Status = $"GGUF сохранён локально: {Path.GetFileName(destination)}";
+            Status = $"Выбран существующий GGUF: {Path.GetFileName(source)}";
         }
         catch (Exception ex) { HandleError("Не удалось добавить GGUF в библиотеку", ex); }
         finally { IsBusy = false; }

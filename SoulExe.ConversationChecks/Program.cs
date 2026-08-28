@@ -226,7 +226,7 @@ Expect(ConversationPaging.ReadMessageTake("999") == 100, "Лимит сообщ�
 Expect(ConversationPaging.ReadPageSize("0") == 50, "Некорректный размер страницы должен использовать безопасный стандартный лимит.");
 Expect(ConversationTurnPolicy.CanScheduleAutomaticTurn("running", "alternate", 5), "Автоматическая сцена с задержкой от пяти секунд должна планироваться.");
 Expect(!ConversationTurnPolicy.CanScheduleAutomaticTurn("paused", "alternate", 10), "Пауза не должна планировать автоматический ход.");
-Expect(ConversationTurnPolicy.NextStatusAfterGeneratedTurn("manual") == "paused", "Ручная сцена должна останавливаться после сгенерированного хода.");
+Expect(ConversationTurnPolicy.NextStatusAfterGeneratedTurn("manual") == "running", "Сцена должна продолжаться после сгенерированного хода независимо от прежнего режима.");
 
 var promptCharacter = new SoulCharacter { Name = "Надя", ReplyLanguage = "Русский", SystemPrompt = new string('п', 6000) };
 var promptState = new SoulStateVariable { Key = "location" };
@@ -287,8 +287,9 @@ var scenePrompt = new ConversationPromptEngine().BuildGroup(new GroupPromptBuild
     new Dictionary<Guid, SoulLorebook> { [sceneLore.Id] = sceneLore }, promptFirst.Id, 4096, 512));
 Expect(scenePrompt.Messages[0].content.Contains("[BACKGROUND KNOWLEDGE: Сигнальный огонь]", StringComparison.Ordinal), "Групповой разговор должен активировать лор по недавней истории.");
 Expect(scenePrompt.Messages.Any(message => message.role == "system" && message.content.StartsWith("[DIRECTOR EVENT]", StringComparison.Ordinal)), "Групповой промпт должен сохранять режиссёрское событие системным.");
-Expect(scenePrompt.Messages.Any(message => message.role == "user" && message.content.StartsWith("[PERSONA: Мира]", StringComparison.Ordinal)), "Групповой промпт должен сохранять реплику пользовательской персоны.");
-var directorMessageIndex = scenePrompt.Messages.Select((message, index) => (message, index)).Single(entry => entry.message.content.StartsWith("[DIRECTOR EVENT]", StringComparison.Ordinal)).index;
+Expect(scenePrompt.Messages.Any(message => message.role == "user" && message.content.StartsWith("[PERSONA SPEECH: Мира]", StringComparison.Ordinal)), "Групповой промпт должен сохранять реплику пользовательской персоны.");
+var directorMessageIndex = Enumerable.Range(0, scenePrompt.Messages.Count)
+    .First(index => scenePrompt.Messages[index].role == "system" && scenePrompt.Messages[index].content.StartsWith("[DIRECTOR EVENT]", StringComparison.Ordinal));
 Expect(directorMessageIndex > 1 && directorMessageIndex < scenePrompt.Messages.Count - 1, "Событие режиссёра в середине истории должно сохранять позицию между репликами и финальной инструкцией хода.");
 Expect(scenePrompt.Diagnostics.Any(diagnostic => diagnostic.Category == "budget"), "Групповой промпт должен публиковать диагностику token budget.");
 Expect(scenePrompt.Diagnostics.Any(diagnostic => diagnostic.Category == "character"), "Групповой промпт должен сообщать об обрезании слишком длинной карточки.");

@@ -61,6 +61,7 @@ public sealed class SceneMessageViewModel : INotifyPropertyChanged
     public string Time { get; }
     public bool IsDirector { get; }
     public bool IsFirstCharacter { get; }
+    public bool IsSecondCharacter => !IsDirector && !IsUserParticipant && !IsFirstCharacter;
     public bool IsUserParticipant { get; }
     public bool IsLive => _isLive;
     public bool IsSearchHighlighted => _isSearchHighlighted;

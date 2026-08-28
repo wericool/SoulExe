@@ -73,7 +73,6 @@ public static class ConversationTurnPolicy
 {
     public static bool CanScheduleAutomaticTurn(string? status, string? turnMode, int delaySeconds) =>
         string.Equals(status, SceneStatus.Running, StringComparison.OrdinalIgnoreCase)
-        && string.Equals(turnMode, "alternate", StringComparison.OrdinalIgnoreCase)
         && delaySeconds >= 5;
 
     public static DateTimeOffset? NextTurnAt(string? status, string? turnMode, int delaySeconds, DateTimeOffset now) =>
@@ -81,6 +80,5 @@ public static class ConversationTurnPolicy
             ? now.AddSeconds(Math.Clamp(delaySeconds, 5, 30))
             : null;
 
-    public static string NextStatusAfterGeneratedTurn(string? turnMode) =>
-        string.Equals(turnMode, "alternate", StringComparison.OrdinalIgnoreCase) ? SceneStatus.Running : SceneStatus.Paused;
+    public static string NextStatusAfterGeneratedTurn(string? turnMode) => SceneStatus.Running;
 }

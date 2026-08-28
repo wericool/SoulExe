@@ -161,6 +161,46 @@ public sealed partial class MainViewModel
         catch (Exception ex) { HandleError("Не удалось создать персону", ex); }
         finally { IsBusy = false; }
     }
+    private async Task GeneratePersonaDescriptionAsync()
+    {
+        if (SelectedPersona is null) return;
+        try
+        {
+            IsBusy = true;
+            Status = "Локальная модель пишет описание персоны…";
+            var settings = await BuildLlamaSettingsAsync();
+            var current = SelectedPersona.Description?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(current))
+            {
+                Status = "Сначала введите короткую основу в поле «Описание», затем нажмите «Сгенерировать».";
+                return;
+            }
+            var messages = new[]
+            {
+                new LlamaMessage("system", "You expand a concise user-persona description for a roleplay chat. Return only the expanded Russian description, without a heading, JSON, Markdown, quotes, or <think> tags."),
+                new LlamaMessage("user", $"""
+Expand the following Russian persona description into a concrete, internally consistent text of 180 to 300 characters.
+Keep every fact that is explicitly given. Add only plausible stable details that follow from this text. Do not use, infer, or mention the persona's name. Do not invent dialogue or actions by other people.
+
+Source description:
+{current}
+""")
+            };
+            var raw = await Task.Run(async () =>
+            {
+                var response = new StringBuilder();
+                await foreach (var chunk in GenerateWithPromptPolicyAsync(settings, messages, CancellationToken.None, "persona_description_generator").ConfigureAwait(false)) response.Append(chunk);
+                return response.ToString();
+            });
+            var description = CharacterCardGenerationService.LimitField(raw.Replace("<think>", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("</think>", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(), 500);
+            if (string.IsNullOrWhiteSpace(description)) throw new InvalidOperationException("Модель не вернула описание. Попробуйте ещё раз.");
+            SelectedPersona.Description = description;
+            OnPropertyChanged(nameof(SelectedPersona));
+            Status = "Описание сгенерировано. Проверьте текст и нажмите «Сохранить».";
+        }
+        catch (Exception ex) { HandleError("Не удалось сгенерировать описание персоны", ex); }
+        finally { IsBusy = false; }
+    }
     private async Task SavePersonaAsync()
     {
         if (SelectedPersona is null) return;

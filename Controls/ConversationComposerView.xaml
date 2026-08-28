@@ -1,29 +1,83 @@
 <UserControl x:Class="SoulExe.Controls.ConversationComposerView" x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <DataTemplate x:Key="ComposerAuthorTemplate"><TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" /></DataTemplate>
+        <Style x:Key="ComposerAuthorPicker" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Width" Value="132" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="7,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ItemTemplate" Value="{StaticResource ComposerAuthorTemplate}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="AutomationProperties.Name" Value="Автор сообщения" />
+        </Style>
+        <Style x:Key="ComposerInlineButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="ComposerInlineIcon" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+        <Style x:Key="ComposerScenePlayButton" TargetType="Button" BasedOn="{StaticResource ComposerInlineIcon}">
+            <Setter Property="Background" Value="{StaticResource SuccessBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}" />
+        </Style>
+        <Style x:Key="ComposerSceneCountdown" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ElevatedBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="9,4" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
     <Grid>
+        <!-- Personal composer: text and actions live on one shared surface. -->
         <Border>
             <Border.Style><Style TargetType="Border" BasedOn="{StaticResource ConversationComposerBar}"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding Tag, ElementName=Root}" Value="Group"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Border.Style>
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <ComboBox ItemsSource="{Binding ComposerAuthors}" SelectedItem="{Binding ComposerAuthor}" DisplayMemberPath="DisplayName" ToolTip="От чьего имени отправить сообщение"/>
-                <Border Grid.Column="2" Style="{StaticResource ConversationComposerInput}"><TextBox Style="{StaticResource ChatComposerTextBox}" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter — отправить; Shift+Enter — новая строка" PreviewKeyDown="PersonalDraft_OnPreviewKeyDown" AutomationProperties.Name="Текст личного сообщения" AutomationProperties.HelpText="Enter отправляет сообщение. Shift+Enter вставляет новую строку." /></Border>
-                <Button Grid.Column="4" Content="Продолжить" Command="{Binding ContinueChatCommand}" Style="{StaticResource ChatComposerButton}" ToolTip="Попросить персонажа продолжить ответ"/>
-                <Button Grid.Column="6" Content="➤" Command="{Binding SendCommand}" Style="{StaticResource ChatComposerSendButton}" AutomationProperties.Name="Отправить сообщение" AutomationProperties.HelpText="Отправляет личное сообщение. Также можно нажать Enter в поле ввода." ToolTip="Отправить (Enter)"/>
+                <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <TextBox Style="{StaticResource ChatComposerTextBox}" Text="{Binding Draft, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" MinHeight="42" Padding="5,3" Background="Transparent" BorderThickness="0" ToolTip="Enter — отправить; Shift+Enter — новая строка" PreviewKeyDown="PersonalDraft_OnPreviewKeyDown" AutomationProperties.Name="Текст личного сообщения" AutomationProperties.HelpText="Enter отправляет сообщение. Shift+Enter вставляет новую строку." />
+                <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Margin="0,7,0,0" Padding="0,7,0,0">
+                    <DockPanel LastChildFill="False">
+                        <ComboBox DockPanel.Dock="Left" ItemsSource="{Binding ComposerAuthors}" SelectedItem="{Binding ComposerAuthor}" Style="{StaticResource ComposerAuthorPicker}" ToolTip="От чьего имени отправить сообщение" />
+                        <Button DockPanel.Dock="Right" Content="➤" Command="{Binding SendCommand}" Style="{StaticResource ComposerInlineIcon}" AutomationProperties.Name="Отправить сообщение" AutomationProperties.HelpText="Отправляет личное сообщение. Также можно нажать Enter в поле ввода." ToolTip="Отправить (Enter)" />
+                        <Button DockPanel.Dock="Right" Content="Продолжить" Command="{Binding ContinueChatCommand}" Style="{StaticResource ComposerInlineButton}" ToolTip="Попросить персонажа продолжить ответ" AutomationProperties.Name="Продолжить ответ персонажа" />
+                        <TextBlock Text="Enter — отправить" Foreground="{StaticResource TextMutedBrush}" FontSize="10" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </DockPanel>
+                </Border>
             </Grid>
         </Border>
+
+        <!-- Group composer uses the same surface, with scene controls in its lower row. -->
         <Border>
             <Border.Style><Style TargetType="Border" BasedOn="{StaticResource ConversationComposerBar}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Tag, ElementName=Root}" Value="Group"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style>
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="132"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="8"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <ComboBox ItemsSource="{Binding ComposerAuthors}" SelectedItem="{Binding ComposerAuthor}" DisplayMemberPath="DisplayName" ToolTip="От чьего имени отправить сообщение"/>
-                <StackPanel Grid.Column="2">
-                    <Border Style="{StaticResource ConversationComposerInput}"><TextBox Style="{StaticResource ChatComposerTextBox}" Text="{Binding GroupDraft, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter и Shift+Enter — новая строка; Ctrl+Enter — отправить" PreviewKeyDown="GroupDraft_OnPreviewKeyDown" AutomationProperties.Name="Текст реплики группового разговора" AutomationProperties.HelpText="Enter и Shift+Enter вставляют новую строку. Ctrl+Enter отправляет реплику." /></Border>
-                    <TextBlock Text="Ctrl+Enter — отправить; Enter — новая строка" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="4,4,0,0" />
-                </StackPanel>
-                <Button Grid.Column="4" Content="{Binding SceneStartPauseText}" Command="{Binding ToggleSceneStartPauseCommand}" Style="{StaticResource ChatComposerAccentButton}"/>
-                <Button Grid.Column="6" Content="Следующая реплика" Command="{Binding NextSceneTurnCommand}" Style="{StaticResource ChatComposerButton}"/>
-                <Button Grid.Column="8" Content="Отправить" Command="{Binding SendGroupMessageCommand}" Style="{StaticResource ChatComposerSendButton}" AutomationProperties.Name="Отправить реплику группового разговора" AutomationProperties.HelpText="Отправляет реплику группового разговора. Также можно нажать Ctrl+Enter в поле ввода." ToolTip="Отправить (Ctrl+Enter)"/>
+                <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <TextBox Style="{StaticResource ChatComposerTextBox}" Text="{Binding GroupDraft, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" MinHeight="42" Padding="5,3" Background="Transparent" BorderThickness="0" ToolTip="Enter — отправить; Shift+Enter — новая строка" PreviewKeyDown="GroupDraft_OnPreviewKeyDown" AutomationProperties.Name="Текст реплики группового разговора" AutomationProperties.HelpText="Enter отправляет реплику. Shift+Enter вставляет новую строку." />
+                <Border Grid.Row="1" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Margin="0,7,0,0" Padding="0,7,0,0">
+                    <DockPanel LastChildFill="False">
+                        <ComboBox DockPanel.Dock="Left" ItemsSource="{Binding ComposerAuthors}" SelectedItem="{Binding ComposerAuthor}" Style="{StaticResource ComposerAuthorPicker}" ToolTip="От чьего имени отправить сообщение" />
+                        <Button DockPanel.Dock="Left" Content="{Binding SceneStartPauseIcon}" Command="{Binding ToggleSceneStartPauseCommand}" Style="{StaticResource ComposerScenePlayButton}" ToolTip="Запустить или остановить автоматическое развитие сцены" AutomationProperties.Name="Запустить или остановить сцену" />
+                        <Border DockPanel.Dock="Left" ToolTip="Время до следующей автоматической реплики">
+                            <Border.Style><Style TargetType="Border" BasedOn="{StaticResource ComposerSceneCountdown}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding IsSceneCountdownVisible}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
+                            <TextBlock Text="{Binding SceneCountdownText}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </Border>
+                        <Button DockPanel.Dock="Right" Content="➤" Command="{Binding SendGroupMessageCommand}" Style="{StaticResource ComposerInlineIcon}" AutomationProperties.Name="Отправить реплику группового разговора" ToolTip="Отправить (Enter)" />
+                        <Button DockPanel.Dock="Right" Content="След. ход" Command="{Binding NextSceneTurnCommand}" Style="{StaticResource ComposerInlineButton}" ToolTip="Сделать один ход следующего персонажа без запуска автоматики" AutomationProperties.Name="Следующая реплика персонажа" />
+                        <TextBlock Text="Enter — отправить" Foreground="{StaticResource TextMutedBrush}" FontSize="10" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </DockPanel>
+                </Border>
             </Grid>
         </Border>
     </Grid>
