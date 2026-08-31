@@ -8,6 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>SoulExe</AssemblyName>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
     <ApplicationIcon>Assets\SoulExe.ico</ApplicationIcon>
     <RootNamespace>SoulExe</RootNamespace>
     <PublishSingleFile>true</PublishSingleFile>
@@ -16,6 +19,7 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <BaseOutputPath>..\OutputNewStyle\</BaseOutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);mobile\**\*</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Assets\SoulExe.ico" />

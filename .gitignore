@@ -6,3 +6,23 @@ obj/
 SoulExeData/
 logs/
 *.log
+
+# Release artifacts
+release/
+artifacts/
+*.apk
+*.zip
+
+# Mobile dependencies and generated outputs
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/android/.gradle/
+mobile/android/.kotlin/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/app/.cxx/
+mobile/android/local.properties
+mobile/.env*
+!mobile/.env.example
