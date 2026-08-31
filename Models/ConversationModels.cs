@@ -84,6 +84,15 @@ public sealed class ConversationContextSnapshot
     public string RelationshipContext { get; set; } = "";
     public SoulMemoryBundle? Memory { get; set; }
     public Dictionary<Guid, string> StateValues { get; set; } = [];
+    public ProactiveConversationState Proactive { get; set; } = new();
+}
+
+public sealed class ProactiveConversationState
+{
+    public Guid? ScheduledAfterMessageId { get; set; }
+    public DateTimeOffset? NextAttemptAt { get; set; }
+    public string DailyCountDate { get; set; } = "";
+    public int SentToday { get; set; }
 }
 
 /// <summary>Present only for modes that have a generated next turn, currently scenes.</summary>

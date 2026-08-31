@@ -45,6 +45,7 @@ public sealed class ConversationTurnRunner
         Action<string>? onChunk = null,
         bool persistAssistant = true,
         Guid? activePersonaId = null,
+        string? hiddenDirective = null,
         CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(generate);
@@ -62,7 +63,7 @@ public sealed class ConversationTurnRunner
             AppLog.Write($"GEN {generationId} BEGIN mode={mode} character={characterId} chat={chatId} {commandLog}");
 
             var context = await BuildDirectPromptAsync(
-                characterId, chatId, userMessage, isContinuation, contextSize, reservedGenerationTokens, activePersonaId, token);
+                characterId, chatId, userMessage, isContinuation, contextSize, reservedGenerationTokens, activePersonaId, hiddenDirective, token);
 
             LogPromptBuild(generationId, context);
 
@@ -137,7 +138,7 @@ public sealed class ConversationTurnRunner
             AppLog.Write($"GEN {generationId} BEGIN mode={mode} character={characterId} chat={chatId} streamOnly=1");
 
             var context = await BuildDirectPromptAsync(
-                characterId, chatId, userMessage, isContinuation, contextSize, reservedGenerationTokens, null, token);
+                characterId, chatId, userMessage, isContinuation, contextSize, reservedGenerationTokens, null, null, token);
 
             LogPromptBuild(generationId, context);
 
@@ -165,6 +166,7 @@ public sealed class ConversationTurnRunner
         int contextSize,
         int reservedGenerationTokens,
         Guid? activePersonaId,
+        string? hiddenDirective,
         CancellationToken token)
     {
         return await _store.ReadAsync(root =>
@@ -211,7 +213,8 @@ public sealed class ConversationTurnRunner
                 // in history prevents a Director event from being re-added as a user turn.
                 ExcludeLastUserMessage: false,
                 AppendUserMessage: false,
-                IsContinuation: isContinuation));
+                IsContinuation: isContinuation,
+                HiddenDirective: hiddenDirective));
         }, token);
     }
 

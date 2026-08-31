@@ -187,6 +187,61 @@ public sealed partial class MainViewModel
             OnPropertyChanged(nameof(SelectedCharacterCognitiveStatus));
         }
     }
+
+    public bool SelectedCharacterProactiveMessagesEnabled
+    {
+        get => SelectedCharacter?.ProactiveMessagesEnabled ?? false;
+        set
+        {
+            if (SelectedCharacter is null || SelectedCharacter.ProactiveMessagesEnabled == value) return;
+            SelectedCharacter.ProactiveMessagesEnabled = value;
+            OnPropertyChanged(nameof(SelectedCharacterProactiveMessagesEnabled));
+        }
+    }
+
+    public string SelectedCharacterProactiveQuietHoursStart
+    {
+        get => SelectedCharacter?.ProactiveQuietHoursStart ?? "23:00";
+        set
+        {
+            if (SelectedCharacter is null || SelectedCharacter.ProactiveQuietHoursStart == value) return;
+            SelectedCharacter.ProactiveQuietHoursStart = value;
+            OnPropertyChanged(nameof(SelectedCharacterProactiveQuietHoursStart));
+        }
+    }
+
+    public bool SelectedCharacterProactiveQuietHoursEnabled
+    {
+        get => SelectedCharacter?.ProactiveQuietHoursEnabled ?? true;
+        set
+        {
+            if (SelectedCharacter is null || SelectedCharacter.ProactiveQuietHoursEnabled == value) return;
+            SelectedCharacter.ProactiveQuietHoursEnabled = value;
+            OnPropertyChanged(nameof(SelectedCharacterProactiveQuietHoursEnabled));
+        }
+    }
+
+    public string SelectedCharacterProactiveQuietHoursEnd
+    {
+        get => SelectedCharacter?.ProactiveQuietHoursEnd ?? "08:00";
+        set
+        {
+            if (SelectedCharacter is null || SelectedCharacter.ProactiveQuietHoursEnd == value) return;
+            SelectedCharacter.ProactiveQuietHoursEnd = value;
+            OnPropertyChanged(nameof(SelectedCharacterProactiveQuietHoursEnd));
+        }
+    }
+
+    public bool SelectedCharacterRealisticMessagingEnabled
+    {
+        get => SelectedCharacter?.RealisticMessagingEnabled ?? false;
+        set
+        {
+            if (SelectedCharacter is null || SelectedCharacter.RealisticMessagingEnabled == value) return;
+            SelectedCharacter.RealisticMessagingEnabled = value;
+            OnPropertyChanged(nameof(SelectedCharacterRealisticMessagingEnabled));
+        }
+    }
     public string SelectedCharacterCognitiveStatus =>
         CognitiveStatusText.For(SelectedCharacter, SelectedCharacterCognitiveArchitectureEnabled);
 
@@ -307,26 +362,32 @@ public sealed partial class MainViewModel
             _ = SaveCognitiveArchitectureAsync();
         }
     }
-    public string CognitiveArchitectureStatus => $"Soul Memory: {(CognitiveSoulMemoryEnabled ? $"{SoulMemoryPresetMode.From(SelectedSoulMemoryPreset).DisplayName}, каждые {CognitiveMemoryIntervalMessages} реплик диалога" : "выключена")}; summary: {(CognitiveAutoSummaryEnabled ? $"каждые {CognitiveSummaryIntervalMessages} реплик диалога" : "выключено")}.";
+    public string CognitiveArchitectureStatus => $"Память: {(CognitiveSoulMemoryEnabled ? $"{SoulMemoryPresetMode.From(SelectedSoulMemoryPreset).DisplayName}, каждые {CognitiveMemoryIntervalMessages} реплик диалога" : "выключена")}; краткая история: {(CognitiveAutoSummaryEnabled ? $"каждые {CognitiveSummaryIntervalMessages} реплик диалога" : "выключена")}.";
     public string CognitiveBackgroundMode
     {
         get => _cognitiveBackgroundMode;
         set
         {
-            // Automatic maintenance must not take the model away from the next chat turn.
-            var mode = BackgroundModes.Idle;
+            var mode = BackgroundModes.Normalize(value);
             if (!Set(ref _cognitiveBackgroundMode, mode)) return;
             OnPropertyChanged(nameof(IsCognitiveIdleMode));
+            OnPropertyChanged(nameof(CognitiveBackgroundModeDescription));
             _ = SaveCognitiveArchitectureAsync();
         }
     }
     public bool IsCognitiveIdleMode => CognitiveBackgroundMode == BackgroundModes.Idle;
+    public string CognitiveBackgroundModeDescription => CognitiveBackgroundMode switch
+    {
+        BackgroundModes.Immediate => "Запуск начинается сразу, как накоплено выбранное количество реплик. Это быстрее обновляет память, но может ненадолго занять модель после ответа.",
+        BackgroundModes.Manual => "Автоматических запусков нет. Память и краткая история обновляются только кнопками в разделе контекста чата.",
+        _ => "Рекомендуемый режим: приложение ждёт заданную паузу без новых сообщений и только затем обновляет память. Новое сообщение отменяет фоновую работу."
+    };
     public int CognitiveBackgroundIdleSeconds
     {
         get => _cognitiveBackgroundIdleSeconds;
         set
         {
-            var seconds = Math.Clamp(value, 60, 300);
+            var seconds = Math.Clamp(value, 30, 300);
             if (!Set(ref _cognitiveBackgroundIdleSeconds, seconds)) return;
             _ = SaveCognitiveArchitectureAsync();
         }

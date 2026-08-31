@@ -36,76 +36,89 @@ public sealed class SoulMemoryService
         CancellationToken token = default,
         bool force = false,
         int intervalMessages = DefaultBatchSize,
-        string preset = "full")
+        string preset = "full",
+        bool memoryEnabled = true,
+        bool summaryEnabled = false,
+        int summaryIntervalMessages = 5,
+        bool forceSummary = false)
     {
         var mode = SoulMemoryPresetMode.From(preset);
         var interval = Math.Clamp(intervalMessages, 1, 50);
+        var summaryInterval = Math.Clamp(summaryIntervalMessages, 1, 100);
         var key = $"{characterId:N}:{chatId:N}";
         var gate = UpdateLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(token);
         try
         {
-            var input = await _store.ReadAsync(root => BuildInput(root, characterId, chatId), token);
-            if (input.NewMessages.Count == 0)
-                return MemoryUpdateResult.NotNeeded(0, interval);
-
-            // Original Soul Memory batches dialogue turns, not only user messages.
-            if (!force && input.NewMessages.Count < interval)
+            var input = await _store.ReadAsync(root => BuildInput(root, characterId, chatId, summaryInterval), token);
+            var memoryDue = memoryEnabled && input.NewMessages.Count > 0 && (force || input.NewMessages.Count >= interval);
+            var summaryDue = summaryEnabled && input.SummaryMessages.Count > 0 && (forceSummary || input.PendingSummaryMessages >= summaryInterval);
+            if (!memoryDue && !summaryDue)
             {
-                AppLog.Write($"SOUL_MEMORY_GATE character={characterId} chat={chatId} newDialogueMessages={input.NewMessages.Count} interval={interval} action=skip");
-                return MemoryUpdateResult.NotNeeded(input.NewMessages.Count, interval);
+                AppLog.Write($"COGNITIVE_GATE character={characterId} chat={chatId} memory={input.NewMessages.Count}/{interval} summary={input.PendingSummaryMessages}/{summaryInterval} action=skip");
+                return MemoryUpdateResult.NotNeeded(input.NewMessages.Count, interval, input.PendingSummaryMessages, summaryInterval, memoryEnabled, summaryEnabled);
             }
 
-            AppLog.Write($"SOUL_MEMORY_PIPELINE_START character={characterId} chat={chatId} mode={mode.Id} newDialogueMessages={input.NewMessages.Count} delta={input.Delta.Count} through={input.ThroughSequence}");
-            var router = mode.UpdatesIndex
-                ? ParseRouter(await complete(BuildRouterMessages(input, mode), token))
-                : RouterPayload.Empty;
+            var updateIndex = memoryDue && mode.UpdatesIndex;
+            var updateDiary = memoryDue && mode.UpdatesDiary;
+            var planTopics = memoryDue && mode.UpdatesTopics;
+            var relevantTopics = planTopics
+                ? MemoryTopicSelector.Select(input.Topics, FormatDialogue(input.Delta))
+                : [];
+            AppLog.Write($"COGNITIVE_PASS_START character={characterId} chat={chatId} mode={mode.Id} memoryDue={memoryDue} summaryDue={summaryDue} index={updateIndex} diary={updateDiary} topics={planTopics}");
 
-            if (mode.UpdatesIndex && router.ParseFailed)
+            var pass = ParseCognitivePass(await complete(
+                SoulMemoryPromptBuilder.BuildCognitivePass(new CognitivePassPromptInput(
+                    input.CharacterName,
+                    input.InitialUserProfile,
+                    input.InitialRelationshipContext,
+                    input.CharacterMemory,
+                    input.UserProfile,
+                    input.ExistingSummary,
+                    input.SummaryDirectives,
+                    input.LoreContext,
+                    relevantTopics,
+                    memoryDue ? input.Delta : [],
+                    summaryDue ? input.SummaryMessages : [],
+                    updateIndex,
+                    updateDiary,
+                    summaryDue,
+                    planTopics), mode), token));
+
+            if (pass.ParseFailed || (summaryDue && pass.Summary.Length < 50))
             {
-                await AddAuditAsync(characterId, chatId, "router", "parse_failed", "Router вернул некорректный JSON; пакет будет повторён при следующем запуске.", input.ThroughSequence, token);
-                return MemoryUpdateResult.Failed("Router памяти вернул некорректный JSON. Пакет не помечен обработанным и будет повторён.");
+                if (memoryDue)
+                    await AddAuditAsync(characterId, chatId, "cognitive_pass", "parse_failed", "Объединённый проход вернул неполные данные; пакет будет повторён.", input.ThroughSequence, token);
+                return MemoryUpdateResult.Failed("Обновление памяти не сохранено: модель вернула неполный ответ. Пакет будет повторён.");
             }
 
-            // A successful Router run always advances the tracker, including no-op batches, as in the original.
-            await ApplyRouterAsync(characterId, chatId, input, router, mode, token);
-
-            var topicsUpdated = 0;
-            if (mode.UpdatesTopics && !router.NoSignificantChange)
+            var topicUpdates = new List<TopicUpdate>();
+            if (planTopics && !pass.NoSignificantMemoryChange && pass.TopicPlan.Count > 0)
             {
-                foreach (var plan in router.TopicPlan.Take(5))
-                {
-                    token.ThrowIfCancellationRequested();
-                    var archived = CleanPlainText(await complete(BuildArchivistMessages(input, router, plan), token));
-                    if (archived.Length < 30)
-                    {
-                        await AddAuditAsync(characterId, chatId, "archivist", "skipped", $"Тема {plan.Key}: ответ слишком короткий.", input.ThroughSequence, token);
-                        continue;
-                    }
-                    await ApplyTopicAsync(characterId, chatId, plan, archived, input.ThroughSequence, token);
-                    topicsUpdated++;
-                }
+                token.ThrowIfCancellationRequested();
+                var batchMessages = SoulMemoryPromptBuilder.BuildArchivistBatch(
+                    input.CharacterName,
+                    string.IsNullOrWhiteSpace(pass.CharacterMemory) ? input.CharacterMemory : pass.CharacterMemory,
+                    pass.TopicPlan,
+                    input.Topics,
+                    input.Delta);
+                topicUpdates = ParseTopicUpdates(await complete(batchMessages, token));
+                var returnedKeys = topicUpdates.Select(item => item.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                if (pass.TopicPlan.Any(plan => !returnedKeys.Contains(plan.Key)))
+                    return MemoryUpdateResult.Failed("Тематическая память не сохранена: модель вернула неполный пакет тем. Обновление будет повторено целиком.");
             }
 
-            var diaryAdded = false;
-            if (mode.UpdatesDiary)
+            await ApplyCombinedAsync(characterId, chatId, input, pass, topicUpdates, mode, memoryDue, summaryDue, token);
+            var details = new List<string>();
+            if (memoryDue)
             {
-                var diary = CleanPlainText(await complete(BuildDiaryMessages(input), token));
-                if (diary.Length >= 20)
-                {
-                    await ApplyDiaryAsync(characterId, chatId, diary, input.ThroughSequence, token);
-                    diaryAdded = true;
-                }
-                else
-                {
-                    await AddAuditAsync(characterId, chatId, "diary", "skipped", "Дневниковая запись была пустой или слишком короткой.", input.ThroughSequence, token);
-                }
+                if (updateIndex) details.Add(pass.NoSignificantMemoryChange ? "новых важных фактов нет" : "основная память обновлена");
+                if (updateDiary) details.Add(pass.DiaryEntry.Length >= 20 ? "дневник дополнен" : "дневник без изменений");
+                if (planTopics) details.Add($"тем обновлено: {topicUpdates.Count}");
             }
-
-            var status = router.NoSignificantChange
-                ? $"{mode.DisplayName}: новых значимых фактов нет; пакет отмечен обработанным."
-                : $"{mode.DisplayName}: индекс сохранён; тем обновлено {topicsUpdated}; дневник {(diaryAdded ? "добавлен" : "не изменён")}.";
-            AppLog.Write($"SOUL_MEMORY_PIPELINE_COMPLETE character={characterId} chat={chatId} mode={mode.Id} noChange={router.NoSignificantChange} topics={topicsUpdated} diary={diaryAdded}");
+            if (summaryDue) details.Add("краткая история обновлена");
+            var status = $"Когнитивное обновление завершено: {string.Join(", ", details)}.";
+            AppLog.Write($"COGNITIVE_PASS_COMPLETE character={characterId} chat={chatId} mode={mode.Id} memory={memoryDue} summary={summaryDue} topics={topicUpdates.Count}");
             return new MemoryUpdateResult(true, false, status);
         }
         catch (OperationCanceledException) { throw; }
@@ -117,7 +130,7 @@ public sealed class SoulMemoryService
         finally { gate.Release(); UpdateLocks.TryRemove(key, out _); }
     }
 
-    private static MemoryInput BuildInput(SoulDataRoot root, Guid characterId, Guid chatId)
+    private static MemoryInput BuildInput(SoulDataRoot root, Guid characterId, Guid chatId, int summaryInterval)
     {
         var character = root.Characters.FirstOrDefault(x => x.Id == characterId) ?? throw new InvalidOperationException("Персонаж не найден.");
         var conversation = root.Conversations.FirstOrDefault(x => x.Id == chatId && x.Mode == ConversationMode.Personal) ?? throw new InvalidOperationException("Личный разговор не найден.");
@@ -127,7 +140,14 @@ public sealed class SoulMemoryService
         var firstNewIndex = newMessages.Count == 0 ? all.Count : Math.Max(0, all.FindIndex(x => x.SequenceNumber > memory.LastProcessedSequence) - MessageOverlap);
         var delta = all.Skip(firstNewIndex).TakeLast(MaxDeltaMessages).ToList();
         var through = newMessages.Count == 0 ? memory.LastProcessedSequence : newMessages.Max(x => x.SequenceNumber);
-        return new MemoryInput(character.Name, conversation.Context.InitialUserProfile, conversation.Context.InitialRelationshipContext, memory.CharacterMemory, memory.UserProfile, memory.HealingLog, CloneTopics(memory.Topics), newMessages, delta, memory.LastProcessedSequence, through);
+        var pendingSummary = all.Where(x => x.SequenceNumber > conversation.LastSummarizedSequence).ToList();
+        var summaryMessages = pendingSummary.Take(summaryInterval).ToList();
+        var summaryThrough = summaryMessages.Count == 0 ? conversation.LastSummarizedSequence : summaryMessages.Max(x => x.SequenceNumber);
+        var lore = BuildMemoryLore(root, character, delta);
+        return new MemoryInput(character.Name, conversation.Context.InitialUserProfile, conversation.Context.InitialRelationshipContext,
+            memory.CharacterMemory, memory.UserProfile, memory.HealingLog, CloneTopics(memory.Topics), newMessages, delta,
+            memory.LastProcessedSequence, through, conversation.SummaryText, conversation.Context.SummaryDirectives,
+            summaryMessages, pendingSummary.Count, summaryThrough, lore);
     }
 
     private static IReadOnlyList<LlamaMessage> BuildRouterMessages(MemoryInput input, SoulMemoryPresetMode mode)
@@ -141,6 +161,153 @@ public sealed class SoulMemoryService
 
     private static IReadOnlyList<LlamaMessage> BuildDiaryMessages(MemoryInput input)
         => SoulMemoryPromptBuilder.BuildDiary(input.CharacterName, input.CharacterMemory, input.Delta);
+
+    private static CognitivePassPayload ParseCognitivePass(string raw)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(ExtractJson(raw));
+            var root = document.RootElement;
+            var plan = new List<CognitiveTopicPlan>();
+            if (root.TryGetProperty("topic_plan", out var topicPlan) && topicPlan.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in topicPlan.EnumerateArray().Take(3))
+                {
+                    var action = TextValue(item, "action").Trim().ToLowerInvariant();
+                    var key = NormaliseTopicKey(TextValue(item, "key"));
+                    var summary = TextValue(item, "summary").Trim();
+                    if ((action is "create" or "update") && key.Length > 0)
+                        plan.Add(new CognitiveTopicPlan(action, key, summary));
+                }
+            }
+            return new CognitivePassPayload
+            {
+                NoSignificantMemoryChange = root.TryGetProperty("no_significant_memory_change", out var noChange) && noChange.ValueKind == JsonValueKind.True,
+                CharacterMemory = TextValue(root, "character_memory").Trim(),
+                UserProfile = TextValue(root, "user_profile").Trim(),
+                HealingLog = TextValue(root, "healing_log").Trim(),
+                DiaryEntry = CleanPlainText(TextValue(root, "diary_entry")),
+                Summary = TextValue(root, "summary").Trim(),
+                TopicPlan = plan
+            };
+        }
+        catch
+        {
+            return new CognitivePassPayload { ParseFailed = true };
+        }
+    }
+
+    private static List<TopicUpdate> ParseTopicUpdates(string raw)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(ExtractJson(raw));
+            if (!document.RootElement.TryGetProperty("topic_updates", out var updates) || updates.ValueKind != JsonValueKind.Array)
+                return [];
+            return updates.EnumerateArray()
+                .Select(item => new TopicUpdate(NormaliseTopicKey(TextValue(item, "key")), TextValue(item, "content").Trim()))
+                .Where(item => item.Key.Length > 0 && item.Content.Length >= 30)
+                .Take(3)
+                .ToList();
+        }
+        catch { return []; }
+    }
+
+    private async Task ApplyCombinedAsync(
+        Guid characterId,
+        Guid chatId,
+        MemoryInput input,
+        CognitivePassPayload payload,
+        IReadOnlyList<TopicUpdate> topicUpdates,
+        SoulMemoryPresetMode mode,
+        bool memoryDue,
+        bool summaryDue,
+        CancellationToken token)
+    {
+        await _store.MutateConversationsAsync(conversations =>
+        {
+            var conversation = conversations.First(value => value.Id == chatId && value.Mode == ConversationMode.Personal);
+            var memory = EnsureMemory(conversation);
+            if (memoryDue)
+            {
+                if (mode.UpdatesIndex && !payload.NoSignificantMemoryChange)
+                {
+                    memory.Snapshots.Add(new SoulMemorySnapshot
+                    {
+                        ThroughSequence = memory.LastProcessedSequence,
+                        CharacterMemory = memory.CharacterMemory,
+                        UserProfile = memory.UserProfile,
+                        HealingLog = memory.HealingLog,
+                        Topics = CloneTopics(memory.Topics)
+                    });
+                    while (memory.Snapshots.Count > MaxSnapshots) memory.Snapshots.RemoveAt(0);
+                    if (payload.CharacterMemory.Length > 0) memory.CharacterMemory = Limit(payload.CharacterMemory, 6000);
+                    if (payload.UserProfile.Length > 0) memory.UserProfile = Limit(payload.UserProfile, 5000);
+                    if (payload.HealingLog.Length > 0) memory.HealingLog = Limit(payload.HealingLog, 2400);
+                    memory.LastRouterUpdatedAt = DateTimeOffset.Now;
+                }
+
+                foreach (var update in topicUpdates)
+                {
+                    var plan = payload.TopicPlan.FirstOrDefault(item => string.Equals(item.Key, update.Key, StringComparison.OrdinalIgnoreCase));
+                    if (plan is null) continue;
+                    var existing = memory.Topics.FirstOrDefault(topic => string.Equals(topic.Key, update.Key, StringComparison.OrdinalIgnoreCase));
+                    if (existing is null)
+                        memory.Topics.Add(new SoulMemoryTopic { Key = update.Key, Content = Limit(update.Content, 6000), SourceSummary = plan.Summary, MentionCount = 1 });
+                    else
+                    {
+                        existing.Content = Limit(update.Content, 6000);
+                        existing.SourceSummary = plan.Summary;
+                        existing.MentionCount++;
+                        existing.UpdatedAt = DateTimeOffset.Now;
+                    }
+                    AddAudit(memory, "archivist", "ok", $"Тема {update.Key} обновлена в общем пакете.", input.ThroughSequence);
+                }
+
+                if (mode.UpdatesDiary && payload.DiaryEntry.Length >= 20)
+                {
+                    memory.Diary.Add(new SoulDiaryEntry { Content = Limit(payload.DiaryEntry, 1800), ThroughSequence = input.ThroughSequence });
+                    while (memory.Diary.Count > MaxDiaryEntries) memory.Diary.RemoveAt(0);
+                    memory.LastDiaryUpdatedAt = DateTimeOffset.Now;
+                    AddAudit(memory, "diary", "ok", "Добавлена личная рефлексия из общего когнитивного прохода.", input.ThroughSequence);
+                }
+
+                memory.LastProcessedSequence = Math.Max(memory.LastProcessedSequence, input.ThroughSequence);
+                AddAudit(memory, "cognitive_pass", payload.NoSignificantMemoryChange ? "no_change" : "ok",
+                    payload.NoSignificantMemoryChange ? "Новых важных фактов нет; разрешённые вспомогательные части обработаны." : "Разрешённые части памяти обновлены одним проходом.",
+                    input.ThroughSequence);
+                memory.UpdatedAt = DateTimeOffset.Now;
+            }
+
+            if (summaryDue)
+            {
+                conversation.SummaryText = Limit(payload.Summary, 12000);
+                conversation.LastSummarizedSequence = Math.Max(conversation.LastSummarizedSequence, input.SummaryThroughSequence);
+            }
+            conversation.UpdatedAt = DateTimeOffset.Now;
+        }, "cognitive_combined_pass", token);
+    }
+
+    private static string BuildMemoryLore(SoulDataRoot root, SoulCharacter character, IReadOnlyList<SoulMessage> dialogue)
+    {
+        var trigger = FormatDialogue(dialogue).ToLowerInvariant();
+        var entries = (root.Lorebooks ?? [])
+            .Where(book => character.LorebookIds.Contains(book.Id))
+            .SelectMany(book => book.Entries ?? [])
+            .Where(entry => entry.IsEnabled)
+            .Where(entry =>
+            {
+                var mode = (entry.TriggerMode ?? "always").Trim().ToLowerInvariant();
+                if (mode is "always" or "constant") return true;
+                var keys = mode == "secondary" ? entry.SecondaryKeywords : entry.Keywords;
+                return (keys ?? []).Any(key => !string.IsNullOrWhiteSpace(key) && trigger.Contains(key.Trim().ToLowerInvariant(), StringComparison.Ordinal));
+            })
+            .OrderBy(entry => entry.InsertionOrder)
+            .Take(6)
+            .Select(entry => $"[{entry.Name}] {Limit(entry.Content?.Trim() ?? string.Empty, 1200)}")
+            .Where(content => content.Length > 3);
+        return string.Join("\n", entries);
+    }
 
     private static RouterPayload ParseRouter(string raw)
     {
@@ -300,8 +467,37 @@ public sealed class SoulMemoryService
     }
     private static List<SoulMemoryTopic> CloneTopics(IEnumerable<SoulMemoryTopic> topics) => topics.Select(topic => new SoulMemoryTopic { Id = topic.Id, Key = topic.Key, Content = topic.Content, SourceSummary = topic.SourceSummary, MentionCount = topic.MentionCount, CreatedAt = topic.CreatedAt, UpdatedAt = topic.UpdatedAt, LastRetrievedAt = topic.LastRetrievedAt }).ToList();
 
-    private sealed record MemoryInput(string CharacterName, string InitialUserProfile, string InitialRelationshipContext, string CharacterMemory, string UserProfile, string HealingLog, IReadOnlyList<SoulMemoryTopic> Topics, IReadOnlyList<SoulMessage> NewMessages, IReadOnlyList<SoulMessage> Delta, int LastProcessedSequence, int ThroughSequence);
+    private sealed record MemoryInput(
+        string CharacterName,
+        string InitialUserProfile,
+        string InitialRelationshipContext,
+        string CharacterMemory,
+        string UserProfile,
+        string HealingLog,
+        IReadOnlyList<SoulMemoryTopic> Topics,
+        IReadOnlyList<SoulMessage> NewMessages,
+        IReadOnlyList<SoulMessage> Delta,
+        int LastProcessedSequence,
+        int ThroughSequence,
+        string ExistingSummary,
+        string SummaryDirectives,
+        IReadOnlyList<SoulMessage> SummaryMessages,
+        int PendingSummaryMessages,
+        int SummaryThroughSequence,
+        string LoreContext);
     private sealed record TopicPlan(string Action, string Key, string Summary);
+    private sealed record TopicUpdate(string Key, string Content);
+    private sealed class CognitivePassPayload
+    {
+        public bool ParseFailed { get; init; }
+        public bool NoSignificantMemoryChange { get; init; }
+        public string CharacterMemory { get; init; } = "";
+        public string UserProfile { get; init; } = "";
+        public string HealingLog { get; init; } = "";
+        public string DiaryEntry { get; init; } = "";
+        public string Summary { get; init; } = "";
+        public List<CognitiveTopicPlan> TopicPlan { get; init; } = [];
+    }
     private sealed class RouterPayload
     {
         public static RouterPayload Empty { get; } = new();
@@ -318,10 +514,10 @@ public sealed record SoulMemoryPresetMode(string Id, string DisplayName, string 
 {
     public static IReadOnlyList<SoulMemoryPresetMode> All { get; } =
     [
-        new("full", "Full", "Router + Archivist + Diary: индекс памяти, профиль пользователя, тематические воспоминания и личный дневник.", true, true, true),
-        new("index-diary", "Index + Diary", "Router + Diary: индекс памяти и личный дневник без тематических воспоминаний.", true, false, true),
-        new("index", "Index only", "Только Router: индекс памяти и профиль отношений без тем и дневника.", true, false, false),
-        new("diary", "Diary only", "Только личные рефлексии персонажа; основной индекс и темы не изменяются.", false, false, true)
+        new("full", "Полная память", "Запоминает основные факты и отношения, ведёт личный дневник и отдельные воспоминания о важных людях, местах и событиях. Самый подробный вариант.", true, true, true),
+        new("index-diary", "Факты и дневник", "Запоминает главное о персонаже, пользователе и отношениях и сохраняет личные впечатления. Отдельные тематические воспоминания не создаются.", true, false, true),
+        new("index", "Только основные факты", "Обновляет факты о персонаже, пользователе и отношениях. Самый быстрый вариант без дневника и отдельных тем.", true, false, false),
+        new("diary", "Только дневник", "Сохраняет личные впечатления персонажа от разговора. Основные факты, отношения и тематические воспоминания не изменяются.", false, false, true)
     ];
 
     public static SoulMemoryPresetMode From(string? id) => All.FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.OrdinalIgnoreCase)) ?? All[0];
@@ -331,5 +527,12 @@ public sealed record SoulMemoryPresetMode(string Id, string DisplayName, string 
 public sealed record MemoryUpdateResult(bool Updated, bool Skipped, string Status)
 {
     public static MemoryUpdateResult NotNeeded(int count, int interval) => new(false, true, $"До обновления Soul Memory осталось реплик диалога: {Math.Max(0, interval - count)}.");
+    public static MemoryUpdateResult NotNeeded(int memoryCount, int memoryInterval, int summaryCount, int summaryInterval, bool memoryEnabled, bool summaryEnabled)
+    {
+        var parts = new List<string>();
+        if (memoryEnabled) parts.Add($"до памяти: {Math.Max(0, memoryInterval - memoryCount)}");
+        if (summaryEnabled) parts.Add($"до краткой истории: {Math.Max(0, summaryInterval - summaryCount)}");
+        return new(false, true, parts.Count == 0 ? "Автоматическое обновление отключено." : $"Обновление пока не требуется ({string.Join(", ", parts)} реплик).");
+    }
     public static MemoryUpdateResult Failed(string text) => new(false, false, text);
 }

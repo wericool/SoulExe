@@ -19,6 +19,15 @@ public sealed class SoulDataRoot
     public List<SoulImportRun> ImportRuns { get; set; } = [];
     /// <summary>Canonical storage for personal and group conversations.</summary>
     public List<ConversationSnapshot> Conversations { get; set; } = [];
+    public List<MobilePushSubscription> MobilePushSubscriptions { get; set; } = [];
+}
+
+public sealed class MobilePushSubscription
+{
+    public string Token { get; set; } = "";
+    public string Platform { get; set; } = "android";
+    public string DeviceName { get; set; } = "";
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.Now;
 }
 
 
@@ -94,10 +103,10 @@ public sealed class AppPreferences
     public int CognitiveMemoryIntervalMessages { get; set; } = 4;
     public bool CognitiveAutoSummaryEnabled { get; set; } = true;
     public int CognitiveSummaryIntervalMessages { get; set; } = 5;
-    /// <summary>idle = wait for a reading pause; immediate = enqueue immediately without blocking the UI.</summary>
+    /// <summary>idle = after a reading pause; immediate = as soon as an interval is due; manual = buttons only.</summary>
     public string CognitiveBackgroundMode { get; set; } = BackgroundModes.Idle;
     public int CognitiveBackgroundIdleSeconds { get; set; } = 60;
-    public int CognitiveMaintenancePolicyVersion { get; set; } = 2;
+    public int CognitiveMaintenancePolicyVersion { get; set; } = 4;
     public bool InitialSetupCompleted { get; set; }
     public bool GatewayNsfwEnabled { get; set; }
     public string GatewayCategory { get; set; } = "soul";
@@ -203,6 +212,15 @@ public sealed class SoulCharacter
     public int SoulMemoryIntervalMessages { get; set; } = 4;
     public bool AutoSummaryEnabled { get; set; }
     public int AutoSummaryIntervalMessages { get; set; } = 5;
+    /// <summary>Allows the character to write after a long period of silence.</summary>
+    public bool ProactiveMessagesEnabled { get; set; }
+    /// <summary>Local quiet-hours start in HH:mm format.</summary>
+    public bool ProactiveQuietHoursEnabled { get; set; } = true;
+    public string ProactiveQuietHoursStart { get; set; } = "23:00";
+    /// <summary>Local quiet-hours end in HH:mm format.</summary>
+    public string ProactiveQuietHoursEnd { get; set; } = "08:00";
+    /// <summary>Delays ordinary replies to imitate a real messenger conversation.</summary>
+    public bool RealisticMessagingEnabled { get; set; }
     public List<SoulStateVariable> StateVariables { get; set; } = [];
     public Guid? CurrentChatId { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;

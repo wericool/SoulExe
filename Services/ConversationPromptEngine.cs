@@ -90,7 +90,9 @@ public sealed class ConversationPromptEngine
 
         messages = PromptRules.CollapseConsecutiveAssistantTurns(messages);
 
-        if (request.IsContinuation)
+        if (!string.IsNullOrWhiteSpace(request.HiddenDirective))
+            messages.Add(new LlamaMessage("system", request.HiddenDirective.Trim()));
+        else if (request.IsContinuation)
             messages.Add(new LlamaMessage("system", PromptRules.ContinuationDirectorCommand));
 
         // The caller persists a message before prompt construction. Reusing the

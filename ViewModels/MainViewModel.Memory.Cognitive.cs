@@ -90,37 +90,24 @@ public sealed partial class MainViewModel
         var summaryInterval = character.AutoSummaryIntervalMessages;
         _cognitiveScheduler.Schedule(characterId, chatId, CognitiveBackgroundMode, CognitiveBackgroundIdleSeconds, async token =>
         {
-            var statuses = new List<string>();
-            // A summary is one concise call, while Full Soul Memory can be three or more calls.
-            // When both are due, preserve the responsive path: update the summary now and defer
-            // detailed memory until the next genuine idle window.
-            if (summaryEnabled)
+            var result = await AppServices.SoulMemory.UpdateAfterConversationAsync(
+                characterId,
+                chatId,
+                CompleteForMemoryAsync,
+                token,
+                intervalMessages: memoryInterval,
+                preset: memoryPreset,
+                memoryEnabled: memoryEnabled,
+                summaryEnabled: summaryEnabled,
+                summaryIntervalMessages: summaryInterval);
+            if (!result.Skipped)
             {
-                var summary = await AppServices.Summaries.UpdateAsync(characterId, chatId, CompleteForMemoryAsync, token, intervalMessages: summaryInterval);
-                if (summary.Updated)
-                {
-                    AppLog.Write($"COGNITIVE_MAINTENANCE_DECISION character={characterId:N} chat={chatId:N} action=summary_first_memory_deferred");
-                    statuses.Add(summary.Status + " Детальная Soul Memory отложена до следующей паузы.");
-                }
-                else if (!summary.Skipped)
-                {
-                    statuses.Add(summary.Status);
-                }
-            }
-
-            if (statuses.Count == 0 && memoryEnabled)
-            {
-                var memory = await AppServices.SoulMemory.UpdateAfterConversationAsync(characterId, chatId, CompleteForMemoryAsync, token, intervalMessages: memoryInterval, preset: memoryPreset);
-                if (memory.Updated) statuses.Add(memory.Status);
-            }
-            if (statuses.Count > 0)
-            {
-                ReportCognitiveBackground(string.Join(" ", statuses));
+                ReportCognitiveBackground(result.Status);
                 await RefreshCognitiveUiAsync(characterId).ConfigureAwait(false);
             }
             else
             {
-                ReportCognitiveBackground("Новых данных для фонового обновления памяти нет.");
+                ReportCognitiveBackground(result.Status);
             }
         });
     }

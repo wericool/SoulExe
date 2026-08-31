@@ -17,7 +17,8 @@ public sealed record PromptBuildRequest(
     bool IncludeAutoSummary = true,
     bool ExcludeLastUserMessage = true,
     bool AppendUserMessage = true,
-    bool IsContinuation = false);
+    bool IsContinuation = false,
+    string? HiddenDirective = null);
 
 public sealed record GroupPromptBuildRequest(
     ConversationSnapshot Conversation,

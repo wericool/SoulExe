@@ -269,6 +269,13 @@ var boundedBasePrompt = new ConversationPromptEngine().BuildDirect(new PromptBui
     [promptLore], [], "Что там видно?", 4096, 512, IncludeSoulMemory: true, IncludeAutoSummary: true, ExcludeLastUserMessage: false));
 Expect(boundedBasePrompt.Diagnostics.Any(diagnostic => diagnostic.Category == "base_context"), "Preset и профиль персоны должны обрезаться в отдельном защищённом бюджете.");
 Expect(boundedBasePrompt.Messages.Any(message => message.content.Contains("[DIRECTOR EVENT]", StringComparison.Ordinal)), "Ограничение базового контекста не должно вытеснять событие режиссёра из истории.");
+const string proactiveFixtureDirective = "PROACTIVE FIXTURE DIRECTIVE";
+var proactivePrompt = new ConversationPromptEngine().BuildDirect(new PromptBuildRequest(
+    promptCharacter, promptConversation, null, null, [promptLore], [], string.Empty, 4096, 512,
+    ExcludeLastUserMessage: false, AppendUserMessage: false, IsContinuation: true, HiddenDirective: proactiveFixtureDirective));
+Expect(proactivePrompt.Messages.Count(message => message.content == proactiveFixtureDirective) == 1, "Инициативная команда должна передаваться модели ровно один раз.");
+Expect(!proactivePrompt.Messages.Any(message => message.content == PromptRules.ContinuationDirectorCommand), "Инициативная команда не должна одновременно добавлять обычную команду Continue.");
+Expect(!promptConversation.Messages.Any(message => message.Content.Contains(proactiveFixtureDirective, StringComparison.Ordinal)), "Скрытая инициативная команда не должна попадать в сохранённую историю.");
 
 var (promptFirst, promptSecond, promptScene) = ConversationFixtures.CreateScene();
 promptFirst.SystemPrompt = new string('г', 6000);
@@ -317,6 +324,44 @@ Expect(archivistPrompt.Count == 2 && archivistPrompt[0].content.Contains("[SOUL 
 Expect(archivistPrompt[1].content.Contains("TOPIC KEY: cafe\nACTION: update\nREASON: Появился новый факт", StringComparison.Ordinal), "Archivist памяти должен получать план обновления темы.");
 Expect(archivistPrompt[1].content.Contains("EXISTING TOPIC CONTENT:\nОни встретились в кафе.", StringComparison.Ordinal), "Archivist памяти должен получать существующее содержимое темы.");
 Expect(archivistPrompt[1].content.Contains("USER: Мы всё ещё у старого маяка.", StringComparison.Ordinal), "Archivist памяти должен получать свежий диалог.");
+
+var indexOnlyPass = SoulMemoryPromptBuilder.BuildCognitivePass(new CognitivePassPromptInput(
+    "Надя", "Гость", "Знакомство", "Надя волнуется", "Гость любит кофе", "Старая summary", "Сохраняй доверие", "Лор маяка",
+    [new SoulMemoryTopic { Key = "cafe", Content = "Встреча в кафе" }], promptHistory, [],
+    UpdateIndex: true, UpdateDiary: false, UpdateSummary: false, PlanTopics: false), SoulMemoryPresetMode.From("index"));
+Expect(indexOnlyPass[0].content.Contains("allowed to update only: character_memory, user_profile and healing_log", StringComparison.Ordinal), "Index only должен разрешать только индекс и профиль отношений.");
+Expect(!indexOnlyPass[1].content.Contains("RELEVANT TOPIC MEMORIES", StringComparison.Ordinal) && !indexOnlyPass[1].content.Contains("CURRENT STORY SUMMARY", StringComparison.Ordinal), "Index only не должен передавать темы или Summary, когда они не обновляются.");
+Expect(!indexOnlyPass[1].content.Contains("\"diary_entry\"", StringComparison.Ordinal) && !indexOnlyPass[1].content.Contains("\"topic_plan\"", StringComparison.Ordinal), "JSON-схема Index only не должна запрашивать отключённые части памяти.");
+
+var fullCombinedPass = SoulMemoryPromptBuilder.BuildCognitivePass(new CognitivePassPromptInput(
+    "Надя", "Гость", "Знакомство", "Надя волнуется", "Гость любит кофе", "Старая summary", "Сохраняй доверие", "Лор маяка",
+    [new SoulMemoryTopic { Key = "cafe", Content = "Встреча в кафе" }], promptHistory, promptHistory,
+    UpdateIndex: true, UpdateDiary: true, UpdateSummary: true, PlanTopics: true), SoulMemoryPresetMode.From("full"));
+Expect(fullCombinedPass[1].content.Contains("CURRENT STORY SUMMARY", StringComparison.Ordinal) && fullCombinedPass[1].content.Contains("RELEVANT TOPIC MEMORIES", StringComparison.Ordinal), "Full должен передавать Summary и релевантные темы единому проходу.");
+Expect(fullCombinedPass[1].content.Contains("\"diary_entry\"", StringComparison.Ordinal) && fullCombinedPass[1].content.Contains("\"topic_plan\"", StringComparison.Ordinal), "Full должен запросить дневник и план тем в том же JSON.");
+
+var batchArchivist = SoulMemoryPromptBuilder.BuildArchivistBatch("Надя", "Надя волнуется",
+    [new CognitiveTopicPlan("update", "cafe", "Новый факт"), new CognitiveTopicPlan("create", "lighthouse", "Новая локация")],
+    [new SoulMemoryTopic { Key = "cafe", Content = "Старая встреча" }], promptHistory);
+Expect(batchArchivist[0].content.Contains("BATCH ARCHIVIST", StringComparison.Ordinal) && batchArchivist[1].content.Contains("cafe", StringComparison.Ordinal) && batchArchivist[1].content.Contains("lighthouse", StringComparison.Ordinal), "Все тематические действия должны объединяться в один пакет Archivist.");
+Expect(SoulMemoryPromptBuilder.MaximumGenerationPasses(true, true, true, true) == 2, "Полная память вместе с Summary должна требовать максимум два запроса.");
+Expect(SoulMemoryPromptBuilder.MaximumGenerationPasses(true, false, false, false) == 1, "Профиль основных фактов должен требовать ровно один запрос.");
+Expect(SoulMemoryPromptBuilder.MaximumGenerationPasses(false, false, true, false) == 1, "Отдельное обновление Summary должно требовать один запрос.");
+
+for (var index = 0; index < 500; index++)
+{
+    var realisticDelay = MessagingTiming.RealisticReplyDelay(new string('а', index * 8), new Random(index + 17));
+    Expect(realisticDelay >= TimeSpan.FromSeconds(3) && realisticDelay <= TimeSpan.FromSeconds(120), "Реалистичная задержка должна оставаться в диапазоне 3–120 секунд.");
+    var proactiveDelay = MessagingTiming.NextProactiveDelay(new Random(index + 31));
+    Expect(proactiveDelay >= TimeSpan.FromMinutes(20) && proactiveDelay <= TimeSpan.FromHours(5), "Инициативная задержка должна оставаться в диапазоне 20 минут–5 часов.");
+}
+for (var seed = 0; seed < 100; seed++)
+    Expect(
+        MessagingTiming.RealisticReplyDelay(new string('а', 20), new Random(seed)) <= TimeSpan.FromSeconds(40),
+        "Короткая реплика до 20 символов не должна получать длинную задержку.");
+Expect(
+    MessagingTiming.RealisticReplyDelay(new string('а', 3000), new Random(42)) > MessagingTiming.RealisticReplyDelay("да", new Random(42)),
+    "Длинное сообщение должно давать большую реалистичную задержку при одинаковом случайном компоненте.");
 
 if (failures.Count > 0)
 {

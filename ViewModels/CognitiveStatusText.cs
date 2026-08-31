@@ -10,13 +10,13 @@ public static class CognitiveStatusText
     {
         if (character is null) return "Выберите персонажа.";
         if (!architectureEnabled)
-            return "Cognitive Architecture полностью отключена для этого персонажа; его память и summary не попадут в prompt.";
+            return "Долговременная память и краткая история отключены для этого персонажа и не передаются модели.";
         var memory = character.SoulMemoryEnabled
             ? $"{SoulMemoryPresetMode.From(character.SoulMemoryPreset).DisplayName}, каждые {character.SoulMemoryIntervalMessages} реплик диалога"
             : "выключена";
         var summary = character.AutoSummaryEnabled
             ? $"каждые {character.AutoSummaryIntervalMessages} реплик диалога"
             : "выключено";
-        return $"Soul Memory: {memory}; Auto-Summary: {summary}.";
+        return $"Память: {memory}; краткая история: {summary}.";
     }
 }

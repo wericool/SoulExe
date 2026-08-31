@@ -406,12 +406,41 @@
                                                             <TextBlock Text="{DynamicResource S.Character.Editor.Mode}" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" />
                                                             <ComboBox Grid.Column="1" SelectedValue="{Binding CognitiveBackgroundMode, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Tag">
                                                                 <ComboBoxItem Tag="idle" Content="{DynamicResource S.Character.Editor.AfterPause}" />
+                                                                <ComboBoxItem Tag="immediate" Content="{DynamicResource S.Character.Editor.Immediately}" />
+                                                                <ComboBoxItem Tag="manual" Content="{DynamicResource S.Character.Editor.ManualOnly}" />
                                                             </ComboBox>
-                                                            <TextBox Grid.Column="2" Text="{Binding CognitiveBackgroundIdleSeconds, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="{DynamicResource S.Character.Editor.BackgroundDelayHelp}" />
+                                                            <TextBox Grid.Column="2" Text="{Binding CognitiveBackgroundIdleSeconds, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsCognitiveIdleMode}" TextAlignment="Center" Margin="8,0,0,0" ToolTip="{DynamicResource S.Character.Editor.BackgroundDelayHelp}" />
                                                         </Grid>
+                                                        <TextBlock Text="{Binding CognitiveBackgroundModeDescription}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,7,0,0" />
                                                         <TextBlock Text="{Binding CognitiveBackgroundStatus}" Foreground="{StaticResource TextMutedBrush}" FontSize="10" TextWrapping="Wrap" Margin="0,7,0,0" />
                                                     </StackPanel>
                                                 </Border>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource SheetSection}" Padding="18" Margin="0,14,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Самостоятельность в переписке" FontSize="17" FontWeight="SemiBold" />
+                                                <TextBlock Text="Эти параметры меняют только время появления реплики. Характер, стиль и содержание всегда берутся из карточки, памяти и текущего диалога." Style="{StaticResource InlineHelp}" Margin="0,4,0,14" />
+                                                <CheckBox Content="Инициативные сообщения" IsChecked="{Binding SelectedCharacterProactiveMessagesEnabled}" FontWeight="SemiBold" />
+                                                <TextBlock Text="После тишины персонаж сможет написать сам. Ожидание каждый раз случайное — от 20 минут до 5 часов, не больше трёх сообщений в сутки." Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="25,5,0,8" />
+                                                <StackPanel IsEnabled="{Binding SelectedCharacterProactiveMessagesEnabled}">
+                                                <CheckBox Content="Не писать ночью" IsChecked="{Binding SelectedCharacterProactiveQuietHoursEnabled}" Margin="25,0,0,7" />
+                                                <Grid Margin="25,0,0,10" IsEnabled="{Binding SelectedCharacterProactiveQuietHoursEnabled}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="72" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="72" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Тихие часы с" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBox Grid.Column="1" Text="{Binding SelectedCharacterProactiveQuietHoursStart, UpdateSourceTrigger=PropertyChanged}" Margin="8,0" TextAlignment="Center" ToolTip="Время в формате 23:00" />
+                                                    <TextBlock Grid.Column="2" Text="до" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBox Grid.Column="3" Text="{Binding SelectedCharacterProactiveQuietHoursEnd, UpdateSourceTrigger=PropertyChanged}" Margin="8,0" TextAlignment="Center" ToolTip="Время в формате 08:00" />
+                                                </Grid>
+                                                </StackPanel>
+                                                <CheckBox Content="Реалистичная переписка" IsChecked="{Binding SelectedCharacterRealisticMessagingEnabled}" FontWeight="SemiBold" />
+                                                <TextBlock Text="После обычного сообщения ответ появится не сразу. Задержка автоматически меняется от 3 до 120 секунд. Короткие фразы до 20 символов получают быстрый ответ, длинные добавляют время на чтение. Continue и автоматический групповой режим работают без задержки." Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" TextWrapping="Wrap" Margin="25,5,0,0" />
                                             </StackPanel>
                                         </Border>
                                         <TextBlock Text="{DynamicResource S.Character.Editor.ChatContext}" Style="{StaticResource SectionLabel}" Margin="0,20,0,8" />

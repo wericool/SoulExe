@@ -208,7 +208,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         ]);
         StateVariableValues = new ObservableCollection<StateVariableContextItem>();
         SceneMessages = new ObservableCollection<SceneMessageViewModel>();
-        _network = new NetworkChatServer(AskFromNetworkAsync, () => Characters, ControlSceneFromNetworkAsync, () => (MobileAccessUsername, _mobileAccessPasswordHash), GenerateCharacterFromNetworkAsync, GeneratePersonaFromNetworkAsync, ExpandCharacterFieldFromNetworkAsync, RefreshDesktopAfterNetworkMutationAsync);
+        _network = new NetworkChatServer(AskFromNetworkAsync, AskFromNetworkWithPreviewAsync, () => Characters, ControlSceneFromNetworkAsync, () => (MobileAccessUsername, _mobileAccessPasswordHash), GenerateCharacterFromNetworkAsync, GeneratePersonaFromNetworkAsync, ExpandPersonaDescriptionFromNetworkAsync, ExpandCharacterFieldFromNetworkAsync, RefreshDesktopAfterNetworkMutationAsync);
         _cognitiveScheduler = new CognitiveBackgroundScheduler(ReportCognitiveBackground);
         _memoryDiagnostics = new MemoryDiagnosticsSampler(
             () => MemoryDiagnosticsSampler.Capture(_llama.ProcessId, _cognitiveScheduler.PendingCount, _cognitiveScheduler.RunningCount, _network.SessionCount),
@@ -359,24 +359,21 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         await viewModel.LoadAsync();
         await viewModel.StartNetworkOnLaunchAsync();
         viewModel._memoryDiagnostics.Start();
+        viewModel.StartProactiveMessaging();
         return viewModel;
     }
 
     private async Task LoadAsync()
     {
         var data = await _store.ReadAsync(root => root);
-        if (data.Preferences.CognitiveMaintenancePolicyVersion < 3)
+        if (data.Preferences.CognitiveMaintenancePolicyVersion < 4)
         {
             await _store.MutateAsync(root =>
             {
-                // Earlier releases could begin a multi-call Full Soul Memory pipeline immediately
-                // after an answer. Persist all pending messages, but consume them only after a
-                // real reading pause so a new chat turn always has priority over maintenance.
-                if (string.Equals(root.Preferences.CognitiveBackgroundMode, BackgroundModes.Immediate, StringComparison.OrdinalIgnoreCase))
-                    root.Preferences.CognitiveBackgroundMode = BackgroundModes.Idle;
-                root.Preferences.CognitiveBackgroundIdleSeconds = Math.Max(60, root.Preferences.CognitiveBackgroundIdleSeconds);
-                root.Preferences.CognitiveMaintenancePolicyVersion = 3;
-            }, "migrate_cognitive_maintenance_v3");
+                root.Preferences.CognitiveBackgroundMode = BackgroundModes.Normalize(root.Preferences.CognitiveBackgroundMode);
+                root.Preferences.CognitiveBackgroundIdleSeconds = Math.Clamp(root.Preferences.CognitiveBackgroundIdleSeconds, 30, 300);
+                root.Preferences.CognitiveMaintenancePolicyVersion = 4;
+            }, "migrate_cognitive_maintenance_v4");
             data = await _store.ReadAsync(root => root);
         }
         if (!string.IsNullOrEmpty(data.Preferences.MobileAccessPassword))
@@ -404,8 +401,8 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         _cognitiveMemoryIntervalMessages = Math.Clamp(data.Preferences.CognitiveMemoryIntervalMessages, 1, 50);
         _cognitiveAutoSummaryEnabled = data.Preferences.CognitiveAutoSummaryEnabled;
         _cognitiveSummaryIntervalMessages = Math.Clamp(data.Preferences.CognitiveSummaryIntervalMessages, 1, 100);
-        _cognitiveBackgroundMode = BackgroundModes.Idle;
-        _cognitiveBackgroundIdleSeconds = Math.Clamp(data.Preferences.CognitiveBackgroundIdleSeconds, 60, 300);
+        _cognitiveBackgroundMode = BackgroundModes.Normalize(data.Preferences.CognitiveBackgroundMode);
+        _cognitiveBackgroundIdleSeconds = Math.Clamp(data.Preferences.CognitiveBackgroundIdleSeconds, 30, 300);
         OnPropertyChanged(nameof(CognitiveSoulMemoryEnabled));
         OnPropertyChanged(nameof(SelectedSoulMemoryPreset));
         OnPropertyChanged(nameof(SoulMemoryPresetDescription));
@@ -414,6 +411,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         OnPropertyChanged(nameof(CognitiveSummaryIntervalMessages));
         OnPropertyChanged(nameof(CognitiveBackgroundMode));
         OnPropertyChanged(nameof(IsCognitiveIdleMode));
+        OnPropertyChanged(nameof(CognitiveBackgroundModeDescription));
         OnPropertyChanged(nameof(CognitiveBackgroundIdleSeconds));
         OnPropertyChanged(nameof(CognitiveArchitectureStatus));
         _gatewayNsfwEnabled = data.Preferences.GatewayNsfwEnabled;
@@ -617,13 +615,16 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
     public async ValueTask DisposeAsync()
     {
         CancelSceneTimer();
+        _proactiveLoopCts.Cancel();
         try
         {
+            if (_proactiveLoopTask is not null) await _proactiveLoopTask.ConfigureAwait(false);
             await _sceneTurnScheduler.DisposeAsync();
             await _cognitiveScheduler.DisposeAsync();
             await _network.DisposeAsync();
             await _memoryDiagnostics.DisposeAsync();
             await _llama.DisposeAsync();
+            _proactiveLoopCts.Dispose();
         }
         finally
         {

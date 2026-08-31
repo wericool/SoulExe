@@ -18,6 +18,7 @@
     <Compile Include="..\Services\ConversationContextWindow.cs" Link="Services\ConversationContextWindow.cs" />
     <Compile Include="..\Services\ConversationPaging.cs" Link="Services\ConversationPaging.cs" />
     <Compile Include="..\Services\MobileAccessPasswordHasher.cs" Link="Services\MobileAccessPasswordHasher.cs" />
+    <Compile Include="..\Services\MessagingTiming.cs" Link="Services\MessagingTiming.cs" />
     <Compile Include="..\Services\ConversationPromptEngine.cs" Link="Services\ConversationPromptEngine.cs" />
     <Compile Include="..\Services\PromptModels.cs" Link="Services\PromptModels.cs" />
     <Compile Include="..\Services\PromptTraceFormatter.cs" Link="Services\PromptTraceFormatter.cs" />

@@ -16,6 +16,7 @@ public sealed partial class NetworkChatServer
         app.MapPut("/api/conversations/{conversationId:guid}", UpdateConversationAsync);
         app.MapGet("/api/conversations/page", GetConversationPageAsync);
         app.MapGet("/api/conversations/{conversationId:guid}", GetConversationAsync);
+        app.MapGet("/api/conversations/{conversationId:guid}/generation-preview", GetGenerationPreview);
         app.MapPost("/api/conversations/{conversationId:guid}/actions", ConversationActionAsync);
     }
 
@@ -75,6 +76,8 @@ public sealed partial class NetworkChatServer
         {
             var avatars = (root.Characters ?? []).ToDictionary(character => character.Id, AvatarUrl);
             return ReadConversations(root)
+                .OrderByDescending(conversation => conversation.UpdatedAt)
+                .ThenBy(conversation => conversation.Id)
                 .Select(conversation => ConversationDto(conversation, take, characterId => avatars.GetValueOrDefault(characterId)))
                 .ToList();
         }, token);
@@ -109,6 +112,34 @@ public sealed partial class NetworkChatServer
         }, token);
         return Results.Ok(page);
     }
+
+    private IResult GetGenerationPreview(Guid conversationId)
+    {
+        var preview = _generationPreviews.GetValueOrDefault(conversationId);
+        return Results.Ok(preview is null
+            ? new { text = "", isGenerating = false, error = (string?)null }
+            : new { text = preview.Text, isGenerating = preview.IsGenerating, error = preview.Error });
+    }
+
+    private Task StartDirectGenerationWithPreviewAsync(Guid conversationId, NetworkChatRequest request)
+    {
+        _generationPreviews[conversationId] = new NetworkGenerationPreview("", true);
+        return Task.Run(async () =>
+        {
+        try
+        {
+            await _askWithPreview(request, text => _generationPreviews[conversationId] = new NetworkGenerationPreview(text, true), CancellationToken.None);
+            _generationPreviews[conversationId] = new NetworkGenerationPreview("", false);
+            await NotifyDataChangedAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"Conversation direct generation failed: {ex}");
+            _generationPreviews[conversationId] = new NetworkGenerationPreview("", false, ex.Message);
+        }
+        });
+    }
+
     private async Task<IResult> ConversationActionAsync(HttpContext context, Guid conversationId, MobileConversationActionRequest request, CancellationToken token)
     {
         var action = (request.Action ?? string.Empty).Trim().ToLowerInvariant();
@@ -128,18 +159,7 @@ public sealed partial class NetworkChatServer
             var text = request.Text.Trim();
             if (string.Equals(context.Request.Query["async"], "1", StringComparison.Ordinal))
             {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _ask(new NetworkChatRequest(target.CharacterId.ToString(), target.ChatId.ToString(), text, request.AuthorKind, request.AuthorPersonaId), CancellationToken.None);
-                        await NotifyDataChangedAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        AppLog.Write($"Conversation direct generation failed: {ex}");
-                    }
-                });
+                _ = StartDirectGenerationWithPreviewAsync(conversationId, new NetworkChatRequest(target.CharacterId.ToString(), target.ChatId.ToString(), text, request.AuthorKind, request.AuthorPersonaId));
                 return Results.Accepted($"/api/conversations/{conversationId}", new { accepted = true });
             }
 
@@ -154,6 +174,24 @@ public sealed partial class NetworkChatServer
             var result = await AppServices.Conversations.AppendUserMessageAsync(address, request.Text ?? string.Empty, token);
             await NotifyDataChangedAsync();
             return Results.Ok(ConversationDto(result.Conversation, avatarUrl: AvatarUrlForCharacter));
+        }
+
+        // Mobile uses the same next-reply control for personal and group
+        // conversations. A personal continuation is not a user message: the
+        // established turn runner recognises this directive and asks the
+        // character to continue from the current history.
+        if (kind == ConversationKind.Direct && action == "next")
+        {
+            var target = await AppServices.Conversations.ResolveDirectAsync(conversationId, token);
+            if (string.Equals(context.Request.Query["async"], "1", StringComparison.Ordinal))
+            {
+                _ = StartDirectGenerationWithPreviewAsync(conversationId, new NetworkChatRequest(target.CharacterId.ToString(), target.ChatId.ToString(), "*continue*", "user"));
+                return Results.Accepted($"/api/conversations/{conversationId}", new { accepted = true });
+            }
+            await _ask(new NetworkChatRequest(target.CharacterId.ToString(), target.ChatId.ToString(), "*continue*", "user"), token);
+            var generated = await AppServices.Conversations.GetAsync(address, token);
+            await NotifyDataChangedAsync();
+            return Results.Ok(ConversationDto(generated.Conversation, avatarUrl: AvatarUrlForCharacter));
         }
 
         if (action == "director")

@@ -71,6 +71,40 @@ User's idea:
         else await dispatcher.InvokeAsync(RunAsync).Task.Unwrap();
         return result ?? throw new InvalidOperationException("Не удалось сгенерировать персону.");
     }
+
+    private async Task<string> ExpandPersonaDescriptionFromNetworkAsync(string idea, CancellationToken token)
+    {
+        string? result = null;
+        async Task RunAsync()
+        {
+            var messages = new[]
+            {
+                new LlamaMessage("system", "You expand a concise user-persona description for a roleplay chat. Return only the expanded Russian description, without a heading, JSON, Markdown, quotes, or <think> tags."),
+                new LlamaMessage("user", $"""
+Expand the following Russian persona description into a concrete, internally consistent text of 180 to 300 characters.
+Keep every fact that is explicitly given. Add only plausible stable details that follow from this text. Do not use, infer, or mention the persona's name. Do not invent dialogue or actions by other people.
+
+Source description:
+{idea.Trim()}
+""")
+            };
+            Status = "Локальная модель пишет описание персоны…";
+            var settings = await BuildLlamaSettingsAsync();
+            var raw = await Task.Run(async () =>
+            {
+                var response = new StringBuilder();
+                await foreach (var chunk in GenerateWithPromptPolicyAsync(settings, messages, token, "persona_description_network").ConfigureAwait(false)) response.Append(chunk);
+                return response.ToString();
+            }, token);
+            result = CharacterCardGenerationService.LimitField(raw.Replace("<think>", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("</think>", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(), 500);
+            if (string.IsNullOrWhiteSpace(result)) throw new InvalidOperationException("Модель не вернула описание. Попробуйте ещё раз.");
+            Status = "Описание персоны сгенерировано в мобильном редакторе.";
+        }
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess()) await RunAsync();
+        else await dispatcher.InvokeAsync(RunAsync).Task.Unwrap();
+        return result ?? throw new InvalidOperationException("Не удалось сгенерировать описание персоны.");
+    }
     private async Task<SoulCharacter> ExpandCharacterFieldFromNetworkAsync(Guid characterId, string field, CancellationToken token)
     {
         SoulCharacter? result = null;
@@ -151,7 +185,13 @@ User's idea:
         });
         return Task.CompletedTask;
     }
-    private async Task<string> AskFromNetworkAsync(NetworkChatRequest request, CancellationToken token)
+    private Task<string> AskFromNetworkAsync(NetworkChatRequest request, CancellationToken token) =>
+        AskFromNetworkCoreAsync(request, null, token);
+
+    private Task<string> AskFromNetworkWithPreviewAsync(NetworkChatRequest request, Action<string> onChunk, CancellationToken token) =>
+        AskFromNetworkCoreAsync(request, onChunk, token);
+
+    private async Task<string> AskFromNetworkCoreAsync(NetworkChatRequest request, Action<string>? onChunk, CancellationToken token)
     {
         if (!Guid.TryParse(request.CharacterId, out var id)) throw new InvalidOperationException("Некорректный персонаж.");
         var character = await _library.GetCharacterAsync(id) ?? throw new InvalidOperationException("Персонаж не найден.");
@@ -191,6 +231,8 @@ User's idea:
         if (!isContinuation)
             await _conversations.AppendAuthoredUserMessageAsync(ConversationAddress.Direct(conversation.Id), request.Message, storedAuthorKind, personaId, authorName, avatarPath, token);
         await RefreshDesktopAfterNetworkMutationAsync();
+        if (!isContinuation && character.RealisticMessagingEnabled)
+            await Task.Delay(MessagingTiming.RealisticReplyDelay(request.Message), token);
         var settings = await BuildLlamaSettingsAsync();
         var generationId = Guid.NewGuid().ToString("N")[..12];
         var result = await _conversationTurnRunner.RunPersonalTurnAsync(
@@ -203,6 +245,7 @@ User's idea:
             (messages, cancellation) => GenerateWithPromptPolicyAsync(settings, messages, cancellation, "network_" + generationId),
             async (raw, cancellation) => await DirectChatResponseFinalizer.FinalizeAsync(
                 _stateVariables, character.Id, conversation.Id, raw, character.UseRoleplayResponseFormatting, cancellation),
+            onChunk: onChunk,
             persistAssistant: true,
             activePersonaId: personaId,
             token: token);

@@ -34,6 +34,14 @@ public sealed partial class NetworkChatServer
         personality = character.Personality,
         scenario = character.Scenario,
         systemPrompt = character.SystemPrompt,
+        personalityExpressionLevel = character.PersonalityExpressionLevel,
+        replyLanguage = character.ReplyLanguage,
+        useRoleplayResponseFormatting = character.UseRoleplayResponseFormatting,
+        defaultUserProfile = character.DefaultUserProfile,
+        defaultRelationshipContext = character.DefaultRelationshipContext,
+        exampleDialogue = character.ExampleDialogue,
+        selectedPromptPresetId = character.SelectedPromptPresetId,
+        lorebookIds = character.LorebookIds,
         cognitiveArchitectureEnabled = character.CognitiveArchitectureEnabled,
         soulMemoryEnabled = character.SoulMemoryEnabled,
         soulMemoryPreset = character.SoulMemoryPreset,
@@ -41,6 +49,11 @@ public sealed partial class NetworkChatServer
         autoSummaryEnabled = character.AutoSummaryEnabled,
         selectedPersonaId = character.SelectedPersonaId,
         autoSummaryIntervalMessages = character.AutoSummaryIntervalMessages,
+        proactiveMessagesEnabled = character.ProactiveMessagesEnabled,
+        proactiveQuietHoursEnabled = character.ProactiveQuietHoursEnabled,
+        proactiveQuietHoursStart = character.ProactiveQuietHoursStart,
+        proactiveQuietHoursEnd = character.ProactiveQuietHoursEnd,
+        realisticMessagingEnabled = character.RealisticMessagingEnabled,
         avatarUrl = AvatarUrl(character)
     };
 
@@ -49,10 +62,23 @@ public sealed partial class NetworkChatServer
         app.MapGet("/api/personas", GetPersonasAsync);
         app.MapPost("/api/personas", CreatePersonaAsync);
         app.MapPost("/api/personas/generate", GeneratePersonaAsync);
+        app.MapPost("/api/personas/expand", ExpandPersonaDescriptionAsync);
         app.MapPut("/api/personas/{personaId:guid}", UpdatePersonaAsync);
         app.MapGet("/api/personas/{personaId:guid}/avatar", PersonaAvatarAsync);
         app.MapPost("/api/personas/{personaId:guid}/avatar", UploadPersonaAvatarAsync);
         app.MapGet("/api/characters", () => _characters().Select(CharacterDto));
+        app.MapGet("/api/prompt-presets", async (CancellationToken token) =>
+        {
+            var presets = await AppServices.DataStore.ReadAsync(root => root.PromptPresets
+                .Select(preset => new { id = preset.Id, name = preset.Name, description = preset.Description, isBuiltIn = preset.IsBuiltIn })
+                .ToList(), token);
+            return Results.Ok(presets);
+        });
+        app.MapGet("/api/lorebooks", async (CancellationToken token) =>
+        {
+            var lorebooks = await AppServices.Lorebooks.GetLorebooksAsync(token);
+            return Results.Ok(lorebooks.Select(book => new { id = book.Id, name = book.Name, description = book.Description, entriesCount = book.Entries.Count }));
+        });
         app.MapPost("/api/characters", CreateCharacterAsync);
         app.MapPost("/api/characters/generate", GenerateCharacterAsync);
         app.MapPost("/api/characters/{characterId:guid}/expand", ExpandCharacterFieldAsync);
@@ -88,6 +114,13 @@ public sealed partial class NetworkChatServer
         return Results.Ok(PersonaDto(persona));
     }
 
+    private async Task<IResult> ExpandPersonaDescriptionAsync(MobilePersonaGenerateRequest request, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(request.Idea)) return Results.BadRequest(new { error = "Сначала введите короткую основу в поле «Описание»." });
+        var description = await _expandPersonaDescription(request.Idea.Trim(), token);
+        return Results.Ok(new { description });
+    }
+
     private async Task<IResult> UpdatePersonaAsync(Guid personaId, MobilePersonaUpdateRequest request, CancellationToken token)
     {
         var persona = (await AppServices.Personas.GetPersonasAsync(token)).FirstOrDefault(value => value.Id == personaId);
@@ -108,6 +141,26 @@ public sealed partial class NetworkChatServer
         character.Personality = request.Personality?.Trim() ?? "";
         character.Scenario = request.Scenario?.Trim() ?? "";
         character.SystemPrompt = request.SystemPrompt?.Trim() ?? "";
+        character.PersonalityExpressionLevel = NormalizePersonalityExpression(request.PersonalityExpressionLevel);
+        character.ReplyLanguage = string.IsNullOrWhiteSpace(request.ReplyLanguage) ? "Русский" : request.ReplyLanguage.Trim();
+        character.UseRoleplayResponseFormatting = request.UseRoleplayResponseFormatting ?? false;
+        character.DefaultUserProfile = request.DefaultUserProfile?.Trim() ?? "";
+        character.DefaultRelationshipContext = request.DefaultRelationshipContext?.Trim() ?? "";
+        character.ExampleDialogue = request.ExampleDialogue?.Trim() ?? "";
+        character.SelectedPromptPresetId = Guid.TryParse(request.SelectedPromptPresetId, out var promptPresetId) ? promptPresetId : null;
+        character.LorebookIds = await ValidLorebookIdsAsync(request.LorebookIds, token);
+        character.SelectedPersonaId = Guid.TryParse(request.SelectedPersonaId, out var personaId) ? personaId : null;
+        if (request.CognitiveArchitectureEnabled is not null) character.CognitiveArchitectureEnabled = request.CognitiveArchitectureEnabled.Value;
+        if (request.SoulMemoryEnabled is not null) character.SoulMemoryEnabled = request.SoulMemoryEnabled.Value;
+        if (!string.IsNullOrWhiteSpace(request.SoulMemoryPreset)) character.SoulMemoryPreset = request.SoulMemoryPreset;
+        if (request.SoulMemoryIntervalMessages is not null) character.SoulMemoryIntervalMessages = request.SoulMemoryIntervalMessages.Value;
+        if (request.AutoSummaryEnabled is not null) character.AutoSummaryEnabled = request.AutoSummaryEnabled.Value;
+        if (request.AutoSummaryIntervalMessages is not null) character.AutoSummaryIntervalMessages = request.AutoSummaryIntervalMessages.Value;
+        if (request.ProactiveMessagesEnabled is not null) character.ProactiveMessagesEnabled = request.ProactiveMessagesEnabled.Value;
+        if (request.ProactiveQuietHoursEnabled is not null) character.ProactiveQuietHoursEnabled = request.ProactiveQuietHoursEnabled.Value;
+        if (request.ProactiveQuietHoursStart is not null) character.ProactiveQuietHoursStart = request.ProactiveQuietHoursStart.Trim();
+        if (request.ProactiveQuietHoursEnd is not null) character.ProactiveQuietHoursEnd = request.ProactiveQuietHoursEnd.Trim();
+        if (request.RealisticMessagingEnabled is not null) character.RealisticMessagingEnabled = request.RealisticMessagingEnabled.Value;
         await AppServices.CharacterLibrary.UpdateCharacterAsync(character, token);
         await NotifyDataChangedAsync();
         return Results.Ok(CharacterDto(character));
@@ -212,6 +265,14 @@ public sealed partial class NetworkChatServer
         character.Personality = request.Personality?.Trim() ?? "";
         character.Scenario = request.Scenario?.Trim() ?? "";
         character.SystemPrompt = request.SystemPrompt?.Trim() ?? "";
+        character.PersonalityExpressionLevel = NormalizePersonalityExpression(request.PersonalityExpressionLevel ?? character.PersonalityExpressionLevel);
+        if (request.ReplyLanguage is not null) character.ReplyLanguage = string.IsNullOrWhiteSpace(request.ReplyLanguage) ? "Русский" : request.ReplyLanguage.Trim();
+        if (request.UseRoleplayResponseFormatting is not null) character.UseRoleplayResponseFormatting = request.UseRoleplayResponseFormatting.Value;
+        if (request.DefaultUserProfile is not null) character.DefaultUserProfile = request.DefaultUserProfile.Trim();
+        if (request.DefaultRelationshipContext is not null) character.DefaultRelationshipContext = request.DefaultRelationshipContext.Trim();
+        if (request.ExampleDialogue is not null) character.ExampleDialogue = request.ExampleDialogue.Trim();
+        if (request.SelectedPromptPresetId is not null) character.SelectedPromptPresetId = Guid.TryParse(request.SelectedPromptPresetId, out var promptPresetId) ? promptPresetId : null;
+        if (request.LorebookIds is not null) character.LorebookIds = await ValidLorebookIdsAsync(request.LorebookIds, token);
         character.SelectedPersonaId = Guid.TryParse(request.SelectedPersonaId, out var personaId) ? personaId : null;
         if (request.CognitiveArchitectureEnabled is not null) character.CognitiveArchitectureEnabled = request.CognitiveArchitectureEnabled.Value;
         if (request.SoulMemoryEnabled is not null) character.SoulMemoryEnabled = request.SoulMemoryEnabled.Value;
@@ -219,9 +280,29 @@ public sealed partial class NetworkChatServer
         if (request.SoulMemoryIntervalMessages is not null) character.SoulMemoryIntervalMessages = request.SoulMemoryIntervalMessages.Value;
         if (request.AutoSummaryEnabled is not null) character.AutoSummaryEnabled = request.AutoSummaryEnabled.Value;
         if (request.AutoSummaryIntervalMessages is not null) character.AutoSummaryIntervalMessages = request.AutoSummaryIntervalMessages.Value;
+        if (request.ProactiveMessagesEnabled is not null) character.ProactiveMessagesEnabled = request.ProactiveMessagesEnabled.Value;
+        if (request.ProactiveQuietHoursEnabled is not null) character.ProactiveQuietHoursEnabled = request.ProactiveQuietHoursEnabled.Value;
+        if (request.ProactiveQuietHoursStart is not null) character.ProactiveQuietHoursStart = request.ProactiveQuietHoursStart.Trim();
+        if (request.ProactiveQuietHoursEnd is not null) character.ProactiveQuietHoursEnd = request.ProactiveQuietHoursEnd.Trim();
+        if (request.RealisticMessagingEnabled is not null) character.RealisticMessagingEnabled = request.RealisticMessagingEnabled.Value;
         await AppServices.CharacterLibrary.UpdateCharacterAsync(character, token);
         await NotifyDataChangedAsync();
         return Results.Ok(CharacterDto(character));
+    }
+
+    private static string NormalizePersonalityExpression(string? value) => value?.Trim().ToLowerInvariant() switch
+    {
+        "vivid" => "vivid",
+        "subtle" => "subtle",
+        _ => "natural"
+    };
+
+    private static async Task<List<Guid>> ValidLorebookIdsAsync(string[]? values, CancellationToken token)
+    {
+        if (values is null || values.Length == 0) return [];
+        var available = (await AppServices.Lorebooks.GetLorebooksAsync(token)).Select(book => book.Id).ToHashSet();
+        return values.Select(value => Guid.TryParse(value, out var id) ? id : Guid.Empty)
+            .Where(id => id != Guid.Empty && available.Contains(id)).Distinct().ToList();
     }
 
 

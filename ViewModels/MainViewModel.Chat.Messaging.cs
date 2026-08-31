@@ -215,6 +215,13 @@ public sealed partial class MainViewModel
             var displayedUser = new ChatMessageViewModel(user, character.AvatarPath);
             AddPersonalPresentationMessage(displayedUser);
 
+            if (character.RealisticMessagingEnabled)
+            {
+                var delay = MessagingTiming.RealisticReplyDelay(text);
+                Status = $"{character.Name} ответит примерно через {Math.Ceiling(delay.TotalSeconds):0} сек.";
+                await Task.Delay(delay);
+            }
+
             Status = "Модель формирует ответ…";
             IsAssistantTyping = true;
 

@@ -74,7 +74,9 @@ public static class LlamaSettingsFactory
     public static AppSettings ForCognitiveMaintenance(AppSettings source)
     {
         var settings = Clone(source);
-        settings.MaxTokens = Math.Clamp(Math.Min(settings.MaxTokens, 960), 128, 960);
+        // The combined pass can return summary + the enabled memory fields in one response.
+        // A slightly larger ceiling is still much faster than several separate generations.
+        settings.MaxTokens = Math.Clamp(settings.MaxTokens, 768, 1280);
         settings.Temperature = Math.Min(settings.Temperature, 0.3d);
         return settings;
     }

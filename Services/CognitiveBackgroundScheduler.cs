@@ -27,13 +27,19 @@ public sealed class CognitiveBackgroundScheduler : IAsyncDisposable
         var key = Key(characterId, chatId);
         Cancel(characterId, chatId);
         if (_disposed) return;
+        var normalizedMode = BackgroundModes.Normalize(mode);
+        if (normalizedMode == BackgroundModes.Manual)
+        {
+            _report("Автоматическое обновление памяти отключено: используется ручной режим.");
+            return;
+        }
         var source = new CancellationTokenSource();
         _requests[key] = source;
-        // The local model has one practical generation lane. Running automatic maintenance
-        // immediately after a reply makes the next user turn queue behind it and feels like
-        // the application froze. Keep the data in the persisted queue, but wait for a real
-        // reading pause before consuming one maintenance batch.
-        var wait = TimeSpan.FromSeconds(Math.Clamp(idleSeconds, 60, 300));
+        // The recommended idle mode leaves the local model free during active conversation.
+        // Immediate mode is an explicit user choice; manual mode returns before creating a job.
+        var wait = normalizedMode == BackgroundModes.Immediate
+            ? TimeSpan.Zero
+            : TimeSpan.FromSeconds(Math.Clamp(idleSeconds, 30, 300));
         _ = RunAsync(key, source, wait, work);
     }
 
